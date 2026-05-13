@@ -1,0 +1,113 @@
+'use strict';
+
+const express = require('express');
+const authenticate = require('../middleware/auth');
+const User = require('../models/User');
+
+const router = express.Router({ mergeParams: true });
+
+function computeVaccinationReminder(nextDueDate, windowDays) {
+  if (!nextDueDate) return null;
+  const reminderDate = new Date(nextDueDate);
+  reminderDate.setDate(reminderDate.getDate() - (windowDays || 7));
+  return reminderDate > new Date() ? reminderDate : null;
+}
+
+// GET /api/dogs/:dogId/vaccinations
+router.get('/', authenticate, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const dog = user?.dogs.id(req.params.dogId);
+    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    return res.json({ vaccinations: dog.vaccinations });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/dogs/:dogId/vaccinations
+router.post('/', authenticate, async (req, res, next) => {
+  try {
+    const { vaccineName, dateAdministered, nextDueDate, notes } = req.body;
+
+    if (!vaccineName || !dateAdministered) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'vaccineName and dateAdministered are required.' });
+    }
+
+    const adminDate = new Date(dateAdministered);
+    if (isNaN(adminDate.getTime())) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'dateAdministered must be a valid date.' });
+    }
+
+    const user = await User.findById(req.user.id);
+    const dog = user?.dogs.id(req.params.dogId);
+    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+
+    const duplicate = dog.vaccinations.some(
+      (v) =>
+        v.vaccineName.toLowerCase() === vaccineName.toLowerCase() &&
+        new Date(v.dateAdministered).toISOString().split('T')[0] === adminDate.toISOString().split('T')[0]
+    );
+    if (duplicate) {
+      return res.status(409).json({ code: 'DUPLICATE_VACCINATION', message: 'A vaccination with this name and date already exists.' });
+    }
+
+    const windowDays = user.notificationPreferences?.vaccinationWindowDays || 7;
+    const nextReminderAt = nextDueDate ? computeVaccinationReminder(new Date(nextDueDate), windowDays) : null;
+
+    dog.vaccinations.push({ vaccineName, dateAdministered: adminDate, nextDueDate: nextDueDate ? new Date(nextDueDate) : null, notes: notes || '', nextReminderAt });
+    await user.save();
+
+    const newVac = dog.vaccinations[dog.vaccinations.length - 1];
+    return res.status(201).json(newVac);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// PATCH /api/dogs/:dogId/vaccinations/:vacId
+router.patch('/:vacId', authenticate, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const dog = user?.dogs.id(req.params.dogId);
+    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+
+    const vac = dog.vaccinations.id(req.params.vacId);
+    if (!vac) return res.status(404).json({ code: 'NOT_FOUND', message: 'Vaccination not found.' });
+
+    const { vaccineName, dateAdministered, nextDueDate, notes } = req.body;
+    if (vaccineName !== undefined) vac.vaccineName = vaccineName;
+    if (dateAdministered !== undefined) vac.dateAdministered = new Date(dateAdministered);
+    if (nextDueDate !== undefined) {
+      vac.nextDueDate = nextDueDate ? new Date(nextDueDate) : null;
+      const windowDays = user.notificationPreferences?.vaccinationWindowDays || 7;
+      vac.nextReminderAt = vac.nextDueDate ? computeVaccinationReminder(vac.nextDueDate, windowDays) : null;
+    }
+    if (notes !== undefined) vac.notes = notes;
+
+    await user.save();
+    return res.json(vac);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// DELETE /api/dogs/:dogId/vaccinations/:vacId
+router.delete('/:vacId', authenticate, async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+    const dog = user?.dogs.id(req.params.dogId);
+    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+
+    const vac = dog.vaccinations.id(req.params.vacId);
+    if (!vac) return res.status(404).json({ code: 'NOT_FOUND', message: 'Vaccination not found.' });
+
+    vac.deleteOne();
+    await user.save();
+    return res.json({ message: 'Vaccination record deleted.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+module.exports = router;

@@ -19,11 +19,11 @@
 
 **Purpose**: Project scaffolding and tooling — no dependencies, start immediately.
 
-- [ ] T001 Initialize backend Node.js project with Express, Mongoose, jsonwebtoken, bcrypt, Resend, dotenv, nodemon in `backend/`
-- [ ] T002 Initialize frontend project with Vite + React 18, React Router 6, Redux Toolkit, Axios in `frontend/`
-- [ ] T003 [P] Configure ESLint + Prettier for backend in `backend/.eslintrc.js` and `backend/.prettierrc`
-- [ ] T004 [P] Configure ESLint + Prettier for frontend in `frontend/.eslintrc.js` and `frontend/.prettierrc`
-- [ ] T005 Configure Jest + Supertest for backend in `backend/package.json` and `backend/jest.config.js`
+- [x] T001 Initialize backend Node.js project with Express, Mongoose, jsonwebtoken, bcrypt, Resend, dotenv, nodemon in `backend/`
+- [x] T002 Initialize frontend project with Vite + React 18, React Router 6, Redux Toolkit, Axios in `frontend/`
+- [x] T003 [P] Configure ESLint + Prettier for backend in `backend/.eslintrc.js` and `backend/.prettierrc`
+- [x] T004 [P] Configure ESLint + Prettier for frontend in `frontend/.eslintrc.js` and `frontend/.prettierrc`
+- [x] T005 Configure Jest + Supertest for backend in `backend/package.json` and `backend/jest.config.js`
 
 **Checkpoint**: Both projects bootstrap without errors; linting passes on empty scaffolds.
 
@@ -35,16 +35,16 @@
 
 **⚠️ CRITICAL**: Phases 3–7 cannot start until this phase is complete.
 
-- [ ] T006 Set up MongoDB connection with environment validation in `backend/src/config/db.js`
-- [ ] T007 Create User Mongoose schema (email, passwordHash, name, tier, notificationPreferences, dogs[] embedded) in `backend/src/models/User.js`
-- [ ] T008 Implement JWT authentication middleware (verify Bearer token, attach `req.user`) in `backend/src/middleware/auth.js`
-- [ ] T009 [P] Implement global error-handling middleware (maps domain errors to HTTP responses, including `TierLimitError → 403`) in `backend/src/middleware/errorHandler.js`
-- [ ] T010 Implement EmailService wrapper around Resend SDK with retry/backoff in `backend/src/services/EmailService.js`
-- [ ] T011 Implement TierService with `canAddDog(user, count)` and typed `TierLimitError` class in `backend/src/services/TierService.js`
-- [ ] T012 Implement ReminderJob scaffold (5-min cron loop, query structure, dispatch hook) in `backend/src/services/ReminderJob.js`
-- [ ] T013 [P] Bootstrap Express app with route mounting, CORS, JSON parsing, and error handler in `backend/src/app.js`
-- [ ] T014 [P] Set up Redux Toolkit store with `authSlice` (user, token, tier) in `frontend/src/store/authSlice.js` and `frontend/src/store/index.js`
-- [ ] T015 [P] Set up React Router routes scaffold (public + protected route wrapper) in `frontend/src/main.jsx` and `frontend/src/components/ProtectedRoute.jsx`
+- [x] T006 Set up MongoDB connection with environment validation in `backend/src/config/db.js`
+- [x] T007 Create User Mongoose schema (email, passwordHash, name, tier, notificationPreferences, dogs[] embedded) in `backend/src/models/User.js`
+- [x] T008 Implement JWT authentication middleware (verify Bearer token, attach `req.user`) in `backend/src/middleware/auth.js`
+- [x] T009 [P] Implement global error-handling middleware (maps domain errors to HTTP responses, including `TierLimitError → 403`) in `backend/src/middleware/errorHandler.js`
+- [x] T010 Implement EmailService wrapper around Resend SDK with retry/backoff in `backend/src/services/EmailService.js`
+- [x] T011 Implement TierService with `canAddDog(user, count)` and typed `TierLimitError` class in `backend/src/services/TierService.js`
+- [x] T012 Implement ReminderJob scaffold (5-min cron loop, query structure, dispatch hook) in `backend/src/services/ReminderJob.js`
+- [x] T013 [P] Bootstrap Express app with route mounting, CORS, JSON parsing, and error handler in `backend/src/app.js`
+- [x] T014 [P] Set up Redux Toolkit store with `authSlice` (user, token, tier) in `frontend/src/store/authSlice.js` and `frontend/src/store/index.js`
+- [x] T015 [P] Set up React Router routes scaffold (public + protected route wrapper) in `frontend/src/main.jsx` and `frontend/src/components/ProtectedRoute.jsx`
 
 **Checkpoint**: Backend starts on `:3001`; MongoDB connects; JWT middleware rejects unauthenticated requests; frontend boots on `:5173` with routing.
 
@@ -56,17 +56,17 @@
 
 **Independent Test**: Register → create dog profile → see dashboard. No other health features required.
 
-- [ ] T016 [P] [US1] Implement `POST /api/auth/register` and `POST /api/auth/login` in `backend/src/routes/auth.js`
-- [ ] T017 [P] [US1] Create PasswordResetToken Mongoose model (tokenHash, userId, expiresAt, TTL index) in `backend/src/models/PasswordResetToken.js`
-- [ ] T018 [US1] Implement `POST /api/auth/forgot-password` and `POST /api/auth/reset-password` (rate-limited, generic response, bcrypt token) in `backend/src/routes/auth.js`
-- [ ] T019 [P] [US1] Implement `POST /api/auth/logout` and `DELETE /api/auth/me` (full data purge) in `backend/src/routes/auth.js`
-- [ ] T020 [US1] Implement `GET /POST /PATCH /DELETE /api/dogs` with TierService enforcement for free-tier 1-dog limit in `backend/src/routes/dogs.js`
-- [ ] T021 [P] [US1] Build `RegisterPage` (name, email, password form with field-level validation) in `frontend/src/pages/RegisterPage.jsx`
-- [ ] T022 [P] [US1] Build `LoginPage` (email, password form) and `ForgotPasswordPage` / `ResetPasswordPage` in `frontend/src/pages/`
-- [ ] T023 [US1] Build `DogProfileSetupPage` (create first dog: name, breed, date of birth, optional photo URL) in `frontend/src/pages/DogProfileSetupPage.jsx`
-- [ ] T024 [US1] Build `DashboardPage` with empty health state, upcoming reminders placeholder, and dog switcher (multi-dog support) in `frontend/src/pages/DashboardPage.jsx`
-- [ ] T025 [P] [US1] Build `DogListPage` (view all dogs, link to add second dog for premium users) in `frontend/src/pages/DogListPage.jsx`
-- [ ] T026 [P] [US1] Implement API client functions for auth and dogs endpoints in `frontend/src/services/api.js`
+- [x] T016 [P] [US1] Implement `POST /api/auth/register` and `POST /api/auth/login` in `backend/src/routes/auth.js`
+- [x] T017 [P] [US1] Create PasswordResetToken Mongoose model (tokenHash, userId, expiresAt, TTL index) in `backend/src/models/PasswordResetToken.js`
+- [x] T018 [US1] Implement `POST /api/auth/forgot-password` and `POST /api/auth/reset-password` (rate-limited, generic response, bcrypt token) in `backend/src/routes/auth.js`
+- [x] T019 [P] [US1] Implement `POST /api/auth/logout` and `DELETE /api/auth/me` (full data purge) in `backend/src/routes/auth.js`
+- [x] T020 [US1] Implement `GET /POST /PATCH /DELETE /api/dogs` with TierService enforcement for free-tier 1-dog limit in `backend/src/routes/dogs.js`
+- [x] T021 [P] [US1] Build `RegisterPage` (name, email, password form with field-level validation) in `frontend/src/pages/RegisterPage.jsx`
+- [x] T022 [P] [US1] Build `LoginPage` (email, password form) and `ForgotPasswordPage` / `ResetPasswordPage` in `frontend/src/pages/`
+- [x] T023 [US1] Build `DogProfileSetupPage` (create first dog: name, breed, date of birth, optional photo URL) in `frontend/src/pages/DogProfileSetupPage.jsx`
+- [x] T024 [US1] Build `DashboardPage` with empty health state, upcoming reminders placeholder, and dog switcher (multi-dog support) in `frontend/src/pages/DashboardPage.jsx`
+- [x] T025 [P] [US1] Build `DogListPage` (view all dogs, link to add second dog for premium users) in `frontend/src/pages/DogListPage.jsx`
+- [x] T026 [P] [US1] Implement API client functions for auth and dogs endpoints in `frontend/src/services/api.js`
 
 **Checkpoint**: Full registration → login → create dog → dashboard flow works end-to-end. Tier limit returns correct 403 for free users adding a second dog.
 
@@ -78,13 +78,13 @@
 
 **Independent Test**: Add vaccination with due date → confirm reminder appears on dashboard → (manually trigger reminder job) → confirm email dispatched.
 
-- [ ] T027 [US2] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/vaccinations` with duplicate-detection warning in `backend/src/routes/vaccinations.js`
-- [ ] T028 [US2] Add `nextReminderAt` computation on vaccination save (dueDate minus user's `vaccinationWindowDays`) in `backend/src/routes/vaccinations.js`
-- [ ] T029 [US2] Extend ReminderJob to query vaccinations where `nextReminderAt <= now`, dispatch reminder emails via EmailService, then clear `nextReminderAt` in `backend/src/services/ReminderJob.js`
-- [ ] T030 [P] [US2] Build `VaccinationListPage` (chronological history, upcoming/overdue status badges) in `frontend/src/pages/VaccinationListPage.jsx`
-- [ ] T031 [P] [US2] Build `AddVaccinationForm` component (vaccine name, date administered, next due date, duplicate warning) in `frontend/src/components/AddVaccinationForm.jsx`
-- [ ] T032 [US2] Integrate upcoming vaccination reminders card into `DashboardPage` in `frontend/src/pages/DashboardPage.jsx`
-- [ ] T033 [P] [US2] Add vaccination API calls to `frontend/src/services/api.js`
+- [x] T027 [US2] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/vaccinations` with duplicate-detection warning in `backend/src/routes/vaccinations.js`
+- [x] T028 [US2] Add `nextReminderAt` computation on vaccination save (dueDate minus user's `vaccinationWindowDays`) in `backend/src/routes/vaccinations.js`
+- [x] T029 [US2] Extend ReminderJob to query vaccinations where `nextReminderAt <= now`, dispatch reminder emails via EmailService, then clear `nextReminderAt` in `backend/src/services/ReminderJob.js`
+- [x] T030 [P] [US2] Build `VaccinationListPage` (chronological history, upcoming/overdue status badges) in `frontend/src/pages/VaccinationListPage.jsx`
+- [x] T031 [P] [US2] Build `AddVaccinationForm` component (vaccine name, date administered, next due date, duplicate warning) in `frontend/src/components/AddVaccinationForm.jsx`
+- [x] T032 [US2] Integrate upcoming vaccination reminders card into `DashboardPage` in `frontend/src/pages/DashboardPage.jsx`
+- [x] T033 [P] [US2] Add vaccination API calls to `frontend/src/services/api.js`
 
 **Checkpoint**: Log a vaccination with a due date, see it on the dashboard, trigger the reminder job manually and confirm an email send is attempted.
 
@@ -96,12 +96,12 @@
 
 **Independent Test**: Add medication with 12-hour frequency → confirm next reminder time shown → trigger job → confirm email dispatched → mark completed → confirm archived.
 
-- [ ] T034 [US3] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/medications` with `nextReminderAt` computation and `status` transitions in `backend/src/routes/medications.js`
-- [ ] T035 [US3] Extend ReminderJob to query active medications where `nextReminderAt <= now`, dispatch dosage reminder emails, and advance `nextReminderAt` by `frequencyHours` in `backend/src/services/ReminderJob.js`
-- [ ] T036 [P] [US3] Build `MedicationListPage` (active list + completed archive tabs) in `frontend/src/pages/MedicationListPage.jsx`
-- [ ] T037 [P] [US3] Build `AddMedicationForm` component (name, dosage, start date, frequency, optional end date) in `frontend/src/components/AddMedicationForm.jsx`
-- [ ] T038 [US3] Integrate active medications card into `DashboardPage` in `frontend/src/pages/DashboardPage.jsx`
-- [ ] T039 [P] [US3] Add medication API calls to `frontend/src/services/api.js`
+- [x] T034 [US3] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/medications` with `nextReminderAt` computation and `status` transitions in `backend/src/routes/medications.js`
+- [x] T035 [US3] Extend ReminderJob to query active medications where `nextReminderAt <= now`, dispatch dosage reminder emails, and advance `nextReminderAt` by `frequencyHours` in `backend/src/services/ReminderJob.js`
+- [x] T036 [P] [US3] Build `MedicationListPage` (active list + completed archive tabs) in `frontend/src/pages/MedicationListPage.jsx`
+- [x] T037 [P] [US3] Build `AddMedicationForm` component (name, dosage, start date, frequency, optional end date) in `frontend/src/components/AddMedicationForm.jsx`
+- [x] T038 [US3] Integrate active medications card into `DashboardPage` in `frontend/src/pages/DashboardPage.jsx`
+- [x] T039 [P] [US3] Add medication API calls to `frontend/src/services/api.js`
 
 **Checkpoint**: Add a medication, see it in the active list, trigger the reminder job, confirm email attempted, mark as completed, confirm it moves to the archive.
 
@@ -113,12 +113,12 @@
 
 **Independent Test**: Add appointment → see it in upcoming list with reminder time shown → trigger reminder job → confirm email dispatched → cancel appointment → confirm reminder cleared.
 
-- [ ] T040 [US4] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/appointments` with `reminderAt` computation and `status` transitions (upcoming → cancelled clears reminderAt) in `backend/src/routes/appointments.js`
-- [ ] T041 [US4] Extend ReminderJob to query upcoming appointments where `reminderAt <= now`, dispatch appointment reminder emails, and clear `reminderAt` after send in `backend/src/services/ReminderJob.js`
-- [ ] T042 [P] [US4] Build `AppointmentListPage` (upcoming + history tabs, edit/cancel actions) in `frontend/src/pages/AppointmentListPage.jsx`
-- [ ] T043 [P] [US4] Build `AddAppointmentForm` component (clinic name, date/time, notes) in `frontend/src/components/AddAppointmentForm.jsx`
-- [ ] T044 [US4] Integrate upcoming appointments card into `DashboardPage` in `frontend/src/pages/DashboardPage.jsx`
-- [ ] T045 [P] [US4] Add appointment API calls to `frontend/src/services/api.js`
+- [x] T040 [US4] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/appointments` with `reminderAt` computation and `status` transitions (upcoming → cancelled clears reminderAt) in `backend/src/routes/appointments.js`
+- [x] T041 [US4] Extend ReminderJob to query upcoming appointments where `reminderAt <= now`, dispatch appointment reminder emails, and clear `reminderAt` after send in `backend/src/services/ReminderJob.js`
+- [x] T042 [P] [US4] Build `AppointmentListPage` (upcoming + history tabs, edit/cancel actions) in `frontend/src/pages/AppointmentListPage.jsx`
+- [x] T043 [P] [US4] Build `AddAppointmentForm` component (clinic name, date/time, notes) in `frontend/src/components/AddAppointmentForm.jsx`
+- [x] T044 [US4] Integrate upcoming appointments card into `DashboardPage` in `frontend/src/pages/DashboardPage.jsx`
+- [x] T045 [P] [US4] Add appointment API calls to `frontend/src/services/api.js`
 
 **Checkpoint**: Add appointment, see it on dashboard, cancel it, confirm reminder is cleared and it disappears from upcoming list.
 
@@ -130,10 +130,10 @@
 
 **Independent Test**: Log a symptom with type, description, and date → see it in the symptom log (reverse-chronological) → mark as resolved.
 
-- [ ] T046 [US5] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/symptoms` (ordered by `dateObserved` desc) in `backend/src/routes/symptoms.js`
-- [ ] T047 [P] [US5] Build `SymptomLogPage` (reverse-chronological list, resolved/unresolved filter, mark-as-resolved action) in `frontend/src/pages/SymptomLogPage.jsx`
-- [ ] T048 [P] [US5] Build `AddSymptomForm` component (symptom type, description, date observed) in `frontend/src/components/AddSymptomForm.jsx`
-- [ ] T049 [P] [US5] Add symptom API calls to `frontend/src/services/api.js`
+- [x] T046 [US5] Implement `GET /POST /PATCH /DELETE /api/dogs/:dogId/symptoms` (ordered by `dateObserved` desc) in `backend/src/routes/symptoms.js`
+- [x] T047 [P] [US5] Build `SymptomLogPage` (reverse-chronological list, resolved/unresolved filter, mark-as-resolved action) in `frontend/src/pages/SymptomLogPage.jsx`
+- [x] T048 [P] [US5] Build `AddSymptomForm` component (symptom type, description, date observed) in `frontend/src/components/AddSymptomForm.jsx`
+- [x] T049 [P] [US5] Add symptom API calls to `frontend/src/services/api.js`
 
 **Checkpoint**: Log multiple symptoms, verify reverse-chronological order, mark one as resolved, confirm filtered views work.
 
@@ -143,12 +143,12 @@
 
 **Purpose**: Notification preferences, full health history, GDPR deletion, offline UX, and validation polish across all stories.
 
-- [ ] T050 Implement `PATCH /api/auth/me/notifications` to update `vaccinationWindowDays`, `appointmentWindowHours`, and `enabled` flag in `backend/src/routes/auth.js`
-- [ ] T051 [P] Build `NotificationPreferencesPage` (toggle all notifications, set vaccination window days, appointment window hours) in `frontend/src/pages/NotificationPreferencesPage.jsx`
-- [ ] T052 [P] Build `HealthHistoryPage` showing all records (vaccinations, medications, appointments, symptoms) per dog in a unified timeline in `frontend/src/pages/HealthHistoryPage.jsx`
-- [ ] T053 Verify `DELETE /api/auth/me` performs full cascade purge (User + all embedded dogs, PasswordResetToken records) and confirm GDPR account deletion flow works end-to-end in `backend/src/routes/auth.js`
-- [ ] T054 [P] Add `OfflineIndicator` banner component (shown when `navigator.onLine === false`) in `frontend/src/components/OfflineIndicator.jsx`
-- [ ] T055 [P] Audit all forms for consistent field-level validation error display (required fields, format errors, server errors) across `frontend/src/components/` and `frontend/src/pages/`
+- [x] T050 Implement `PATCH /api/auth/me/notifications` to update `vaccinationWindowDays`, `appointmentWindowHours`, and `enabled` flag in `backend/src/routes/auth.js`
+- [x] T051 [P] Build `NotificationPreferencesPage` (toggle all notifications, set vaccination window days, appointment window hours) in `frontend/src/pages/NotificationPreferencesPage.jsx`
+- [x] T052 [P] Build `HealthHistoryPage` showing all records (vaccinations, medications, appointments, symptoms) per dog in a unified timeline in `frontend/src/pages/HealthHistoryPage.jsx`
+- [x] T053 Verify `DELETE /api/auth/me` performs full cascade purge (User + all embedded dogs, PasswordResetToken records) and confirm GDPR account deletion flow works end-to-end in `backend/src/routes/auth.js`
+- [x] T054 [P] Add `OfflineIndicator` banner component (shown when `navigator.onLine === false`) in `frontend/src/components/OfflineIndicator.jsx`
+- [x] T055 [P] Audit all forms for consistent field-level validation error display (required fields, format errors, server errors) across `frontend/src/components/` and `frontend/src/pages/`
 - [ ] T056 Validate `quickstart.md` end-to-end: fresh clone → install → configure `.env` → start both servers → complete full new-user registration + dog profile + vaccination flow
 
 **Checkpoint**: All 5 user stories work together cohesively. Notification preferences affect reminder timing. Account deletion purges all data. Offline banner appears on disconnect.
