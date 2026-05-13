@@ -1,0 +1,18 @@
+{
+  "projectId": "4378896d-9b85-40ab-b2bb-678e8ab0ea11",
+  "projectName": "Milocura",
+  "templateId": "mvp-saas",
+  "stackId": null,
+  "currentStage": 4,
+  "hasGeneratedSite": false,
+  "hasProjectFiles": false,
+  "generatedAt": "2026-05-13T23:02:31.689Z",
+  "files": [
+    "docs/",
+    "docs/01-brief.md",
+    "docs/02-prd.md",
+    "docs/03-rfc.md",
+    "docs/summary.md",
+    "manifest.json"
+  ]
+}
