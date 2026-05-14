@@ -264,6 +264,50 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .record-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .record-actions button { padding: 6px 12px; font-size: .85rem; }
 
+/* ── Vaccine catalog select ───────────────────────────────── */
+.vaccine-catalog-select { display: flex; flex-direction: column; gap: 8px; }
+
+.vaccine-info-panel {
+  background: #f0f6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: .85rem;
+}
+
+.badge-senasa {
+  display: inline-block;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: .78rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.vaccine-info-antigens { color: var(--color-muted); font-size: .8rem; }
+.vaccine-info-note { color: var(--color-text); line-height: 1.4; }
+
+/* SENASA badge on record lists */
+.badge-senasa-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
 /* ── Checkbox grid (onboarding lifestyle step) ───────────── */
 .checkbox-grid {
   display: grid;

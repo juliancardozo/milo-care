@@ -8,6 +8,10 @@ const { Schema } = mongoose;
 const vaccinationSchema = new Schema(
   {
     vaccineName: { type: String, required: true, trim: true },
+    catalogId: { type: String, trim: true, default: null },
+    isCalendarRequired: { type: Boolean, default: false },
+    antigenGroup: { type: String, trim: true, default: '' },
+    administrationRoute: { type: String, trim: true, default: '' },
     dateAdministered: { type: Date, required: true },
     nextDueDate: { type: Date, default: null },
     nextReminderAt: { type: Date, default: null, index: true },

@@ -24,6 +24,10 @@ export const updateProfile = (data) => api.patch('/auth/me/profile', data);
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);
 export const updateReminderWindowPreference = (data) => api.patch('/user/preferences/reminderWindow', data);
 
+// ── Vaccine catalog ───────────────────────────────────────────────────────────
+
+export const getVaccineCatalog = (country = 'AR') => api.get('/vaccines/catalog', { params: { country } });
+
 // ── Dogs ─────────────────────────────────────────────────────────────────────
 
 export const getDogs = () => api.get('/dogs');

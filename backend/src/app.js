@@ -17,6 +17,7 @@ const usersRoutes = require('./routes/users');
 const onboardingRoutes = require('./routes/onboarding');
 const calendarRoutes = require('./routes/calendar');
 const eventsRoutes = require('./routes/events');
+const vaccinesRoutes = require('./routes/vaccines');
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use('/api/user', usersRoutes);
 app.use('/api/onboarding', onboardingRoutes);
 app.use('/api', calendarRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/vaccines', vaccinesRoutes);
 
 // 404 fallback
 app.use((_req, res) => {
