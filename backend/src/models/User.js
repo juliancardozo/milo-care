@@ -13,6 +13,39 @@ const vaccinationSchema = new Schema(
     nextReminderAt: { type: Date, default: null, index: true },
     veterinarian: { type: String, trim: true },
     notes: { type: String, trim: true },
+    lotNumber: { type: String, trim: true },
+    documentUrl: { type: String, trim: true, default: null },
+    status: {
+      type: String,
+      enum: ['suggested', 'upcoming', 'programado', 'completed', 'cancelled', 'vencido', 'pending_vet_validation'],
+      default: 'suggested',
+    },
+    source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
+    requiresVetValidation: { type: Boolean, default: false },
+  },
+  { timestamps: true }
+);
+
+const dewormingSchema = new Schema(
+  {
+    productName: { type: String, required: true, trim: true },
+    parasiteType: {
+      type: String,
+      enum: ['internal', 'external', 'both'],
+      default: 'internal',
+    },
+    dateAdministered: { type: Date, default: null },
+    nextDueDate: { type: Date, default: null },
+    nextReminderAt: { type: Date, default: null, index: true },
+    veterinarian: { type: String, trim: true },
+    notes: { type: String, trim: true },
+    status: {
+      type: String,
+      enum: ['suggested', 'upcoming', 'programado', 'completed', 'cancelled', 'vencido', 'pending_vet_validation'],
+      default: 'suggested',
+    },
+    source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
+    requiresVetValidation: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -42,17 +75,24 @@ const appointmentSchema = new Schema(
     clinicName: { type: String, required: true, trim: true },
     appointmentDate: { type: Date, required: true },
     reminderAt: { type: Date, default: null, index: true },
-    status: { type: String, enum: ['upcoming', 'completed', 'cancelled'], default: 'upcoming' },
+    status: {
+      type: String,
+      enum: ['suggested', 'upcoming', 'programado', 'completed', 'cancelled'],
+      default: 'suggested',
+    },
     notes: { type: String, trim: true },
+    source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
   },
   { timestamps: true }
 );
 
 const symptomSchema = new Schema(
   {
-    symptomType: { type: String, required: true, trim: true },
+    symptomType: { type: String, trim: true, default: '' },
     description: { type: String, required: true, trim: true, maxlength: 2000 },
+    severity: { type: String, enum: ['mild', 'moderate', 'severe'], default: 'mild' },
     dateObserved: { type: Date, required: true },
+    notes: { type: String, trim: true, default: '' },
     resolved: { type: Boolean, default: false },
   },
   { timestamps: true }
@@ -64,7 +104,30 @@ const dogSchema = new Schema(
     breed: { type: String, required: true, trim: true, maxlength: 100 },
     dateOfBirth: { type: Date, required: true },
     photoUrl: { type: String, trim: true, default: null },
+    countryProfile: { type: String, enum: ['AR', 'UY'], default: 'AR' },
+    city: { type: String, trim: true, default: '' },
+    timezone: { type: String, trim: true, default: '' },
+    sex: { type: String, enum: ['male', 'female', 'unknown'], default: 'unknown' },
+    neutered: { type: Boolean, default: false },
+    weightKg: { type: Number, default: null },
+    microchipId: { type: String, trim: true, default: null },
+    birthDateConfidence: {
+      type: String,
+      enum: ['exact', 'estimated', 'unknown'],
+      default: 'exact',
+    },
+    estimatedAgeMonths: { type: Number, default: null },
+    lifeStage: { type: String, default: 'unknown' },
+    riskProfile: { type: String, enum: ['low', 'medium', 'high', 'unknown'], default: 'unknown' },
+    allergies: [{ type: String, trim: true }],
+    conditions: [{ type: String, trim: true }],
+    lifestyle: { type: Schema.Types.Mixed, default: {} },
+    hasVeterinarian: { type: Boolean, default: false },
+    veterinarianName: { type: String, trim: true, default: '' },
+    onboardingCompleted: { type: Boolean, default: false },
+    onboardingCompletedAt: { type: Date, default: null },
     vaccinations: [vaccinationSchema],
+    dewormingHistory: [dewormingSchema],
     medications: [medicationSchema],
     appointments: [appointmentSchema],
     symptoms: [symptomSchema],

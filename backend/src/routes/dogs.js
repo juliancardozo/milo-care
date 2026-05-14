@@ -13,7 +13,27 @@ function dogResponse(dog) {
   const ageYears = dob
     ? Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
     : null;
-  return { id: obj._id, name: obj.name, breed: obj.breed, dateOfBirth: obj.dateOfBirth, photoUrl: obj.photoUrl, ageYears };
+  return {
+    id: obj._id,
+    name: obj.name,
+    breed: obj.breed,
+    dateOfBirth: obj.dateOfBirth,
+    photoUrl: obj.photoUrl,
+    ageYears,
+    sex: obj.sex || 'unknown',
+    neutered: Boolean(obj.neutered),
+    weightKg: obj.weightKg ?? null,
+    microchipId: obj.microchipId || '',
+    birthDateConfidence: obj.birthDateConfidence || 'exact',
+    estimatedAgeMonths: obj.estimatedAgeMonths ?? null,
+    countryProfile: obj.countryProfile || 'AR',
+    city: obj.city || '',
+    timezone: obj.timezone || '',
+    hasVeterinarian: Boolean(obj.hasVeterinarian),
+    veterinarianName: obj.veterinarianName || '',
+    allergies: obj.allergies || [],
+    conditions: obj.conditions || [],
+  };
 }
 
 // GET /api/dogs
@@ -83,7 +103,14 @@ router.patch('/:dogId', authenticate, async (req, res, next) => {
     const dog = user?.dogs.id(req.params.dogId);
     if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
 
-    const { name, breed, dateOfBirth, photoUrl } = req.body;
+    const {
+      name, breed, dateOfBirth, photoUrl,
+      sex, neutered, weightKg, microchipId, birthDateConfidence, estimatedAgeMonths,
+      countryProfile, city, timezone,
+      hasVeterinarian, veterinarianName,
+      allergies, conditions,
+    } = req.body;
+
     if (name !== undefined) dog.name = name.trim();
     if (breed !== undefined) dog.breed = breed.trim();
     if (dateOfBirth !== undefined) {
@@ -94,6 +121,44 @@ router.patch('/:dogId', authenticate, async (req, res, next) => {
       dog.dateOfBirth = dob;
     }
     if (photoUrl !== undefined) dog.photoUrl = photoUrl;
+
+    if (sex !== undefined) {
+      if (!['male', 'female', 'unknown'].includes(sex)) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'sex must be male, female, or unknown.' });
+      }
+      dog.sex = sex;
+    }
+    if (neutered !== undefined) dog.neutered = Boolean(neutered);
+    if (weightKg !== undefined) {
+      const w = weightKg === null ? null : Number(weightKg);
+      if (w !== null && (!Number.isFinite(w) || w <= 0 || w > 200)) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'weightKg must be a positive number up to 200.' });
+      }
+      dog.weightKg = w;
+    }
+    if (microchipId !== undefined) dog.microchipId = String(microchipId).trim();
+    if (birthDateConfidence !== undefined) {
+      if (!['exact', 'estimated', 'unknown'].includes(birthDateConfidence)) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'birthDateConfidence must be exact, estimated, or unknown.' });
+      }
+      dog.birthDateConfidence = birthDateConfidence;
+    }
+    if (estimatedAgeMonths !== undefined) dog.estimatedAgeMonths = estimatedAgeMonths === null ? null : Number(estimatedAgeMonths);
+
+    if (countryProfile !== undefined) {
+      if (!['AR', 'UY'].includes(String(countryProfile).toUpperCase())) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'countryProfile must be AR or UY.' });
+      }
+      dog.countryProfile = String(countryProfile).toUpperCase();
+    }
+    if (city !== undefined) dog.city = String(city).trim();
+    if (timezone !== undefined) dog.timezone = String(timezone).trim();
+
+    if (hasVeterinarian !== undefined) dog.hasVeterinarian = Boolean(hasVeterinarian);
+    if (veterinarianName !== undefined) dog.veterinarianName = String(veterinarianName).trim();
+
+    if (Array.isArray(allergies)) dog.allergies = allergies.map((a) => String(a).trim()).filter(Boolean);
+    if (Array.isArray(conditions)) dog.conditions = conditions.map((c) => String(c).trim()).filter(Boolean);
 
     await user.save();
     return res.json(dogResponse(dog));

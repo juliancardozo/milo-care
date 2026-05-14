@@ -61,6 +61,7 @@ export default function DogListPage() {
               </div>
               <div className="dog-actions">
                 <button onClick={() => navigate(`/dogs/${dog.id}/vaccinations`)}>{t('dogs.viewRecords')}</button>
+                <button onClick={() => navigate(`/dogs/${dog.id}/edit`)} className="btn-secondary">Editar ficha</button>
                 <button onClick={() => handleDelete(dog.id, dog.name)} className="btn-danger">{t('common.delete')}</button>
               </div>
             </li>

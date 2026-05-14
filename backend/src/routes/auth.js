@@ -178,6 +178,30 @@ router.post('/logout', authenticate, (_req, res) => {
   return res.json({ message: 'Logged out successfully.' });
 });
 
+// ── PATCH /api/auth/me/profile ───────────────────────────────────────────────
+
+router.patch('/me/profile', authenticate, async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    if (name !== undefined) {
+      const trimmed = String(name).trim();
+      if (trimmed.length < 1 || trimmed.length > 100) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'El nombre debe tener entre 1 y 100 caracteres.' });
+      }
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
+
+    if (name !== undefined) user.name = String(name).trim();
+    await user.save();
+
+    return res.json(userResponse(user));
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── PATCH /api/auth/me/notifications ────────────────────────────────────────
 
 router.patch('/me/notifications', authenticate, async (req, res, next) => {

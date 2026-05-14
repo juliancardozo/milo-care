@@ -3,6 +3,51 @@ import { useParams, Link } from 'react-router-dom';
 import { getVaccinations, createVaccination, deleteVaccination } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
 
+const APPLIED_STATUSES = new Set(['completed']);
+
+function isApplied(v) {
+  return APPLIED_STATUSES.has(v.status) || v.source === 'manual';
+}
+
+const STATUS_LABELS = {
+  suggested: 'Sugerida',
+  upcoming: 'Próxima',
+  programado: 'Programada',
+  pending_vet_validation: 'Pendiente validación veterinaria',
+  completed: 'Aplicada',
+};
+
+function VaccineSection({ title, items, onDelete, t }) {
+  if (items.length === 0) return null;
+  return (
+    <section className="card">
+      <h2>{title} ({items.length})</h2>
+      <ul className="record-list">
+        {items.map((v) => (
+          <li key={v._id} className="record-item">
+            <div className="record-info">
+              <h3>{v.vaccineName}</h3>
+              {v.dateAdministered && (
+                <p>{t('vaccinations.administered')}: {new Date(v.dateAdministered).toLocaleDateString('es-AR')}</p>
+              )}
+              {v.nextDueDate && (
+                <p>{t('vaccinations.nextDue')}: {new Date(v.nextDueDate).toLocaleDateString('es-AR')}</p>
+              )}
+              {v.status && STATUS_LABELS[v.status] && (
+                <p>Estado: {STATUS_LABELS[v.status]}</p>
+              )}
+              {v.notes && <p>{v.notes}</p>}
+            </div>
+            <div className="record-actions">
+              <button onClick={() => onDelete(v._id)} className="btn-danger-sm">{t('common.delete')}</button>
+            </div>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
 export default function VaccinationListPage() {
   const { t } = useI18n();
   const { dogId } = useParams();
@@ -40,6 +85,9 @@ export default function VaccinationListPage() {
 
   if (loading) return <div className="page"><p>{t('common.loading')}</p></div>;
 
+  const applied = vaccinations.filter(isApplied);
+  const suggested = vaccinations.filter((v) => !isApplied(v));
+
   return (
     <div className="page">
       <header className="page-header">
@@ -52,21 +100,21 @@ export default function VaccinationListPage() {
       {showForm && <AddVaccinationForm onAdd={handleAdd} onCancel={() => setShowForm(false)} t={t} />}
       {error && <p className="server-error">{error}</p>}
 
-      {vaccinations.length === 0 ? (
-        <p>{t('vaccinations.noRecords')}</p>
-      ) : (
-        <ul className="record-list">
-          {vaccinations.map((v) => (
-            <li key={v._id} className="record-item">
-              <strong>{v.vaccineName}</strong>
-              <span>{t('vaccinations.administered')}: {new Date(v.dateAdministered).toLocaleDateString()}</span>
-              {v.nextDueDate && <span>{t('vaccinations.nextDue')}: {new Date(v.nextDueDate).toLocaleDateString()}</span>}
-              {v.notes && <p className="notes">{v.notes}</p>}
-              <button onClick={() => handleDelete(v._id)} className="btn-danger-sm">{t('common.delete')}</button>
-            </li>
-          ))}
-        </ul>
-      )}
+      {vaccinations.length === 0 && <p className="list-empty">{t('vaccinations.noRecords')}</p>}
+
+      <VaccineSection
+        title="Vacunas aplicadas"
+        items={applied}
+        onDelete={handleDelete}
+        t={t}
+      />
+
+      <VaccineSection
+        title="Vacunas sugeridas / próximas"
+        items={suggested}
+        onDelete={handleDelete}
+        t={t}
+      />
 
       <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
