@@ -71,6 +71,11 @@ router.post('/register', async (req, res, next) => {
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({ name: name.trim(), email: email.toLowerCase(), passwordHash });
 
+    // Fire-and-forget — welcome email must not block or fail the registration response
+    EmailService.sendWelcome({ to: user.email, userName: user.name }).catch((err) => {
+      console.error('[Auth] Welcome email failed:', err.message);
+    });
+
     const token = signToken(user);
     return res.status(201).json({ user: userResponse(user), token });
   } catch (err) {
