@@ -215,6 +215,31 @@ const translations = {
         save: 'No se pudieron guardar las preferencias.',
       },
     },
+    remindersFullList: {
+      title: 'Lista completa de recordatorios',
+      previewTitle: 'Recordatorios proximos',
+      total: 'Total',
+      dueAt: 'Vence',
+      empty: 'No hay recordatorios elegibles por ahora.',
+      overdueLabel: 'Vencido',
+      preferenceLabel: 'Ventana preferida de recordatorios (dias)',
+      savePreference: 'Guardar preferencia',
+      windowInfo: 'Ventana aplicada: {days} dias · origen: {source}',
+      sources: {
+        'temporary-override': 'valor temporal',
+        'user-preference': 'preferencia guardada',
+        default: 'valor por defecto',
+      },
+      types: {
+        vaccination: 'Vacuna',
+        medication: 'Medicamento',
+        appointment: 'Cita',
+      },
+      errors: {
+        load: 'No se pudo cargar la lista de recordatorios.',
+        savePreference: 'No se pudo guardar la preferencia de ventana.',
+      },
+    },
   },
   en: {
     appName: 'Milo Care',
@@ -426,6 +451,31 @@ const translations = {
       saved: 'Preferences saved.',
       errors: {
         save: 'Failed to save preferences.',
+      },
+    },
+    remindersFullList: {
+      title: 'Full reminders list',
+      previewTitle: 'Upcoming reminders',
+      total: 'Total',
+      dueAt: 'Due at',
+      empty: 'No eligible reminders right now.',
+      overdueLabel: 'Overdue',
+      preferenceLabel: 'Preferred reminder window (days)',
+      savePreference: 'Save preference',
+      windowInfo: 'Applied window: {days} days · source: {source}',
+      sources: {
+        'temporary-override': 'temporary value',
+        'user-preference': 'saved preference',
+        default: 'default value',
+      },
+      types: {
+        vaccination: 'Vaccination',
+        medication: 'Medication',
+        appointment: 'Appointment',
+      },
+      errors: {
+        load: 'Failed to load reminders list.',
+        savePreference: 'Failed to save window preference.',
       },
     },
   },

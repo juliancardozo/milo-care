@@ -15,6 +15,7 @@ import AppointmentListPage from './pages/AppointmentListPage';
 import SymptomLogPage from './pages/SymptomLogPage';
 import HealthHistoryPage from './pages/HealthHistoryPage';
 import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
+import FullRemindersListPage from './pages/FullRemindersListPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -52,6 +53,7 @@ export default function App() {
           <Route path="/dogs/:dogId/symptoms" element={<SymptomLogPage />} />
           <Route path="/dogs/:dogId/history" element={<HealthHistoryPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
+          <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />

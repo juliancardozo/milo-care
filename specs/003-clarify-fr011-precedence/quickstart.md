@@ -98,3 +98,9 @@ Expected:
 - SC-002 (Precedence determinism): Window source matches defined order ✓
 - SC-003 (Boundary behavior): Inclusive boundary and overdue inclusion confirmed ✓
 - SC-004 (Support reduction): Clear error messages for invalid input reduce confusion ✓
+
+## Validation Notes (Implementation Run)
+
+- Automated contract/integration/unit tests executed for full-list endpoint, precedence, determinism, and boundary behavior.
+- All implemented tests passed in backend test suite.
+- Docker runtime validation remains pending due to local compose startup failure in current environment.

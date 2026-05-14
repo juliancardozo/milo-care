@@ -34,9 +34,9 @@ tests/ → contract, integration tests
 
 **Purpose**: Project initialization and basic structure
 
-- [ ] T001 Verify feature branch `003-clarify-fr011-precedence` is active and synced with `002-dashboard-reminders-panel`
-- [ ] T002 Review existing reminder data model and filtering logic from feature 002 (backend/src/models/Reminder.js and frontend/src/services/reminderService.ts)
-- [ ] T003 Create directory structure for full-list feature: backend/src/services/reminderFullList.js
+- [x] T001 Verify feature branch `003-clarify-fr011-precedence` is active and synced with `002-dashboard-reminders-panel`
+- [x] T002 Review existing reminder data model and filtering logic from feature 002 (backend/src/models/Reminder.js and frontend/src/services/reminderService.ts)
+- [x] T003 Create directory structure for full-list feature: backend/src/services/reminderFullList.js
 
 ---
 
@@ -46,21 +46,21 @@ tests/ → contract, integration tests
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T004 Implement look-ahead window precedence resolver in backend/src/services/windowResolution.js
+- [x] T004 Implement look-ahead window precedence resolver in backend/src/services/windowResolution.js
   - Resolve window value from: current-view temporary param → user preference → 7-day default
   - Validate bounds (1-60 days)
   - Return { windowDays, windowSource, appliedAt }
-- [ ] T005 Implement invalid-window fallback handler in backend/src/services/windowResolution.js
+- [x] T005 Implement invalid-window fallback handler in backend/src/services/windowResolution.js
   - When windowDays < 1 or > 60, apply 7-day default
   - Generate user-facing explanation message
-- [ ] T006 Create UTC-based time reference utility in backend/src/utils/timeUtils.js
+- [x] T006 Create UTC-based time reference utility in backend/src/utils/timeUtils.js
   - Function: getUTCNow() → ISO 8601 UTC timestamp
   - Used by window calculation and boundary checks
-- [ ] T007 Implement deterministic reminder sort function in backend/src/services/reminderSort.js
+- [x] T007 Implement deterministic reminder sort function in backend/src/services/reminderSort.js
   - Primary: by dueAt ascending
   - Secondary: by sourceType order (vaccination=1, medication=2, appointment=3)
   - Tertiary: by sourceId/sourceName ascending
-- [ ] T008 Create unit tests for window resolution in backend/tests/unit/windowResolution.test.js
+- [x] T008 Create unit tests for window resolution in backend/tests/unit/windowResolution.test.js
   - Test precedence order (temporary > preference > default)
   - Test boundary validation
   - Test invalid input fallback
@@ -78,14 +78,14 @@ tests/ → contract, integration tests
 
 ### Contract Tests for User Story 1 (WRITE FIRST, MUST FAIL INITIALLY) ⚠️
 
-- [ ] T009 [P] [US1] Contract test for GET /api/dashboard/reminders/full endpoint in backend/tests/contract/reminders-full-list.test.js
+- [x] T009 [P] [US1] Contract test for GET /api/dashboard/reminders/full endpoint in backend/tests/contract/reminders-full-list.test.js
   - Verify response schema matches OpenAPI spec (reminders[], total, windowDays, windowSource, appliedAt)
   - Verify response includes all eligible reminder fields (id, sourceType, sourceId, petId, petName, title, dueAt, status)
   - Verify empty array when no reminders match criteria
 
 ### Integration Tests for User Story 1 (WRITE FIRST, MUST FAIL INITIALLY) ⚠️
 
-- [ ] T010 [P] [US1] Integration test for "View all" journey in backend/tests/integration/full-list.test.js
+- [x] T010 [P] [US1] Integration test for "View all" journey in backend/tests/integration/full-list.test.js
   - Setup: Create user with 8 reminders across 2 dogs and 3 types
   - Verify GET /api/dashboard/reminders/full returns all 8 reminders
   - Verify GET with ?windowDays=14 filters correctly
@@ -93,30 +93,30 @@ tests/ → contract, integration tests
 
 ### Implementation for User Story 1
 
-- [ ] T011 [US1] Implement eligibility filter in backend/src/services/reminderFullList.js
+- [x] T011 [US1] Implement eligibility filter in backend/src/services/reminderFullList.js
   - Query all undismissed reminders for user (Vaccination, Medication, Appointment models)
   - Filter by: dueAt <= now + windowDays OR overdue + undismissed
   - Return complete Eligible Reminder Set
-- [ ] T012 [US1] Implement full-list API endpoint in backend/src/routes/reminders.js
+- [x] T012 [US1] Implement full-list API endpoint in backend/src/routes/reminders.js
   - GET /api/dashboard/reminders/full
   - Accept query params: windowDays (optional), includeOverdue (optional, default true)
   - Call windowResolution → filter → sort → return with metadata
-- [ ] T013 [US1] Add error handling and logging for full-list endpoint in backend/src/routes/reminders.js
+- [x] T013 [US1] Add error handling and logging for full-list endpoint in backend/src/routes/reminders.js
   - Handle invalid windowDays parameter
   - Log response count, window source, and execution time
-- [ ] T014 [P] [US1] Create frontend full-list service in frontend/src/services/reminderFullListService.ts
+- [x] T014 [P] [US1] Create frontend full-list service in frontend/src/services/reminderFullListService.ts
   - Async function: fetchFullRemindersList(windowDays?: number) → ReminderItem[]
   - Call backend GET /api/dashboard/reminders/full
   - Handle errors and network retries
-- [ ] T015 [P] [US1] Create FullRemindersListPage component in frontend/src/pages/FullRemindersListPage.tsx
+- [x] T015 [P] [US1] Create FullRemindersListPage component in frontend/src/pages/FullRemindersListPage.tsx
   - Display all reminders returned from API
   - Show dog name, type, due date for each reminder
   - Show empty-state message when no reminders
-- [ ] T016 [P] [US1] Add "View all" link to dashboard reminders panel in frontend/src/components/DashboardRemindersPanel.tsx
+- [x] T016 [P] [US1] Add "View all" link to dashboard reminders panel in frontend/src/components/DashboardRemindersPanel.tsx
   - Link navigates to FullRemindersListPage
   - Label: "View all reminders"
-- [ ] T017 [US1] Implement accessibility for full-list page (ARIA labels, semantic HTML in frontend/src/pages/FullRemindersListPage.tsx)
-- [ ] T018 [US1] Add i18n support for full-list strings (ES + EN) in frontend/src/i18n/reminders-full-list.json
+- [x] T017 [US1] Implement accessibility for full-list page (ARIA labels, semantic HTML in frontend/src/pages/FullRemindersListPage.tsx)
+- [x] T018 [US1] Add i18n support for full-list strings (ES + EN) in frontend/src/i18n/reminders-full-list.json
   - "View all" link text
   - "No reminders" empty-state message
   - Column headers: Dog, Type, Due Date
@@ -133,7 +133,7 @@ tests/ → contract, integration tests
 
 ### Contract Tests for User Story 2 (WRITE FIRST, MUST FAIL INITIALLY) ⚠️
 
-- [ ] T019 [P] [US2] Contract test for window precedence resolution in backend/tests/contract/window-precedence.test.js
+- [x] T019 [P] [US2] Contract test for window precedence resolution in backend/tests/contract/window-precedence.test.js
   - Verify temporary-override parameter takes precedence over all
   - Verify user preference is applied when no override
   - Verify default 7 days when neither override nor preference
@@ -141,7 +141,7 @@ tests/ → contract, integration tests
 
 ### Integration Tests for User Story 2 (WRITE FIRST, MUST FAIL INITIALLY) ⚠️
 
-- [ ] T020 [P] [US2] Integration test for precedence scenarios in backend/tests/integration/precedence-rules.test.js
+- [x] T020 [P] [US2] Integration test for precedence scenarios in backend/tests/integration/precedence-rules.test.js
   - Scenario A: Override param only → temporary-override
   - Scenario B: Saved preference only → user-preference
   - Scenario C: Both override and preference → override wins
@@ -150,21 +150,21 @@ tests/ → contract, integration tests
 
 ### Implementation for User Story 2
 
-- [ ] T021 [US2] Implement user preference storage in backend/src/models/User.js
+- [x] T021 [US2] Implement user preference storage in backend/src/models/User.js
   - Add field: `reminderWindowPreference` (number, 1-60, default null)
   - Create getter/setter for user window preference
-- [ ] T022 [US2] Extend full-list endpoint to accept windowDays parameter in backend/src/routes/reminders.js (from T012)
+- [x] T022 [US2] Extend full-list endpoint to accept windowDays parameter in backend/src/routes/reminders.js (from T012)
   - Query param ?windowDays=N overrides user preference
   - Resolution logic: check param first, then user preference, then default
-- [ ] T023 [P] [US2] Create frontend settings component for window preference in frontend/src/components/ReminderWindowPreference.tsx
+- [x] T023 [P] [US2] Create frontend settings component for window preference in frontend/src/components/ReminderWindowPreference.tsx
   - User can set preferred window value (1-60 days)
   - Save preference to backend PATCH /api/user/preferences/reminderWindow
-- [ ] T024 [US2] Add PATCH endpoint to persist user window preference in backend/src/routes/users.js
+- [x] T024 [US2] Add PATCH endpoint to persist user window preference in backend/src/routes/users.js
   - PATCH /api/user/preferences/reminderWindow
   - Accept { reminderWindowDays: number }
   - Validate bounds (1-60)
   - Update User.reminderWindowPreference
-- [ ] T025 [US2] Implement determinism verification test in backend/tests/integration/determinism.test.js
+- [x] T025 [US2] Implement determinism verification test in backend/tests/integration/determinism.test.js
   - Run same query 10 times; verify identical ordering every time
   - Verify SC-002: Resolved window source always matches precedence order
 
@@ -180,7 +180,7 @@ tests/ → contract, integration tests
 
 ### Contract Tests for User Story 3 (WRITE FIRST, MUST FAIL INITIALLY) ⚠️
 
-- [ ] T026 [P] [US3] Contract test for boundary conditions in backend/tests/contract/boundary-conditions.test.js
+- [x] T026 [P] [US3] Contract test for boundary conditions in backend/tests/contract/boundary-conditions.test.js
   - Reminder due exactly at window boundary is INCLUDED
   - Reminder 1 second past boundary is EXCLUDED
   - Reminder 1 second before boundary is INCLUDED
@@ -188,7 +188,7 @@ tests/ → contract, integration tests
 
 ### Integration Tests for User Story 3 (WRITE FIRST, MUST FAIL INITIALLY) ⚠️
 
-- [ ] T027 [P] [US3] Integration test for boundary and overdue scenarios in backend/tests/integration/boundary-edge-cases.test.js
+- [x] T027 [P] [US3] Integration test for boundary and overdue scenarios in backend/tests/integration/boundary-edge-cases.test.js
   - Scenario A: Reminder exactly at now+7days → included
   - Scenario B: Reminder at now+7days+1ms → excluded
   - Scenario C: Overdue undismissed with window=1 day → included
@@ -197,21 +197,21 @@ tests/ → contract, integration tests
 
 ### Implementation for User Story 3
 
-- [ ] T028 [US3] Implement inclusive boundary check in backend/src/services/reminderFullList.js
+- [x] T028 [US3] Implement inclusive boundary check in backend/src/services/reminderFullList.js
   - Filter logic: dueAt <= (now + windowDays milliseconds) OR (overdue AND undismissed)
   - Boundary: Use exact UTC timestamp comparison (not calendar days)
-- [ ] T029 [US3] Add boundary-inclusive logic unit test in backend/tests/unit/boundaryLogic.test.js
+- [x] T029 [US3] Add boundary-inclusive logic unit test in backend/tests/unit/boundaryLogic.test.js
   - Test reminder exactly at boundary (microsecond precision)
   - Test overdue inclusion logic
   - Verify inclusive boundary behavior
-- [ ] T030 [P] [US3] Add invalid-window error message to frontend full-list page in frontend/src/pages/FullRemindersListPage.tsx
+- [x] T030 [P] [US3] Add invalid-window error message to frontend full-list page in frontend/src/pages/FullRemindersListPage.tsx
   - When API response includes error message for invalid windowDays
   - Display user-facing explanation (e.g., "Invalid window. Using default 7 days.")
   - Style as non-blocking warning (not error)
-- [ ] T031 [US3] Implement overdue indicator/styling in frontend/src/components/ReminderItem.tsx
+- [x] T031 [US3] Implement overdue indicator/styling in frontend/src/components/ReminderItem.tsx
   - Mark overdue reminders distinctly (color, icon, or badge)
   - Add aria-label: "Overdue"
-- [ ] T032 [US3] Add overdue reminders to i18n in frontend/src/i18n/reminders-full-list.json
+- [x] T032 [US3] Add overdue reminders to i18n in frontend/src/i18n/reminders-full-list.json
   - Label: "Overdue reminder"
   - Explanation: "This reminder is past due. Please take action or dismiss."
 
@@ -223,23 +223,23 @@ tests/ → contract, integration tests
 
 **Purpose**: Performance, observability, documentation, and release readiness
 
-- [ ] T033 [P] Add performance monitoring to full-list endpoint in backend/src/routes/reminders.js
+- [x] T033 [P] Add performance monitoring to full-list endpoint in backend/src/routes/reminders.js
   - Measure query time, filter time, sort time
   - Log if any step exceeds 100ms
   - Verify SC-001 performance goal: full-list load <= 2s
-- [ ] T034 [P] Implement E2E manual test steps in specs/003-clarify-fr011-precedence/quickstart.md validation
+- [x] T034 [P] Implement E2E manual test steps in specs/003-clarify-fr011-precedence/quickstart.md validation
   - Execute all 5 scenarios (A-E) from quickstart.md
   - Verify results match expected behavior
   - Document any deviations
-- [ ] T035 [P] Add feature flag for full-list rollout in backend/src/config/featureFlags.js (optional)
+- [x] T035 [P] Add feature flag for full-list rollout in backend/src/config/featureFlags.js (optional)
   - Feature flag: `reminderFullListEnabled` (default true)
   - Allow gradual enablement or quick disable
-- [ ] T036 Create feature release notes in docs/release-notes/003-full-list.md
+- [x] T036 Create feature release notes in docs/release-notes/003-full-list.md
   - Summary: Full-list and precedence clarification
   - Breaking changes: None (backward compatible)
   - Migration: None required
   - Known limitations: Single-response (no pagination)
-- [ ] T037 Update API documentation in backend/README.md
+- [x] T037 Update API documentation in backend/README.md
   - Add GET /api/dashboard/reminders/full endpoint
   - Include query parameters (windowDays, includeOverdue)
   - Link to contracts/full-list-api.yaml

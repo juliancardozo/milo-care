@@ -21,6 +21,7 @@ export const forgotPassword = (email) => api.post('/auth/forgot-password', { ema
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const deleteAccount = () => api.delete('/auth/me');
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);
+export const updateReminderWindowPreference = (data) => api.patch('/user/preferences/reminderWindow', data);
 
 // ── Dogs ─────────────────────────────────────────────────────────────────────
 
@@ -57,5 +58,12 @@ export const getSymptoms = (dogId) => api.get(`/dogs/${dogId}/symptoms`);
 export const createSymptom = (dogId, data) => api.post(`/dogs/${dogId}/symptoms`, data);
 export const updateSymptom = (dogId, symId, data) => api.patch(`/dogs/${dogId}/symptoms/${symId}`, data);
 export const deleteSymptom = (dogId, symId) => api.delete(`/dogs/${dogId}/symptoms/${symId}`);
+
+// ── Dashboard Reminders ──────────────────────────────────────────────────────
+
+export const getFullRemindersList = (windowDays) =>
+  api.get('/dashboard/reminders/full', {
+    params: windowDays ? { windowDays } : undefined,
+  });
 
 export default api;

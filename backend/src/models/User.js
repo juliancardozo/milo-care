@@ -108,6 +108,16 @@ const userSchema = new Schema(
     passwordHash: { type: String, required: true },
     name: { type: String, required: true, trim: true, maxlength: 100 },
     tier: { type: String, enum: ['free', 'premium'], default: 'free' },
+    reminderWindowPreference: {
+      type: Number,
+      default: null,
+      min: 1,
+      max: 60,
+      validate: {
+        validator: (value) => value === null || Number.isInteger(value),
+        message: 'reminderWindowPreference must be an integer between 1 and 60',
+      },
+    },
     notificationPreferences: { type: notificationPreferencesSchema, default: () => ({}) },
     dogs: [dogSchema],
   },

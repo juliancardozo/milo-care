@@ -40,8 +40,11 @@ function resolveWindow({ tempWindowDays, userPreference, now }) {
       windowDays = tempWindowDays;
       windowSource = 'temporary-override';
     } else {
-      // Invalid temporary override - provide explanation and fall through
+      // Invalid temporary override - always fallback to default 7 days.
+      // Clarification requires default fallback instead of dropping to preference.
       fallbackReason = generateFallbackExplanation(tempWindowDays);
+      windowDays = WINDOW_BOUNDS.DEFAULT;
+      windowSource = 'default';
     }
   }
 
