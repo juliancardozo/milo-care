@@ -211,6 +211,15 @@ router.post('/email/test', async (req, res, next) => {
     await send();
     return res.json({ message: `Test email "${type}" sent to ${admin.email}.` });
   } catch (err) {
+    // Surface Resend-specific errors as 400 so the admin panel shows them clearly
+    const msg = err.message || '';
+    if (msg.includes('API key') || msg.includes('invalid') || msg.includes('unauthorized')) {
+      return res.status(400).json({
+        code: 'EMAIL_CONFIG_ERROR',
+        message: 'La API key de Resend es inválida o está mal configurada. Verificá RESEND_API_KEY en backend/.env.',
+        detail: msg,
+      });
+    }
     next(err);
   }
 });
