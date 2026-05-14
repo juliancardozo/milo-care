@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import { clearCredentials, selectCurrentUser } from '../store/authSlice';
+import { clearCredentials, selectCurrentUser, selectIsAdmin } from '../store/authSlice';
 import { logout } from '../services/api';
 
 export default function UserMenu({ dogs = [] }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
+  const isAdmin = useSelector(selectIsAdmin);
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -74,6 +75,16 @@ export default function UserMenu({ dogs = [] }) {
           </Link>
 
           <div className="user-menu-divider" />
+
+          {isAdmin && (
+            <>
+              <div className="user-menu-section-label">Administración</div>
+              <Link to="/admin" className="user-menu-item" onClick={() => setOpen(false)}>
+                ⚙️ Panel de admin
+              </Link>
+              <div className="user-menu-divider" />
+            </>
+          )}
 
           <div className="user-menu-section-label">Cuenta</div>
           <Link to="/settings/account" className="user-menu-item" onClick={() => setOpen(false)}>

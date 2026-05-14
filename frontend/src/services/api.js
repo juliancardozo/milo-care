@@ -24,6 +24,14 @@ export const updateProfile = (data) => api.patch('/auth/me/profile', data);
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);
 export const updateReminderWindowPreference = (data) => api.patch('/user/preferences/reminderWindow', data);
 
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+export const getAdminStats = () => api.get('/admin/stats');
+export const getAdminUsers = (params) => api.get('/admin/users', { params });
+export const getAdminUser = (id) => api.get(`/admin/users/${id}`);
+export const updateAdminUser = (id, data) => api.patch(`/admin/users/${id}`, data);
+export const deleteAdminUser = (id) => api.delete(`/admin/users/${id}`);
+
 // ── Vaccine catalog ───────────────────────────────────────────────────────────
 
 export const getVaccineCatalog = (country = 'AR') => api.get('/vaccines/catalog', { params: { country } });

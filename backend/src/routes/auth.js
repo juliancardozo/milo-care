@@ -21,14 +21,14 @@ const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 function signToken(user) {
   return jwt.sign(
-    { sub: user._id.toString(), email: user.email, tier: user.tier },
+    { sub: user._id.toString(), email: user.email, tier: user.tier, role: user.role || 'user' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 }
 
 function userResponse(user) {
-  return { id: user._id, name: user.name, email: user.email, tier: user.tier };
+  return { id: user._id, name: user.name, email: user.email, tier: user.tier, role: user.role || 'user' };
 }
 
 // ── Rate limiter for password reset ──────────────────────────────────────────
