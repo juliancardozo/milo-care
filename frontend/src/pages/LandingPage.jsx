@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import PawCursorTrail from '../components/PawCursorTrail';
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
@@ -25,10 +26,57 @@ function LandingNav() {
   );
 }
 
+const FLOATING_PAWS = [
+  { x: '4%',  y: '75%', size: 22, opacity: 0.12, delay: '0s',    dur: '7s',  rotate: -25 },
+  { x: '12%', y: '20%', size: 16, opacity: 0.09, delay: '2.1s',  dur: '9s',  rotate:  40 },
+  { x: '22%', y: '55%', size: 28, opacity: 0.14, delay: '0.8s',  dur: '6s',  rotate: -10 },
+  { x: '35%', y: '85%', size: 14, opacity: 0.08, delay: '3.5s',  dur: '8s',  rotate:  60 },
+  { x: '48%', y: '15%', size: 20, opacity: 0.11, delay: '1.4s',  dur: '7.5s',rotate: -40 },
+  { x: '58%', y: '70%', size: 32, opacity: 0.10, delay: '4.2s',  dur: '9.5s',rotate:  15 },
+  { x: '68%', y: '35%', size: 18, opacity: 0.13, delay: '0.3s',  dur: '6.5s',rotate: -55 },
+  { x: '78%', y: '80%', size: 24, opacity: 0.09, delay: '2.8s',  dur: '8s',  rotate:  30 },
+  { x: '88%', y: '25%', size: 26, opacity: 0.15, delay: '1.0s',  dur: '7s',  rotate: -20 },
+  { x: '93%', y: '60%', size: 15, opacity: 0.08, delay: '5.0s',  dur: '10s', rotate:  50 },
+  { x: '42%', y: '45%', size: 12, opacity: 0.07, delay: '3.0s',  dur: '8.5s',rotate: -35 },
+  { x: '74%', y: '10%', size: 20, opacity: 0.10, delay: '1.7s',  dur: '6s',  rotate:  20 },
+];
+
+const PAW_SVG_INLINE = (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="100%" height="100%" fill="white">
+    <ellipse cx="12" cy="19" rx="6.5" ry="8.5"/>
+    <ellipse cx="25" cy="11" rx="6.5" ry="8.5"/>
+    <ellipse cx="39" cy="11" rx="6.5" ry="8.5"/>
+    <ellipse cx="52" cy="19" rx="6.5" ry="8.5"/>
+    <path d="M32 27C20 27 12 34 12 43C12 52 20 57 32 57C44 57 52 52 52 43C52 34 44 27 32 27Z"/>
+  </svg>
+);
+
 function Hero() {
   return (
     <section className="landing-hero">
-      <div className="landing-container">
+      {/* Floating paw background */}
+      <div aria-hidden="true" className="landing-hero-paws-bg">
+        {FLOATING_PAWS.map((p, i) => (
+          <span
+            key={i}
+            className="landing-hero-paw-float"
+            style={{
+              left: p.x,
+              top: p.y,
+              width: p.size,
+              height: p.size,
+              opacity: p.opacity,
+              '--delay': p.delay,
+              '--dur': p.dur,
+              '--rotate': `${p.rotate}deg`,
+            }}
+          >
+            {PAW_SVG_INLINE}
+          </span>
+        ))}
+      </div>
+
+      <div className="landing-container" style={{ position: 'relative', zIndex: 1 }}>
         <div className="landing-hero-badge">🐾 Salud preventiva para tu perro</div>
         <h1 className="landing-hero-title">
           El cuidado que tu perro<br className="landing-br"/>
@@ -47,7 +95,7 @@ function Hero() {
           </a>
         </div>
         <p className="landing-hero-footnote">Sin tarjeta de crédito · Plan gratuito incluye 1 perro</p>
-      </div>
+      </div>  {/* end landing-container */}
     </section>
   );
 }
@@ -315,6 +363,7 @@ function LandingFooter() {
 export default function LandingPage() {
   return (
     <div className="landing-root">
+      <PawCursorTrail />
       <LandingNav />
       <main>
         <Hero />
