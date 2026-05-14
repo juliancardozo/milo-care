@@ -27,6 +27,7 @@ export const updateReminderWindowPreference = (data) => api.patch('/user/prefere
 // ── Vaccine catalog ───────────────────────────────────────────────────────────
 
 export const getVaccineCatalog = (country = 'AR') => api.get('/vaccines/catalog', { params: { country } });
+export const getAppointmentCatalog = () => api.get('/vaccines/appointments/catalog');
 
 // ── Dogs ─────────────────────────────────────────────────────────────────────
 

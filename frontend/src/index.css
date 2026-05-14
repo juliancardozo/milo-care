@@ -264,6 +264,91 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .record-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .record-actions button { padding: 6px 12px; font-size: .85rem; }
 
+/* ── Appointment catalog select ──────────────────────────── */
+.appointment-catalog-select { display: flex; flex-direction: column; gap: 8px; }
+
+.appointment-info-panel {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: .85rem;
+}
+
+.appointment-info-panel.appt-emergency-panel {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.appt-urgency-warning {
+  font-weight: 700;
+  color: var(--color-danger);
+}
+
+.badge-wsava {
+  display: inline-block;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: .78rem;
+  font-weight: 700;
+  width: fit-content;
+}
+
+.badge-wsava-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.badge-urgency-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 4px;
+  padding: 1px 6px;
+  font-size: .72rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.appt-frequency { color: var(--color-muted); font-size: .8rem; }
+.appt-info-note { color: var(--color-text); line-height: 1.4; }
+
+.appt-checklist-preview {
+  font-size: .82rem;
+}
+
+.appt-checklist-preview summary {
+  cursor: pointer;
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+.appt-checklist-preview ul {
+  margin-top: 6px;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
 /* ── Vaccine catalog select ───────────────────────────────── */
 .vaccine-catalog-select { display: flex; flex-direction: column; gap: 8px; }
 

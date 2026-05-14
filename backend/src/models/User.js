@@ -76,15 +76,23 @@ const medicationSchema = new Schema(
 
 const appointmentSchema = new Schema(
   {
-    clinicName: { type: String, required: true, trim: true },
+    title: { type: String, required: true, trim: true },
+    catalogId: { type: String, trim: true, default: null },
+    isWsavaRecommended: { type: Boolean, default: false },
+    appointmentType: { type: String, trim: true, default: '' },
+    checklist: [{ type: String, trim: true }],
+    clinicName: { type: String, trim: true, default: '' },
+    vetName: { type: String, trim: true, default: '' },
+    location: { type: String, trim: true, default: '' },
     appointmentDate: { type: Date, required: true },
+    isCancelled: { type: Boolean, default: false },
     reminderAt: { type: Date, default: null, index: true },
     status: {
       type: String,
       enum: ['suggested', 'upcoming', 'programado', 'completed', 'cancelled'],
-      default: 'suggested',
+      default: 'upcoming',
     },
-    notes: { type: String, trim: true },
+    notes: { type: String, trim: true, default: '' },
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
   },
   { timestamps: true }
