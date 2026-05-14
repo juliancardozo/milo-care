@@ -76,7 +76,7 @@ const medicationSchema = new Schema(
 
 const appointmentSchema = new Schema(
   {
-    title: { type: String, required: true, trim: true },
+    title: { type: String, trim: true, default: '' },
     catalogId: { type: String, trim: true, default: null },
     isWsavaRecommended: { type: Boolean, default: false },
     appointmentType: { type: String, trim: true, default: '' },
@@ -205,5 +205,18 @@ userSchema.methods.toJSON = function () {
   delete obj.passwordHash;
   return obj;
 };
+
+// Migrate legacy appointments that have clinicName but no title (created before
+// the title field was added). Runs on every save so no one-off migration script
+// is needed.
+userSchema.pre('validate', function () {
+  for (const dog of this.dogs || []) {
+    for (const appt of dog.appointments || []) {
+      if (!appt.title) {
+        appt.title = appt.clinicName || 'Consulta';
+      }
+    }
+  }
+});
 
 module.exports = mongoose.model('User', userSchema);
