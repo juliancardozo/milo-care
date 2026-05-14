@@ -6,8 +6,18 @@ const { layout } = require('./emailLayout');
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL || 'noreply@milocura.com';
+
+// Lazy client — only instantiated when actually needed so missing
+// RESEND_API_KEY in dev doesn't crash the server on startup.
+let _resend = null;
+function getResend() {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not set. Add it to backend/.env to send emails.');
+  }
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -15,7 +25,7 @@ async function sleep(ms) {
 
 async function sendWithRetry(payload, attempt = 1) {
   try {
-    const { error } = await resend.emails.send(payload);
+    const { error } = await getResend().emails.send(payload);
     if (error) throw new Error(error.message);
   } catch (err) {
     if (attempt < MAX_RETRIES) {
