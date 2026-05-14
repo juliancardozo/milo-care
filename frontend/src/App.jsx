@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from './store/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -30,7 +33,10 @@ import { useI18n } from './i18n/I18nProvider';
 export default function App() {
   const location = useLocation();
   const { t } = useI18n();
-  const showGlobalHeader = location.pathname !== '/dashboard';
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isLanding = location.pathname === '/';
+  // Hide the global app header on dashboard and landing (both have their own nav)
+  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard';
 
   return (
     <>
@@ -79,8 +85,12 @@ export default function App() {
           <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Root: landing for guests, dashboard for authenticated users */}
+        <Route
+          path="/"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );
