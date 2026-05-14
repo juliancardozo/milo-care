@@ -3,7 +3,7 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const { getCatalog } = require('../config/vaccineCatalog');
-const { getCatalog: getApptCatalog, GROUP_LABELS } = require('../config/appointmentCatalog');
+const { getCatalog: getApptCatalog, GROUP_LABELS: APPT_GROUP_LABELS } = require('../config/appointmentCatalog');
 
 const router = express.Router();
 
@@ -45,7 +45,7 @@ router.get('/appointments/catalog', authenticate, (_req, res) => {
   const appointments = getApptCatalog();
   const grouped = {};
   for (const a of appointments) {
-    if (!grouped[a.group]) grouped[a.group] = { label: GROUP_LABELS[a.group] || a.group, items: [] };
+    if (!grouped[a.group]) grouped[a.group] = { label: APPT_GROUP_LABELS[a.group] || a.group, items: [] };
     grouped[a.group].items.push({
       id: a.id,
       name: a.name,
