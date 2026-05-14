@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { useSelector } from 'react-redux';
 import { getDogs, deleteDog } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
@@ -36,6 +37,7 @@ export default function DogListPage() {
 
   return (
     <div className="page">
+      <BackLink />
       <header className="page-header">
         <h1>{t('dogs.yourDogs')}</h1>
         {canAddDog ? (
@@ -68,7 +70,6 @@ export default function DogListPage() {
           ))}
         </ul>
       )}
-      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

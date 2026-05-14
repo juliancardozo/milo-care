@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { getAppointments, createAppointment, updateAppointment, deleteAppointment } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
 import AppointmentCatalogSelect from '../components/AppointmentCatalogSelect';
+import BackLink from '../components/BackLink';
 
 const now = new Date();
 
@@ -133,6 +134,7 @@ export default function AppointmentListPage() {
 
   return (
     <div className="page">
+      <BackLink />
       <header className="page-header">
         <h1>{t('appointments.title')}</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary">
@@ -161,7 +163,6 @@ export default function AppointmentListPage() {
         emptyText="Sin historial de citas."
       />
 
-      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

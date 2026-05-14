@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { getVaccinations, getMedications, getAppointments, getSymptoms } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -59,6 +60,7 @@ export default function HealthHistoryPage() {
 
   return (
     <div className="page">
+      <BackLink />
       <h1>{t('history.title')}</h1>
       {error && <p className="server-error">{error}</p>}
 
@@ -177,7 +179,6 @@ export default function HealthHistoryPage() {
         )}
       </section>
 
-      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

@@ -439,6 +439,33 @@ button.btn-secondary:hover { background: var(--color-bg); }
   .checkbox-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Back navigation link ─────────────────────────────────── */
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: .8rem;
+  font-weight: 500;
+  color: var(--color-muted);
+  text-decoration: none;
+  padding: 4px 8px 4px 4px;
+  border-radius: 6px;
+  transition: color .15s, background .15s;
+  margin-bottom: 8px;
+}
+
+.back-link:hover {
+  color: var(--color-primary);
+  background: rgba(79, 142, 247, .07);
+  text-decoration: none;
+}
+
+.back-link-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
 /* ── Badges ───────────────────────────────────────────────── */
 .badge {
   display: inline-block;
