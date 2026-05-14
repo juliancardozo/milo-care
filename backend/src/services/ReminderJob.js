@@ -95,12 +95,12 @@ async function processDewormingReminders(now) {
         const status = String(dew.status || '').toLowerCase();
         if (['pending_vet_validation', 'cancelled', 'discarded', 'completed'].includes(status)) continue;
         try {
-          await EmailService.sendMedicationReminder({
+          await EmailService.sendDewormingReminder({
             to: user.email,
             userName: user.name,
             dogName: dog.name,
-            medicationName: dew.productName,
-            dosage: 'Follow veterinarian guidance',
+            productName: dew.productName,
+            nextDueDate: dew.nextDueDate,
           });
           console.log(`[ReminderJob] Deworming reminder sent: user=${user._id} dog=${dog._id} deworm=${dew._id}`);
         } catch (err) {
@@ -134,7 +134,8 @@ async function processAppointmentReminders(now) {
               to: user.email,
               userName: user.name,
               dogName: dog.name,
-              clinicName: appt.clinicName,
+              appointmentTitle: appt.title || appt.clinicName || 'Consulta veterinaria',
+              clinicName: appt.clinicName || appt.vetName || '',
               appointmentDate: appt.appointmentDate,
             });
             console.log(`[ReminderJob] Appointment reminder sent: user=${user._id} dog=${dog._id} appt=${appt._id}`);

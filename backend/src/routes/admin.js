@@ -4,6 +4,7 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 const User = require('../models/User');
+const EmailService = require('../services/EmailService');
 
 const router = express.Router();
 
@@ -160,6 +161,55 @@ router.delete('/users/:id', async (req, res, next) => {
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
     return res.json({ message: 'User deleted.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── GET /api/admin/email/preview/:type ──────────────────────────────────────
+// Returns the rendered HTML of a template for in-browser preview.
+
+const PREVIEW_DATA = {
+  welcome:     () => EmailService._templates.welcome({ userName: 'Julián' }),
+  vaccination: () => EmailService._templates.vaccination({ userName: 'Julián', dogName: 'Milo', vaccineName: 'Triple (CDV + CAV-2 + CPV-2)', nextDueDate: new Date(Date.now() + 7 * 864e5) }),
+  deworming:   () => EmailService._templates.deworming({ userName: 'Julián', dogName: 'Milo', productName: 'Bravecto', nextDueDate: new Date(Date.now() + 30 * 864e5) }),
+  medication:  () => EmailService._templates.medication({ userName: 'Julián', dogName: 'Milo', medicationName: 'Carprofen', dosage: '25 mg' }),
+  appointment: () => EmailService._templates.appointment({ userName: 'Julián', dogName: 'Milo', appointmentTitle: 'Control sano adulto', clinicName: 'Clínica Veterinaria Central', appointmentDate: new Date(Date.now() + 864e5) }),
+  passwordReset: () => EmailService._templates.passwordReset({ resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=PREVIEW_TOKEN` }),
+};
+
+router.get('/email/preview/:type', (req, res) => {
+  const render = PREVIEW_DATA[req.params.type];
+  if (!render) {
+    return res.status(404).json({ code: 'NOT_FOUND', message: `Unknown template "${req.params.type}". Available: ${Object.keys(PREVIEW_DATA).join(', ')}.` });
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.send(render());
+});
+
+// ── POST /api/admin/email/test ───────────────────────────────────────────────
+// Sends a test email of the given type to the requesting admin's address.
+
+router.post('/email/test', async (req, res, next) => {
+  try {
+    const { type } = req.body;
+    const admin = await User.findById(req.user.id).select('email name').lean();
+    if (!admin) return res.status(404).json({ code: 'NOT_FOUND', message: 'Admin user not found.' });
+
+    const map = {
+      welcome:      () => EmailService.sendWelcome({ to: admin.email, userName: admin.name }),
+      vaccination:  () => EmailService.sendVaccinationReminder({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', vaccineName: 'Triple', nextDueDate: new Date(Date.now() + 7 * 864e5) }),
+      deworming:    () => EmailService.sendDewormingReminder({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', productName: 'Bravecto', nextDueDate: new Date(Date.now() + 30 * 864e5) }),
+      medication:   () => EmailService.sendMedicationReminder({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', medicationName: 'Carprofen', dosage: '25 mg' }),
+      appointment:  () => EmailService.sendAppointmentReminder({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', appointmentTitle: 'Control sano adulto', clinicName: 'Clínica Veterinaria Central', appointmentDate: new Date(Date.now() + 864e5) }),
+      passwordReset: () => EmailService.sendPasswordReset({ to: admin.email, resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=test` }),
+    };
+
+    const send = map[type];
+    if (!send) return res.status(400).json({ code: 'VALIDATION_ERROR', message: `Unknown type "${type}". Available: ${Object.keys(map).join(', ')}.` });
+
+    await send();
+    return res.json({ message: `Test email "${type}" sent to ${admin.email}.` });
   } catch (err) {
     next(err);
   }
