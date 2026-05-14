@@ -15,6 +15,7 @@ Milo Care permite a una persona tutora registrar vacunas, medicamentos, citas ve
 - [Variables de entorno](#variables-de-entorno)
 - [Scripts disponibles](#scripts-disponibles)
 - [API principal](#api-principal)
+- [Roles y administracion](#roles-y-administracion)
 - [Flujo funcional esperado](#flujo-funcional-esperado)
 - [Estado del proyecto](#estado-del-proyecto)
 - [Contribucion](#contribucion)
@@ -207,6 +208,54 @@ Rutas relevantes:
   - `.../appointments`
   - `.../symptoms`
 
+## Roles y administracion
+
+### Roles disponibles
+
+| Rol | Descripcion |
+|---|---|
+| `user` | Rol por defecto. Acceso a su propia cuenta, perros y registros de salud. |
+| `admin` | Acceso al panel de administracion en `/admin`. Puede gestionar todos los usuarios de la plataforma. |
+
+El rol se incluye en el JWT y se valida en cada request al backend. Las rutas `/api/admin/*` requieren `role: admin`; cualquier otro usuario recibe `403 Forbidden`.
+
+### Panel de administracion
+
+Accesible en `http://localhost:5173/admin` para usuarios con rol `admin`.
+
+Funcionalidades:
+
+- **Stats generales**: total de usuarios, distribucion por plan (free/premium), total de perros registrados.
+- **Gestion de usuarios**: busqueda por nombre o email, cambio de plan y rol en linea, paginacion.
+- **Detalle de usuario**: edicion de nombre, plan y rol; listado de perros con contadores de vacunas, citas y medicamentos; eliminacion de cuenta.
+
+El link al panel aparece automaticamente en el menu de usuario (header) cuando el rol es `admin`.
+
+### Cuenta administradora activa
+
+| Campo | Valor |
+|---|---|
+| Email | `julian.cardozo.viggiano@gmail.com` |
+| Rol | `admin` |
+
+### Promover un nuevo administrador
+
+Con Docker Compose corriendo:
+
+```bash
+docker exec milocura-mongo mongosh milocura \
+  --eval 'db.users.updateOne({email:"usuario@ejemplo.com"},{$set:{role:"admin"}})'
+```
+
+Despues de ejecutar el comando, el usuario debe cerrar sesion y volver a iniciarla para que el nuevo JWT refleje el rol actualizado.
+
+### Revocar rol de administrador
+
+```bash
+docker exec milocura-mongo mongosh milocura \
+  --eval 'db.users.updateOne({email:"usuario@ejemplo.com"},{$set:{role:"user"}})'
+```
+
 ## Flujo funcional esperado
 
 1. Registrar cuenta
@@ -220,7 +269,10 @@ Rutas relevantes:
 
 - MVP funcional implementado
 - Dashboard bilingue (ES/EN) con switch de idioma
-- Ramas `main`, `develop` y `001-milo-care-mvp` alineadas al mismo estado funcional
+- Onboarding de perros con calendario vacunal (AR/UY) basado en normativa SENASA y guias WSAVA
+- Catalogo de vacunas y citas con clasificacion clinica
+- Panel de administracion con gestion de usuarios y roles
+- Cuenta admin activa: `julian.cardozo.viggiano@gmail.com`
 
 ## Contribucion
 
