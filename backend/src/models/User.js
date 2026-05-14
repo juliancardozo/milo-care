@@ -183,6 +183,7 @@ const userSchema = new Schema(
     passwordHash: { type: String, required: true },
     name: { type: String, required: true, trim: true, maxlength: 100 },
     tier: { type: String, enum: ['free', 'premium'], default: 'free' },
+    role: { type: String, enum: ['user', 'admin'], default: 'user' },
     reminderWindowPreference: {
       type: Number,
       default: null,

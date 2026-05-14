@@ -439,6 +439,128 @@ button.btn-secondary:hover { background: var(--color-bg); }
   .checkbox-grid { grid-template-columns: 1fr; }
 }
 
+/* ── Admin panel ──────────────────────────────────────────── */
+.admin-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.admin-stat-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  padding: 16px 12px;
+  text-align: center;
+}
+
+.admin-stat-value { font-size: 1.75rem; font-weight: 700; color: var(--color-primary); line-height: 1; }
+.admin-stat-label { font-size: .8rem; color: var(--color-muted); margin-top: 4px; }
+.admin-stat-sub { font-size: .75rem; color: var(--color-muted); }
+.admin-total-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 999px;
+  font-size: .75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+.admin-search-form {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.admin-search-input {
+  flex: 1;
+  min-width: 200px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  font-size: .95rem;
+  outline: none;
+}
+
+.admin-search-input:focus { border-color: var(--color-primary); }
+
+.admin-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface);
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: .875rem;
+}
+
+.admin-table th {
+  background: var(--color-bg);
+  padding: 10px 12px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 1px solid var(--color-border);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--color-bg); }
+
+.admin-inline-select {
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: .82rem;
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
+.admin-link-btn {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+
+.admin-link-btn:hover { text-decoration: underline; }
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: .875rem;
+  color: var(--color-muted);
+}
+
+.admin-danger-zone {
+  border-color: #fecaca;
+  background: #fef2f2;
+}
+
+.admin-danger-zone h2 { color: var(--color-danger); }
+
 /* ── Back navigation link ─────────────────────────────────── */
 .back-link {
   display: inline-flex;

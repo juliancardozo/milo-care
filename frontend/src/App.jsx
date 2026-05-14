@@ -21,6 +21,10 @@ import FullRemindersListPage from './pages/FullRemindersListPage';
 import DogEditPage from './pages/DogEditPage';
 import AccountPage from './pages/AccountPage';
 import UserMenu from './components/UserMenu';
+import AdminRoute from './components/AdminRoute';
+import AdminDashboardPage from './pages/admin/AdminDashboardPage';
+import AdminUsersPage from './pages/admin/AdminUsersPage';
+import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -66,6 +70,13 @@ export default function App() {
           <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
+        </Route>
+
+        {/* Admin routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
         </Route>
 
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
