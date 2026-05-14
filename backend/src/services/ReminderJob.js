@@ -18,6 +18,8 @@ async function processVaccinationReminders(now) {
     for (const dog of user.dogs) {
       for (const vax of dog.vaccinations) {
         if (vax.nextReminderAt && vax.nextReminderAt <= now) {
+          if (String(vax.status || '').toLowerCase() === 'pending_vet_validation') continue;
+          if (['cancelled', 'discarded', 'completed'].includes(String(vax.status || '').toLowerCase())) continue;
           try {
             await EmailService.sendVaccinationReminder({
               to: user.email,
@@ -78,6 +80,40 @@ async function processMedicationReminders(now) {
 }
 
 /**
+ * Process deworming reminders.
+ */
+async function processDewormingReminders(now) {
+  const users = await User.find({
+    'notificationPreferences.enabled': true,
+    'dogs.dewormingHistory.nextReminderAt': { $lte: now },
+  });
+
+  for (const user of users) {
+    for (const dog of user.dogs) {
+      for (const dew of dog.dewormingHistory || []) {
+        if (!dew.nextReminderAt || dew.nextReminderAt > now) continue;
+        const status = String(dew.status || '').toLowerCase();
+        if (['pending_vet_validation', 'cancelled', 'discarded', 'completed'].includes(status)) continue;
+        try {
+          await EmailService.sendMedicationReminder({
+            to: user.email,
+            userName: user.name,
+            dogName: dog.name,
+            medicationName: dew.productName,
+            dosage: 'Follow veterinarian guidance',
+          });
+          console.log(`[ReminderJob] Deworming reminder sent: user=${user._id} dog=${dog._id} deworm=${dew._id}`);
+        } catch (err) {
+          console.error(`[ReminderJob] Deworming reminder failed: ${err.message}`);
+        }
+        dew.nextReminderAt = null;
+      }
+    }
+    await user.save();
+  }
+}
+
+/**
  * Process appointment reminders.
  * Clears reminderAt after send.
  */
@@ -122,6 +158,7 @@ async function runReminders() {
   try {
     await Promise.all([
       processVaccinationReminders(now),
+      processDewormingReminders(now),
       processMedicationReminders(now),
       processAppointmentReminders(now),
     ]);

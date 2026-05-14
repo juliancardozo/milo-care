@@ -9,6 +9,8 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import DogListPage from './pages/DogListPage';
 import DogProfileSetupPage from './pages/DogProfileSetupPage';
+import DogOnboardingPage from './pages/DogOnboardingPage';
+import OnboardingSummaryPage from './pages/OnboardingSummaryPage';
 import VaccinationListPage from './pages/VaccinationListPage';
 import MedicationListPage from './pages/MedicationListPage';
 import AppointmentListPage from './pages/AppointmentListPage';
@@ -16,6 +18,9 @@ import SymptomLogPage from './pages/SymptomLogPage';
 import HealthHistoryPage from './pages/HealthHistoryPage';
 import NotificationPreferencesPage from './pages/NotificationPreferencesPage';
 import FullRemindersListPage from './pages/FullRemindersListPage';
+import DogEditPage from './pages/DogEditPage';
+import AccountPage from './pages/AccountPage';
+import UserMenu from './components/UserMenu';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -31,7 +36,10 @@ export default function App() {
             <span aria-hidden="true">🐾</span>
             <span>{t('appName')}</span>
           </div>
-          <LanguageSwitcher />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <LanguageSwitcher />
+            <UserMenu />
+          </div>
         </header>
       )}
 
@@ -46,12 +54,16 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/dogs" element={<DogListPage />} />
-          <Route path="/dogs/new" element={<DogProfileSetupPage />} />
+          <Route path="/dogs/new" element={<DogOnboardingPage />} />
+          <Route path="/dogs/onboarding/legacy" element={<DogProfileSetupPage />} />
+          <Route path="/dogs/onboarding/summary" element={<OnboardingSummaryPage />} />
+          <Route path="/dogs/:dogId/edit" element={<DogEditPage />} />
           <Route path="/dogs/:dogId/vaccinations" element={<VaccinationListPage />} />
           <Route path="/dogs/:dogId/medications" element={<MedicationListPage />} />
           <Route path="/dogs/:dogId/appointments" element={<AppointmentListPage />} />
           <Route path="/dogs/:dogId/symptoms" element={<SymptomLogPage />} />
           <Route path="/dogs/:dogId/history" element={<HealthHistoryPage />} />
+          <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
         </Route>

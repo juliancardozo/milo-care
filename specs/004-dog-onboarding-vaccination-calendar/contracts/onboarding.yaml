@@ -1,0 +1,64 @@
+openapi: 3.0.3
+info:
+  title: Milo Care Onboarding API
+  version: 0.1.0
+paths:
+  /api/onboarding/start:
+    post:
+      summary: Start or resume onboarding session
+      requestBody:
+        required: false
+      responses:
+        '201':
+          description: Session created
+        '200':
+          description: Existing session resumed
+  /api/onboarding/{sessionId}/{stepKey}:
+    post:
+      summary: Save a step payload
+      parameters:
+        - in: path
+          name: sessionId
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: stepKey
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Step persisted
+        '400':
+          description: Validation failed
+  /api/onboarding/{sessionId}/draft:
+    get:
+      summary: Retrieve draft onboarding data
+      responses:
+        '200':
+          description: Draft payload
+  /api/onboarding/{sessionId}/summary:
+    get:
+      summary: Retrieve computed summary and draft calendar
+      responses:
+        '200':
+          description: Summary payload
+  /api/onboarding/{sessionId}/confirm:
+    post:
+      summary: Finalize onboarding and create dog profile
+      responses:
+        '201':
+          description: Dog profile created and calendar generated
+  /api/dogs/{dogId}/calendar:
+    get:
+      summary: Retrieve preventive calendar events
+      responses:
+        '200':
+          description: Calendar payload
+  /api/events/{eventId}/status:
+    patch:
+      summary: Update event status
+      responses:
+        '200':
+          description: Event updated

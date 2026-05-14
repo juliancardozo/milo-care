@@ -20,6 +20,7 @@ export const logout = () => api.post('/auth/logout');
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const deleteAccount = () => api.delete('/auth/me');
+export const updateProfile = (data) => api.patch('/auth/me/profile', data);
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);
 export const updateReminderWindowPreference = (data) => api.patch('/user/preferences/reminderWindow', data);
 

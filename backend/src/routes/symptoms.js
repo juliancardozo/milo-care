@@ -44,6 +44,7 @@ router.post('/', authenticate, async (req, res, next) => {
     if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
 
     dog.symptoms.push({
+      symptomType: description,
       description,
       severity: severity || 'mild',
       dateObserved: observedDate,

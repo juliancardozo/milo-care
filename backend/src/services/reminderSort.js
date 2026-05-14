@@ -9,8 +9,9 @@
 
 const SOURCE_TYPE_PRIORITY = {
   vaccination: 1,
-  medication: 2,
-  appointment: 3,
+  deworming: 2,
+  medication: 3,
+  appointment: 4,
 };
 
 /**

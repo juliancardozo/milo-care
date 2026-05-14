@@ -264,6 +264,52 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .record-actions { display: flex; gap: 8px; flex-shrink: 0; }
 .record-actions button { padding: 6px 12px; font-size: .85rem; }
 
+/* ── Checkbox grid (onboarding lifestyle step) ───────────── */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.inline-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+  font-size: .875rem;
+  line-height: 1.4;
+  user-select: none;
+  background: var(--color-surface);
+}
+
+.inline-checkbox:hover {
+  background: #f0f6ff;
+  border-color: var(--color-primary);
+}
+
+.inline-checkbox:has(input:checked) {
+  background: #eff6ff;
+  border-color: var(--color-primary);
+}
+
+.inline-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .checkbox-grid { grid-template-columns: 1fr; }
+}
+
 /* ── Badges ───────────────────────────────────────────────── */
 .badge {
   display: inline-block;
@@ -280,6 +326,102 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .badge-inactive { background: #f3f4f6; color: #6b7280; }
 .badge-cancelled { background: #fee2e2; color: #991b1b; }
 .badge-overdue { background: #fee2e2; color: #991b1b; }
+
+/* ── User menu dropdown ───────────────────────────────────── */
+.user-menu {
+  position: relative;
+}
+
+.user-menu-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: transparent;
+  border: 1.5px solid var(--color-border);
+  border-radius: 999px;
+  color: var(--color-text);
+  font-size: .875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+
+.user-menu-trigger:hover { background: var(--color-bg); border-color: var(--color-primary); }
+
+.user-menu-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: .75rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.user-menu-name { max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.user-menu-chevron { font-size: .6rem; color: var(--color-muted); }
+
+.user-menu-dropdown {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  min-width: 220px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.user-menu-header {
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  border-bottom: 1px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.user-menu-header strong { font-size: .9rem; }
+.user-menu-header span { font-size: .8rem; color: var(--color-muted); }
+
+.user-menu-section-label {
+  padding: 8px 14px 2px;
+  font-size: .7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  color: var(--color-muted);
+}
+
+.user-menu-item {
+  display: block;
+  padding: 9px 14px;
+  font-size: .875rem;
+  color: var(--color-text);
+  text-decoration: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+  transition: background .12s;
+}
+
+.user-menu-item:hover { background: var(--color-bg); text-decoration: none; }
+
+.user-menu-divider { height: 1px; background: var(--color-border); margin: 4px 0; }
+
+.user-menu-logout { color: var(--color-danger); }
+.user-menu-logout:hover { background: #fef2f2; }
 
 /* ── Offline banner ───────────────────────────────────────── */
 .offline-banner {
