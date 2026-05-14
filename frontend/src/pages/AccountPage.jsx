@@ -34,7 +34,7 @@ export default function AccountPage() {
 
   return (
     <div className="page">
-      <BackLink />
+      <BackLink to="/dashboard" />
       <header className="page-header">
         <h1>Mi cuenta</h1>
       </header>

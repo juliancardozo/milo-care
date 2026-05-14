@@ -37,7 +37,7 @@ export default function DogListPage() {
 
   return (
     <div className="page">
-      <BackLink />
+      <BackLink to="/dashboard" />
       <header className="page-header">
         <h1>{t('dogs.yourDogs')}</h1>
         {canAddDog ? (

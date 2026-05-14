@@ -38,7 +38,7 @@ export default function NotificationPreferencesPage() {
 
   return (
     <div className="page">
-      <BackLink />
+      <BackLink to="/dashboard" />
       <h1>{t('notifications.title')}</h1>
       <form onSubmit={handleSubmit}>
         <div className="field">
