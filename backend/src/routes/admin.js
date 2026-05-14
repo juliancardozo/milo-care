@@ -8,7 +8,28 @@ const EmailService = require('../services/EmailService');
 
 const router = express.Router();
 
-// All admin routes require authentication + admin role
+// ── GET /api/admin/email/preview/:type ──────────────────────────────────────
+// Public: renders sample HTML for browser preview — no user data exposed.
+
+const PREVIEW_DATA = {
+  welcome:     () => EmailService._templates.welcome({ userName: 'Julián' }),
+  vaccination: () => EmailService._templates.vaccination({ userName: 'Julián', dogName: 'Milo', vaccineName: 'Triple (CDV + CAV-2 + CPV-2)', nextDueDate: new Date(Date.now() + 7 * 864e5) }),
+  deworming:   () => EmailService._templates.deworming({ userName: 'Julián', dogName: 'Milo', productName: 'Bravecto', nextDueDate: new Date(Date.now() + 30 * 864e5) }),
+  medication:  () => EmailService._templates.medication({ userName: 'Julián', dogName: 'Milo', medicationName: 'Carprofen', dosage: '25 mg' }),
+  appointment: () => EmailService._templates.appointment({ userName: 'Julián', dogName: 'Milo', appointmentTitle: 'Control sano adulto', clinicName: 'Clínica Veterinaria Central', appointmentDate: new Date(Date.now() + 864e5) }),
+  passwordReset: () => EmailService._templates.passwordReset({ resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=PREVIEW_TOKEN` }),
+};
+
+router.get('/email/preview/:type', (req, res) => {
+  const render = PREVIEW_DATA[req.params.type];
+  if (!render) {
+    return res.status(404).json({ code: 'NOT_FOUND', message: `Unknown template "${req.params.type}". Available: ${Object.keys(PREVIEW_DATA).join(', ')}.` });
+  }
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  return res.send(render());
+});
+
+// All other admin routes require authentication + admin role
 router.use(authenticate, adminAuth);
 
 // ── GET /api/admin/stats ─────────────────────────────────────────────────────
@@ -164,27 +185,6 @@ router.delete('/users/:id', async (req, res, next) => {
   } catch (err) {
     next(err);
   }
-});
-
-// ── GET /api/admin/email/preview/:type ──────────────────────────────────────
-// Returns the rendered HTML of a template for in-browser preview.
-
-const PREVIEW_DATA = {
-  welcome:     () => EmailService._templates.welcome({ userName: 'Julián' }),
-  vaccination: () => EmailService._templates.vaccination({ userName: 'Julián', dogName: 'Milo', vaccineName: 'Triple (CDV + CAV-2 + CPV-2)', nextDueDate: new Date(Date.now() + 7 * 864e5) }),
-  deworming:   () => EmailService._templates.deworming({ userName: 'Julián', dogName: 'Milo', productName: 'Bravecto', nextDueDate: new Date(Date.now() + 30 * 864e5) }),
-  medication:  () => EmailService._templates.medication({ userName: 'Julián', dogName: 'Milo', medicationName: 'Carprofen', dosage: '25 mg' }),
-  appointment: () => EmailService._templates.appointment({ userName: 'Julián', dogName: 'Milo', appointmentTitle: 'Control sano adulto', clinicName: 'Clínica Veterinaria Central', appointmentDate: new Date(Date.now() + 864e5) }),
-  passwordReset: () => EmailService._templates.passwordReset({ resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=PREVIEW_TOKEN` }),
-};
-
-router.get('/email/preview/:type', (req, res) => {
-  const render = PREVIEW_DATA[req.params.type];
-  if (!render) {
-    return res.status(404).json({ code: 'NOT_FOUND', message: `Unknown template "${req.params.type}". Available: ${Object.keys(PREVIEW_DATA).join(', ')}.` });
-  }
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  return res.send(render());
 });
 
 // ── POST /api/admin/email/test ───────────────────────────────────────────────
