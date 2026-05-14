@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getDogs, deleteDog } from '../services/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 export default function DogListPage() {
+  const { t } = useI18n();
   const navigate = useNavigate();
   const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -11,31 +13,31 @@ export default function DogListPage() {
   useEffect(() => {
     getDogs()
       .then(({ data }) => setDogs(data.dogs))
-      .catch(() => setError('Failed to load dogs.'))
+      .catch(() => setError(t('dogs.errors.load')))
       .finally(() => setLoading(false));
-  }, []);
+  }, [t]);
 
   async function handleDelete(dogId, name) {
-    if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
+    if (!window.confirm(t('dogs.confirmDelete', { name }))) return;
     try {
       await deleteDog(dogId);
       setDogs((prev) => prev.filter((d) => d.id !== dogId));
     } catch {
-      setError('Failed to delete dog profile.');
+      setError(t('dogs.errors.delete'));
     }
   }
 
-  if (loading) return <div className="page"><p>Loading…</p></div>;
+  if (loading) return <div className="page"><p>{t('common.loading')}</p></div>;
 
   return (
     <div className="page">
       <header className="page-header">
-        <h1>Your dogs</h1>
-        <Link to="/dogs/new" className="btn-primary">+ Add dog</Link>
+        <h1>{t('dogs.yourDogs')}</h1>
+        <Link to="/dogs/new" className="btn-primary">{t('dogs.addDog')}</Link>
       </header>
       {error && <p className="server-error">{error}</p>}
       {dogs.length === 0 ? (
-        <p>No dogs yet. <Link to="/dogs/new">Add your first dog</Link></p>
+        <p>{t('dogs.noDogs')} <Link to="/dogs/new">{t('dogs.addFirstDogLink')}</Link></p>
       ) : (
         <ul className="dog-list">
           {dogs.map((dog) => (
@@ -44,17 +46,17 @@ export default function DogListPage() {
               <div className="dog-info">
                 <strong>{dog.name}</strong>
                 <span>{dog.breed}</span>
-                <span>{dog.ageYears} yr{dog.ageYears !== 1 ? 's' : ''} old</span>
+                <span>{dog.ageYears} {t('dogs.years')}</span>
               </div>
               <div className="dog-actions">
-                <button onClick={() => navigate(`/dogs/${dog.id}/vaccinations`)}>View records</button>
-                <button onClick={() => handleDelete(dog.id, dog.name)} className="btn-danger">Delete</button>
+                <button onClick={() => navigate(`/dogs/${dog.id}/vaccinations`)}>{t('dogs.viewRecords')}</button>
+                <button onClick={() => handleDelete(dog.id, dog.name)} className="btn-danger">{t('common.delete')}</button>
               </div>
             </li>
           ))}
         </ul>
       )}
-      <Link to="/dashboard">← Dashboard</Link>
+      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

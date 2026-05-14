@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { getVaccinations, createVaccination, deleteVaccination } from '../services/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 export default function VaccinationListPage() {
+  const { t } = useI18n();
   const { dogId } = useParams();
   const [vaccinations, setVaccinations] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,9 +14,9 @@ export default function VaccinationListPage() {
   useEffect(() => {
     getVaccinations(dogId)
       .then(({ data }) => setVaccinations(data.vaccinations))
-      .catch(() => setError('Failed to load vaccinations.'))
+      .catch(() => setError(t('vaccinations.errors.load')))
       .finally(() => setLoading(false));
-  }, [dogId]);
+  }, [dogId, t]);
 
   async function handleAdd(formData) {
     try {
@@ -22,63 +24,63 @@ export default function VaccinationListPage() {
       setVaccinations((prev) => [...prev, data]);
       setShowForm(false);
     } catch (err) {
-      return err.response?.data?.message || 'Failed to add vaccination.';
+      return err.response?.data?.message || t('vaccinations.errors.add');
     }
   }
 
   async function handleDelete(vacId) {
-    if (!window.confirm('Delete this vaccination record?')) return;
+    if (!window.confirm(t('vaccinations.deleteConfirm'))) return;
     try {
       await deleteVaccination(dogId, vacId);
       setVaccinations((prev) => prev.filter((v) => v._id !== vacId));
     } catch {
-      setError('Failed to delete vaccination.');
+      setError(t('vaccinations.errors.delete'));
     }
   }
 
-  if (loading) return <div className="page"><p>Loading…</p></div>;
+  if (loading) return <div className="page"><p>{t('common.loading')}</p></div>;
 
   return (
     <div className="page">
       <header className="page-header">
-        <h1>Vaccinations</h1>
+        <h1>{t('vaccinations.title')}</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? 'Cancel' : '+ Add vaccination'}
+          {showForm ? t('common.cancel') : t('vaccinations.add')}
         </button>
       </header>
 
-      {showForm && <AddVaccinationForm onAdd={handleAdd} onCancel={() => setShowForm(false)} />}
+      {showForm && <AddVaccinationForm onAdd={handleAdd} onCancel={() => setShowForm(false)} t={t} />}
       {error && <p className="server-error">{error}</p>}
 
       {vaccinations.length === 0 ? (
-        <p>No vaccination records yet.</p>
+        <p>{t('vaccinations.noRecords')}</p>
       ) : (
         <ul className="record-list">
           {vaccinations.map((v) => (
             <li key={v._id} className="record-item">
               <strong>{v.vaccineName}</strong>
-              <span>Administered: {new Date(v.dateAdministered).toLocaleDateString()}</span>
-              {v.nextDueDate && <span>Next due: {new Date(v.nextDueDate).toLocaleDateString()}</span>}
+              <span>{t('vaccinations.administered')}: {new Date(v.dateAdministered).toLocaleDateString()}</span>
+              {v.nextDueDate && <span>{t('vaccinations.nextDue')}: {new Date(v.nextDueDate).toLocaleDateString()}</span>}
               {v.notes && <p className="notes">{v.notes}</p>}
-              <button onClick={() => handleDelete(v._id)} className="btn-danger-sm">Delete</button>
+              <button onClick={() => handleDelete(v._id)} className="btn-danger-sm">{t('common.delete')}</button>
             </li>
           ))}
         </ul>
       )}
 
-      <Link to="/dashboard">← Dashboard</Link>
+      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }
 
-function AddVaccinationForm({ onAdd, onCancel }) {
+function AddVaccinationForm({ onAdd, onCancel, t }) {
   const [form, setForm] = useState({ vaccineName: '', dateAdministered: '', nextDueDate: '', notes: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.vaccineName || !form.dateAdministered) { setError('Vaccine name and date administered are required.'); return; }
+    if (!form.vaccineName || !form.dateAdministered) { setError(t('vaccinations.requiredError')); return; }
     setError('');
     setLoading(true);
     const err = await onAdd({ ...form, nextDueDate: form.nextDueDate || undefined });
@@ -88,25 +90,25 @@ function AddVaccinationForm({ onAdd, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="inline-form">
       <div className="field">
-        <label>Vaccine name</label>
+        <label>{t('vaccinations.vaccineName')}</label>
         <input type="text" value={form.vaccineName} onChange={(e) => setForm({ ...form, vaccineName: e.target.value })} />
       </div>
       <div className="field">
-        <label>Date administered</label>
+        <label>{t('vaccinations.dateAdministered')}</label>
         <input type="date" value={form.dateAdministered} onChange={(e) => setForm({ ...form, dateAdministered: e.target.value })} max={new Date().toISOString().split('T')[0]} />
       </div>
       <div className="field">
-        <label>Next due date (optional)</label>
+        <label>{t('vaccinations.nextDueOptional')}</label>
         <input type="date" value={form.nextDueDate} onChange={(e) => setForm({ ...form, nextDueDate: e.target.value })} />
       </div>
       <div className="field">
-        <label>Notes (optional)</label>
+        <label>{t('common.notesOptional')}</label>
         <textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} rows={2} />
       </div>
       {error && <p className="field-error">{error}</p>}
       <div className="form-actions">
-        <button type="submit" disabled={loading}>{loading ? 'Saving…' : 'Save'}</button>
-        <button type="button" onClick={onCancel}>Cancel</button>
+        <button type="submit" disabled={loading}>{loading ? t('vaccinations.saving') : t('vaccinations.save')}</button>
+        <button type="button" onClick={onCancel}>{t('common.cancel')}</button>
       </div>
     </form>
   );

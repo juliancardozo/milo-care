@@ -1,13 +1,30 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { clearCredentials } from '../store/authSlice';
+import { useDispatch, useSelector } from 'react-redux';
+import { clearCredentials, selectCurrentUser } from '../store/authSlice';
 import { getDogs, logout } from '../services/api';
 import OfflineIndicator from '../components/OfflineIndicator';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useI18n } from '../i18n/I18nProvider';
+
+const HEALTH_SECTION_KEYS = ['vaccinations', 'medications', 'appointments', 'symptoms', 'history'];
+
+function DogAvatar({ dog }) {
+  if (dog.photoUrl) {
+    return <img src={dog.photoUrl} alt={dog.name} className="dog-avatar-img" />;
+  }
+  return (
+    <div className="dog-avatar-placeholder">
+      {dog.name.charAt(0).toUpperCase()}
+    </div>
+  );
+}
 
 export default function DashboardPage() {
+  const { t } = useI18n();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector(selectCurrentUser);
   const [dogs, setDogs] = useState([]);
   const [activeDogId, setActiveDogId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,59 +47,107 @@ export default function DashboardPage() {
 
   const activeDog = dogs.find((d) => d.id === activeDogId);
 
-  if (loading) return <div className="page"><p>Loading dashboard…</p></div>;
-
-  if (dogs.length === 0) {
+  if (loading) {
     return (
-      <div className="page">
-        <OfflineIndicator />
-        <h1>Welcome to Milo Care</h1>
-        <p>You don't have any dog profiles yet.</p>
-        <Link to="/dogs/new" className="btn-primary">Add your first dog</Link>
-        <button onClick={handleLogout} className="btn-secondary">Log out</button>
+      <div className="dashboard-shell">
+        <div className="dashboard-loading">
+          <div className="loading-spinner" />
+          <p>{t('common.loading')}</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="page">
+    <div className="dashboard-shell">
       <OfflineIndicator />
-      <header className="dashboard-header">
-        <h1>Dashboard</h1>
-        <button onClick={handleLogout} className="btn-secondary">Log out</button>
+
+      {/* Top nav bar */}
+      <header className="dashboard-topbar">
+        <div className="dashboard-brand">
+          <span className="dashboard-brand-icon">🐾</span>
+          <span className="dashboard-brand-name">{t('appName')}</span>
+        </div>
+        <div className="dashboard-topbar-right">
+          {user && <span className="dashboard-username">{t('dashboard.hi')}, {user.name?.split(' ')[0]}</span>}
+          <LanguageSwitcher />
+          <button className="btn btn-secondary btn-sm" onClick={handleLogout}>{t('common.logout')}</button>
+        </div>
       </header>
 
-      {/* Dog switcher */}
-      {dogs.length > 1 && (
-        <nav className="dog-switcher">
-          {dogs.map((d) => (
-            <button key={d.id} onClick={() => setActiveDogId(d.id)} className={d.id === activeDogId ? 'active' : ''}>
-              {d.name}
-            </button>
-          ))}
-        </nav>
-      )}
+      <main className="dashboard-content">
+        {dogs.length === 0 ? (
+          /* Empty state */
+          <div className="dashboard-empty">
+            <div className="dashboard-empty-icon">🐶</div>
+            <h2>{t('dashboard.addFirstDog')}</h2>
+            <p>{t('dashboard.addFirstDogDesc')}</p>
+            <Link to="/dogs/new" className="btn">{t('dashboard.createDogProfile')}</Link>
+          </div>
+        ) : (
+          <>
+            {/* Dog switcher tabs */}
+            {dogs.length > 1 && (
+              <nav className="dog-tabs">
+                {dogs.map((d) => (
+                  <button
+                    key={d.id}
+                    onClick={() => setActiveDogId(d.id)}
+                    className={`dog-tab ${d.id === activeDogId ? 'active' : ''}`}
+                  >
+                    {d.name}
+                  </button>
+                ))}
+              </nav>
+            )}
 
-      {activeDog && (
-        <section className="dog-summary">
-          <h2>{activeDog.name}</h2>
-          <p>{activeDog.breed} · {activeDog.ageYears} yr{activeDog.ageYears !== 1 ? 's' : ''} old</p>
-        </section>
-      )}
+            {/* Dog profile card */}
+            {activeDog && (
+              <div className="dog-profile-card">
+                <DogAvatar dog={activeDog} />
+                <div className="dog-profile-info">
+                  <h1 className="dog-profile-name">{activeDog.name}</h1>
+                  <p className="dog-profile-meta">{activeDog.breed}</p>
+                  <p className="dog-profile-age">
+                    {activeDog.ageYears} {t('dashboard.yearsOld')}
+                  </p>
+                </div>
+                <Link to="/dogs" className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
+              </div>
+            )}
 
-      {/* Health record navigation */}
-      <nav className="health-nav">
-        <Link to={`/dogs/${activeDogId}/vaccinations`}>Vaccinations</Link>
-        <Link to={`/dogs/${activeDogId}/medications`}>Medications</Link>
-        <Link to={`/dogs/${activeDogId}/appointments`}>Appointments</Link>
-        <Link to={`/dogs/${activeDogId}/symptoms`}>Symptoms</Link>
-        <Link to={`/dogs/${activeDogId}/history`}>Full History</Link>
-      </nav>
+            {/* Health sections grid */}
+            <section className="health-sections">
+              <h2 className="health-sections-title">{t('dashboard.healthRecords')}</h2>
+              <div className="health-grid">
+                {HEALTH_SECTION_KEYS.map((key) => (
+                  <Link
+                    key={key}
+                    to={`/dogs/${activeDogId}/${key}`}
+                    className="health-card"
+                  >
+                    <span className="health-card-emoji">
+                      {key === 'vaccinations' && '💉'}
+                      {key === 'medications' && '💊'}
+                      {key === 'appointments' && '🏥'}
+                      {key === 'symptoms' && '🩺'}
+                      {key === 'history' && '📋'}
+                    </span>
+                    <span className="health-card-label">{t(`dashboard.sections.${key}.label`)}</span>
+                    <span className="health-card-desc">{t(`dashboard.sections.${key}.desc`)}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
 
-      <div className="quick-links">
-        <Link to="/dogs">Manage dogs</Link>
-        <Link to="/settings/notifications">Notification preferences</Link>
-      </div>
+            {/* Quick links */}
+            <section className="dashboard-footer-links">
+              <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
+              <Link to="/settings/notifications" className="footer-link">{t('dashboard.notificationSettings')}</Link>
+            </section>
+          </>
+        )}
+      </main>
     </div>
   );
 }

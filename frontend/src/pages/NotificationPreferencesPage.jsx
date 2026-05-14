@@ -3,8 +3,10 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { selectCurrentUser, updateUser } from '../store/authSlice';
 import { updateNotificationPreferences } from '../services/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 export default function NotificationPreferencesPage() {
+  const { t } = useI18n();
   const user = useSelector(selectCurrentUser);
   const dispatch = useDispatch();
   const prefs = user?.notificationPreferences || { enabled: true, vaccinationWindowDays: 7, appointmentWindowHours: 24 };
@@ -28,7 +30,7 @@ export default function NotificationPreferencesPage() {
       dispatch(updateUser({ notificationPreferences: data.notificationPreferences }));
       setSuccess(true);
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to save preferences.');
+      setError(err.response?.data?.message || t('notifications.errors.save'));
     } finally {
       setSaving(false);
     }
@@ -36,7 +38,7 @@ export default function NotificationPreferencesPage() {
 
   return (
     <div className="page">
-      <h1>Notification Preferences</h1>
+      <h1>{t('notifications.title')}</h1>
       <form onSubmit={handleSubmit}>
         <div className="field">
           <label>
@@ -45,13 +47,13 @@ export default function NotificationPreferencesPage() {
               checked={form.enabled}
               onChange={(e) => setForm({ ...form, enabled: e.target.checked })}
             />
-            Enable email notifications
+            {t('notifications.enableEmail')}
           </label>
         </div>
 
         <div className="field">
           <label htmlFor="vaccinationWindowDays">
-            Vaccination reminder (days before due date)
+            {t('notifications.vaccinationWindow')}
           </label>
           <input
             id="vaccinationWindowDays"
@@ -66,7 +68,7 @@ export default function NotificationPreferencesPage() {
 
         <div className="field">
           <label htmlFor="appointmentWindowHours">
-            Appointment reminder (hours before appointment)
+            {t('notifications.appointmentWindow')}
           </label>
           <input
             id="appointmentWindowHours"
@@ -80,12 +82,12 @@ export default function NotificationPreferencesPage() {
         </div>
 
         {error && <p className="server-error">{error}</p>}
-        {success && <p className="success-msg">Preferences saved.</p>}
+        {success && <p className="success-msg">{t('notifications.saved')}</p>}
 
-        <button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Save preferences'}</button>
+        <button type="submit" disabled={saving}>{saving ? t('vaccinations.saving') : t('notifications.savePreferences')}</button>
       </form>
 
-      <Link to="/dashboard">← Dashboard</Link>
+      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { forgotPassword } from '../services/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 export default function ForgotPasswordPage() {
+  const { t } = useI18n();
   const [email, setEmail] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -10,14 +12,14 @@ export default function ForgotPasswordPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!email.trim()) { setError('Email is required.'); return; }
+    if (!email.trim()) { setError(t('auth.errors.emailRequired')); return; }
     setError('');
     setLoading(true);
     try {
       await forgotPassword(email.trim());
       setSuccess(true);
     } catch (err) {
-      const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
+      const msg = err.response?.data?.message || t('auth.errors.generic');
       setError(msg);
     } finally {
       setLoading(false);
@@ -27,26 +29,26 @@ export default function ForgotPasswordPage() {
   if (success) {
     return (
       <div className="auth-page">
-        <h1>Check your email</h1>
-        <p>If an account with that email exists, we've sent a password reset link. Check your inbox.</p>
-        <Link to="/login">Back to login</Link>
+        <h1>{t('auth.checkEmail')}</h1>
+        <p>{t('auth.resetSuccess')}</p>
+        <Link to="/login">{t('auth.backToLogin')}</Link>
       </div>
     );
   }
 
   return (
     <div className="auth-page">
-      <h1>Reset your password</h1>
-      <p>Enter your email and we'll send you a reset link.</p>
+      <h1>{t('auth.resetPassword')}</h1>
+      <p>{t('auth.resetIntro')}</p>
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('common.email')}</label>
           <input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} aria-invalid={!!error} />
           {error && <span className="field-error">{error}</span>}
         </div>
-        <button type="submit" disabled={loading}>{loading ? 'Sending…' : 'Send reset link'}</button>
+        <button type="submit" disabled={loading}>{loading ? t('auth.sending') : t('auth.sendResetLink')}</button>
       </form>
-      <p><Link to="/login">Back to login</Link></p>
+      <p><Link to="/login">{t('auth.backToLogin')}</Link></p>
     </div>
   );
 }

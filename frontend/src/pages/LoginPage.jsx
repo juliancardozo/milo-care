@@ -3,8 +3,10 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { login } from '../services/api';
+import { useI18n } from '../i18n/I18nProvider';
 
 export default function LoginPage() {
+  const { t } = useI18n();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [form, setForm] = useState({ email: '', password: '' });
@@ -14,8 +16,8 @@ export default function LoginPage() {
 
   function validate() {
     const e = {};
-    if (!form.email.trim()) e.email = 'Email is required.';
-    if (!form.password) e.password = 'Password is required.';
+    if (!form.email.trim()) e.email = t('auth.errors.emailRequired');
+    if (!form.password) e.password = t('auth.errors.passwordRequired');
     return e;
   }
 
@@ -31,7 +33,7 @@ export default function LoginPage() {
       dispatch(setCredentials({ user: data.user, token: data.token }));
       navigate('/dashboard');
     } catch (err) {
-      const msg = err.response?.data?.message || 'Login failed. Please try again.';
+      const msg = err.response?.data?.message || t('auth.errors.loginFailed');
       setServerError(msg);
     } finally {
       setLoading(false);
@@ -40,23 +42,23 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
-      <h1>Welcome back</h1>
+      <h1>{t('auth.welcomeBack')}</h1>
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">
-          <label htmlFor="email">Email</label>
+          <label htmlFor="email">{t('common.email')}</label>
           <input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-invalid={!!errors.email} />
           {errors.email && <span className="field-error">{errors.email}</span>}
         </div>
         <div className="field">
-          <label htmlFor="password">Password</label>
+          <label htmlFor="password">{t('common.password')}</label>
           <input id="password" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} aria-invalid={!!errors.password} />
           {errors.password && <span className="field-error">{errors.password}</span>}
         </div>
         {serverError && <p className="server-error">{serverError}</p>}
-        <button type="submit" disabled={loading}>{loading ? 'Logging in…' : 'Log in'}</button>
+        <button type="submit" disabled={loading}>{loading ? t('auth.loggingIn') : t('auth.login')}</button>
       </form>
-      <p><Link to="/forgot-password">Forgot password?</Link></p>
-      <p>Don't have an account? <Link to="/register">Sign up</Link></p>
+      <p><Link to="/forgot-password">{t('auth.forgotPassword')}</Link></p>
+      <p>{t('auth.noAccount')} <Link to="/register">{t('auth.signUp')}</Link></p>
     </div>
   );
 }

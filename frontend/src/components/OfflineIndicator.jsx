@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import { useI18n } from '../i18n/I18nProvider';
 
 export default function OfflineIndicator() {
+  const { t } = useI18n();
   const [offline, setOffline] = useState(!navigator.onLine);
 
   useEffect(() => {
@@ -14,7 +16,7 @@ export default function OfflineIndicator() {
   if (!offline) return null;
   return (
     <div role="alert" className="offline-banner">
-      You are offline. Some features may not be available.
+      {t('offline')}
     </div>
   );
 }
