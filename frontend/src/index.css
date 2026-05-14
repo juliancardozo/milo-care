@@ -197,6 +197,15 @@ button.btn-secondary:hover { background: var(--color-bg); }
   font-size: .9rem;
 }
 
+.warning-message {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: var(--radius);
+  color: #9a3412;
+  padding: 10px 14px;
+  font-size: .9rem;
+}
+
 /* ── Page shell ───────────────────────────────────────────── */
 .page {
   max-width: 800px;
@@ -270,6 +279,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .badge-active { background: #dbeafe; color: #1e40af; }
 .badge-inactive { background: #f3f4f6; color: #6b7280; }
 .badge-cancelled { background: #fee2e2; color: #991b1b; }
+.badge-overdue { background: #fee2e2; color: #991b1b; }
 
 /* ── Offline banner ───────────────────────────────────────── */
 .offline-banner {
@@ -313,6 +323,15 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .dashboard-nav a:hover {
   border-color: var(--color-primary);
   box-shadow: var(--shadow);
+}
+
+.reminder-item {
+  border-left: 4px solid #cbd5e1;
+}
+
+.reminder-item.reminder-overdue {
+  border-left-color: #ef4444;
+  background: #fff7f7;
 }
 
 /* ── Responsive ───────────────────────────────────────────── */

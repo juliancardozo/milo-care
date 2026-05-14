@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { clearCredentials, selectCurrentUser } from '../store/authSlice';
-import { getDogs, logout } from '../services/api';
+import { getDogs, getFullRemindersList, logout } from '../services/api';
 import OfflineIndicator from '../components/OfflineIndicator';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import { useI18n } from '../i18n/I18nProvider';
@@ -28,6 +28,7 @@ export default function DashboardPage() {
   const [dogs, setDogs] = useState([]);
   const [activeDogId, setActiveDogId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [remindersPreview, setRemindersPreview] = useState([]);
 
   useEffect(() => {
     getDogs()
@@ -45,6 +46,14 @@ export default function DashboardPage() {
     navigate('/login');
   }
 
+
+    getFullRemindersList()
+      .then(({ data }) => {
+        setRemindersPreview((data.reminders || []).slice(0, 5));
+      })
+      .catch(() => {
+        setRemindersPreview([]);
+      });
   const activeDog = dogs.find((d) => d.id === activeDogId);
 
   if (loading) {
@@ -141,6 +150,27 @@ export default function DashboardPage() {
             </section>
 
             {/* Quick links */}
+            <section className="card" style={{ marginTop: 16 }}>
+              <div className="page-header" style={{ marginBottom: 8 }}>
+                <h2>{t('remindersFullList.previewTitle')}</h2>
+                <Link to="/dashboard/reminders/full">{t('common.viewAll')}</Link>
+              </div>
+              {remindersPreview.length === 0 ? (
+                <p className="list-empty">{t('remindersFullList.empty')}</p>
+              ) : (
+                <ul className="record-list">
+                  {remindersPreview.map((r) => (
+                    <li key={r.id} className="record-item">
+                      <div className="record-info">
+                        <h3>{r.title}</h3>
+                        <p>{r.petName}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
             <section className="dashboard-footer-links">
               <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
               <Link to="/settings/notifications" className="footer-link">{t('dashboard.notificationSettings')}</Link>
