@@ -100,6 +100,7 @@ const translations = {
         breedRequired: 'La raza es obligatoria.',
         dobRequired: 'La fecha de nacimiento es obligatoria.',
         dobPast: 'La fecha de nacimiento debe estar en el pasado.',
+        tierLimitReached: 'Las cuentas gratuitas están limitadas a 1 perro. Actualiza a premium para agregar mas.',
       },
     },
     vaccinations: {
@@ -338,6 +339,7 @@ const translations = {
         breedRequired: 'Breed is required.',
         dobRequired: 'Date of birth is required.',
         dobPast: 'Date of birth must be in the past.',
+        tierLimitReached: 'Free accounts are limited to 1 dog. Upgrade to premium for unlimited.',
       },
     },
     vaccinations: {

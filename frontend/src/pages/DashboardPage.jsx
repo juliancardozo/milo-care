@@ -172,7 +172,13 @@ export default function DashboardPage() {
             </section>
 
             <section className="dashboard-footer-links">
-              <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
+              {user?.tier === 'premium' || dogs.length === 0 ? (
+                <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
+              ) : (
+                <button disabled className="footer-link" style={{ cursor: 'not-allowed', opacity: 0.5 }} title={t('dogs.errors.tierLimitReached') || 'Free accounts limited to 1 dog'}>
+                  {t('dashboard.addAnotherDog')}
+                </button>
+              )}
               <Link to="/settings/notifications" className="footer-link">{t('dashboard.notificationSettings')}</Link>
             </section>
           </>

@@ -1,14 +1,19 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { useSelector } from 'react-redux';
 import { getDogs, deleteDog } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
+import { selectCurrentUser } from '../store/authSlice';
 
 export default function DogListPage() {
   const { t } = useI18n();
   const navigate = useNavigate();
+  const user = useSelector(selectCurrentUser);
   const [dogs, setDogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const canAddDog = user?.tier === 'premium' || dogs.length === 0;
 
   useEffect(() => {
     getDogs()
@@ -33,7 +38,13 @@ export default function DogListPage() {
     <div className="page">
       <header className="page-header">
         <h1>{t('dogs.yourDogs')}</h1>
-        <Link to="/dogs/new" className="btn-primary">{t('dogs.addDog')}</Link>
+        {canAddDog ? (
+          <Link to="/dogs/new" className="btn-primary">{t('dogs.addDog')}</Link>
+        ) : (
+          <button disabled className="btn-primary" title={t('dogs.errors.tierLimitReached') || 'Free accounts limited to 1 dog'}>
+            {t('dogs.addDog')}
+          </button>
+        )}
       </header>
       {error && <p className="server-error">{error}</p>}
       {dogs.length === 0 ? (
