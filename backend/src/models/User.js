@@ -8,6 +8,10 @@ const { Schema } = mongoose;
 const vaccinationSchema = new Schema(
   {
     vaccineName: { type: String, required: true, trim: true },
+    catalogId: { type: String, trim: true, default: null },
+    isCalendarRequired: { type: Boolean, default: false },
+    antigenGroup: { type: String, trim: true, default: '' },
+    administrationRoute: { type: String, trim: true, default: '' },
     dateAdministered: { type: Date, required: true },
     nextDueDate: { type: Date, default: null },
     nextReminderAt: { type: Date, default: null, index: true },
@@ -72,15 +76,23 @@ const medicationSchema = new Schema(
 
 const appointmentSchema = new Schema(
   {
-    clinicName: { type: String, required: true, trim: true },
+    title: { type: String, trim: true, default: '' },
+    catalogId: { type: String, trim: true, default: null },
+    isWsavaRecommended: { type: Boolean, default: false },
+    appointmentType: { type: String, trim: true, default: '' },
+    checklist: [{ type: String, trim: true }],
+    clinicName: { type: String, trim: true, default: '' },
+    vetName: { type: String, trim: true, default: '' },
+    location: { type: String, trim: true, default: '' },
     appointmentDate: { type: Date, required: true },
+    isCancelled: { type: Boolean, default: false },
     reminderAt: { type: Date, default: null, index: true },
     status: {
       type: String,
       enum: ['suggested', 'upcoming', 'programado', 'completed', 'cancelled'],
-      default: 'suggested',
+      default: 'upcoming',
     },
-    notes: { type: String, trim: true },
+    notes: { type: String, trim: true, default: '' },
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
   },
   { timestamps: true }
@@ -193,5 +205,18 @@ userSchema.methods.toJSON = function () {
   delete obj.passwordHash;
   return obj;
 };
+
+// Migrate legacy appointments that have clinicName but no title (created before
+// the title field was added). Runs on every save so no one-off migration script
+// is needed.
+userSchema.pre('validate', function () {
+  for (const dog of this.dogs || []) {
+    for (const appt of dog.appointments || []) {
+      if (!appt.title) {
+        appt.title = appt.clinicName || 'Consulta';
+      }
+    }
+  }
+});
 
 module.exports = mongoose.model('User', userSchema);

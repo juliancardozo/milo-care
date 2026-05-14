@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { getDog, updateDog } from '../services/api';
 
 function useSection(initial) {
@@ -113,6 +114,7 @@ export default function DogEditPage() {
 
   return (
     <div className="page">
+      <BackLink to="/dogs" label="Mis perros" />
       <header className="page-header">
         <h1>Editar ficha</h1>
         <button type="button" className="btn-secondary" onClick={() => navigate(-1)}>
@@ -233,9 +235,6 @@ export default function DogEditPage() {
         </div>
       </form>
 
-      <div style={{ marginTop: '16px' }}>
-        <Link to="/dogs">{`← Volver a mis perros`}</Link>
-      </div>
     </div>
   );
 }

@@ -278,12 +278,18 @@ async function confirmSession(sessionId, userId, options = {}) {
       requiresVetValidation: Boolean(item.requiresVetValidation),
     })),
     appointments: calendar.appointments.map((item) => ({
+      title: item.type === 'initial_consult' ? 'Control sano adulto' : (item.type === 'follow_up' ? 'Reevaluación de signos' : (item.type || 'Consulta')),
+      catalogId: item.type === 'initial_consult' ? 'control_sano_adulto' : (item.type === 'follow_up' ? 'control_signos' : null),
+      isWsavaRecommended: true,
+      appointmentType: item.type || '',
+      checklist: [],
       clinicName: item.clinicName || 'Veterinario de confianza',
       appointmentDate: item.scheduledAt || item.reminderAt || new Date(),
       reminderAt: item.reminderAt || null,
       status: item.status || 'suggested',
       notes: item.notes || '',
       source: item.source || 'suggested',
+      isCancelled: false,
     })),
   };
 

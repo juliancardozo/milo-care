@@ -7,12 +7,59 @@ const User = require('../models/User');
 
 const router = express.Router();
 
+/**
+ * Calendar-accurate age from a birth date.
+ * Returns { years, months (remainder), totalMonths }.
+ */
+function calcAge(dob) {
+  const now = new Date();
+  let years = now.getFullYear() - dob.getFullYear();
+  let months = now.getMonth() - dob.getMonth();
+  if (now.getDate() < dob.getDate()) months--;
+  if (months < 0) { years--; months += 12; }
+  return { years, months, totalMonths: Math.max(0, years * 12 + months) };
+}
+
+/**
+ * Human-readable age string in Spanish, respecting birth-date confidence.
+ *   exact     → "3 años" / "8 meses"
+ *   estimated → "aprox. 3 años"
+ *   unknown   → "Edad desconocida"
+ */
+function formatAge(obj) {
+  const confidence = obj.birthDateConfidence || 'exact';
+
+  if (confidence === 'unknown') return 'Edad desconocida';
+
+  const prefix = confidence === 'estimated' ? 'aprox. ' : '';
+  const dob = obj.dateOfBirth ? new Date(obj.dateOfBirth) : null;
+
+  if (!dob || isNaN(dob.getTime())) {
+    // Fall back to estimatedAgeMonths when birthDate is missing
+    const em = obj.estimatedAgeMonths;
+    if (!em) return 'Edad desconocida';
+    const estYears = Math.floor(em / 12);
+    if (em < 12) return `aprox. ${em} ${em === 1 ? 'mes' : 'meses'}`;
+    return `aprox. ${estYears} ${estYears === 1 ? 'año' : 'años'}`;
+  }
+
+  const { years, totalMonths } = calcAge(dob);
+
+  if (totalMonths < 1) return `${prefix}Recién nacido`;
+  if (totalMonths < 12) return `${prefix}${totalMonths} ${totalMonths === 1 ? 'mes' : 'meses'}`;
+  if (years === 1) return `${prefix}1 año`;
+  return `${prefix}${years} años`;
+}
+
 function dogResponse(dog) {
   const obj = dog.toObject ? dog.toObject() : dog;
   const dob = obj.dateOfBirth ? new Date(obj.dateOfBirth) : null;
-  const ageYears = dob
-    ? Math.floor((Date.now() - dob.getTime()) / (365.25 * 24 * 60 * 60 * 1000))
+  const confidence = obj.birthDateConfidence || 'exact';
+  const ageData = (dob && !isNaN(dob.getTime()) && confidence !== 'unknown')
+    ? calcAge(dob)
     : null;
+  const ageYears = ageData ? ageData.years : null;
+  const ageDisplay = formatAge(obj);
   return {
     id: obj._id,
     name: obj.name,
@@ -20,6 +67,7 @@ function dogResponse(dog) {
     dateOfBirth: obj.dateOfBirth,
     photoUrl: obj.photoUrl,
     ageYears,
+    ageDisplay,
     sex: obj.sex || 'unknown',
     neutered: Boolean(obj.neutered),
     weightKg: obj.weightKg ?? null,

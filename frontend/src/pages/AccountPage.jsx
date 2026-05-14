@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCurrentUser, updateUser } from '../store/authSlice';
 import { updateProfile } from '../services/api';
@@ -33,6 +34,7 @@ export default function AccountPage() {
 
   return (
     <div className="page">
+      <BackLink to="/dashboard" />
       <header className="page-header">
         <h1>Mi cuenta</h1>
       </header>
@@ -79,9 +81,6 @@ export default function AccountPage() {
         </ul>
       </div>
 
-      <div style={{ marginTop: '16px' }}>
-        <Link to="/dashboard">← Volver al dashboard</Link>
-      </div>
     </div>
   );
 }

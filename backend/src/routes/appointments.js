@@ -30,7 +30,10 @@ router.get('/', authenticate, async (req, res, next) => {
 // POST /api/dogs/:dogId/appointments
 router.post('/', authenticate, async (req, res, next) => {
   try {
-    const { title, appointmentDate, vetName, location, notes } = req.body;
+    const {
+      title, appointmentDate, vetName, location, notes, clinicName,
+      catalogId, isWsavaRecommended, appointmentType, checklist,
+    } = req.body;
 
     if (!title || !appointmentDate) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'title and appointmentDate are required.' });
@@ -50,12 +53,19 @@ router.post('/', authenticate, async (req, res, next) => {
 
     dog.appointments.push({
       title,
+      catalogId: catalogId || null,
+      isWsavaRecommended: Boolean(isWsavaRecommended),
+      appointmentType: appointmentType || '',
+      checklist: Array.isArray(checklist) ? checklist : [],
       appointmentDate: apptDate,
       vetName: vetName || '',
+      clinicName: clinicName || '',
       location: location || '',
       notes: notes || '',
       isCancelled: false,
       reminderAt,
+      status: 'upcoming',
+      source: 'manual',
     });
     await user.save();
 

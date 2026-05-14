@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { useI18n } from '../i18n/I18nProvider';
 import { fetchFullRemindersList } from '../services/reminderFullListService';
 import ReminderWindowPreference from '../components/ReminderWindowPreference';
@@ -50,9 +51,9 @@ export default function FullRemindersListPage() {
 
   return (
     <div className="page">
+      <BackLink />
       <div className="page-header">
         <h1>{t('remindersFullList.title')}</h1>
-        <Link to="/dashboard">{t('common.backToDashboard')}</Link>
       </div>
 
       <ReminderWindowPreference initialValue={meta.windowDays} onSaved={handlePreferenceSaved} />

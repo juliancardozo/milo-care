@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import { Link } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { selectCurrentUser, updateUser } from '../store/authSlice';
 import { updateNotificationPreferences } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
@@ -38,6 +38,7 @@ export default function NotificationPreferencesPage() {
 
   return (
     <div className="page">
+      <BackLink to="/dashboard" />
       <h1>{t('notifications.title')}</h1>
       <form onSubmit={handleSubmit}>
         <div className="field">
@@ -87,7 +88,6 @@ export default function NotificationPreferencesPage() {
         <button type="submit" disabled={saving}>{saving ? t('vaccinations.saving') : t('notifications.savePreferences')}</button>
       </form>
 
-      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

@@ -28,7 +28,11 @@ router.get('/', authenticate, async (req, res, next) => {
 // POST /api/dogs/:dogId/vaccinations
 router.post('/', authenticate, async (req, res, next) => {
   try {
-    const { vaccineName, dateAdministered, nextDueDate, notes } = req.body;
+    const {
+      vaccineName, dateAdministered, nextDueDate, notes,
+      catalogId, isCalendarRequired, antigenGroup, administrationRoute,
+      lotNumber, veterinarian,
+    } = req.body;
 
     if (!vaccineName || !dateAdministered) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'vaccineName and dateAdministered are required.' });
@@ -55,7 +59,21 @@ router.post('/', authenticate, async (req, res, next) => {
     const windowDays = user.notificationPreferences?.vaccinationWindowDays || 7;
     const nextReminderAt = nextDueDate ? computeVaccinationReminder(new Date(nextDueDate), windowDays) : null;
 
-    dog.vaccinations.push({ vaccineName, dateAdministered: adminDate, nextDueDate: nextDueDate ? new Date(nextDueDate) : null, notes: notes || '', nextReminderAt });
+    dog.vaccinations.push({
+      vaccineName,
+      catalogId: catalogId || null,
+      isCalendarRequired: Boolean(isCalendarRequired),
+      antigenGroup: antigenGroup || '',
+      administrationRoute: administrationRoute || '',
+      dateAdministered: adminDate,
+      nextDueDate: nextDueDate ? new Date(nextDueDate) : null,
+      notes: notes || '',
+      lotNumber: lotNumber || '',
+      veterinarian: veterinarian || '',
+      nextReminderAt,
+      status: 'completed',
+      source: 'manual',
+    });
     await user.save();
 
     const newVac = dog.vaccinations[dog.vaccinations.length - 1];

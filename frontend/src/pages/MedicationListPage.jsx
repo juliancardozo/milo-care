@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import BackLink from '../components/BackLink';
 import { getMedications, createMedication, updateMedication, deleteMedication } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
 
@@ -52,6 +53,7 @@ export default function MedicationListPage() {
 
   return (
     <div className="page">
+      <BackLink />
       <header className="page-header">
         <h1>{t('medications.title')}</h1>
         <button onClick={() => setShowForm(!showForm)} className="btn-primary">
@@ -88,7 +90,6 @@ export default function MedicationListPage() {
         </ul>
       )}
 
-      <Link to="/dashboard">{t('common.backToDashboard')}</Link>
     </div>
   );
 }

@@ -109,7 +109,7 @@ export default function DashboardPage() {
                   <h1 className="dog-profile-name">{activeDog.name}</h1>
                   <p className="dog-profile-meta">{activeDog.breed}</p>
                   <p className="dog-profile-age">
-                    {activeDog.ageYears} {t('dashboard.yearsOld')}
+                    {activeDog.ageDisplay ?? `${activeDog.ageYears} ${t('dashboard.yearsOld')}`}
                   </p>
                 </div>
                 <Link to={`/dogs/${activeDog.id}/edit`} className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
