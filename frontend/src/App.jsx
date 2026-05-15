@@ -28,6 +28,9 @@ import AdminRoute from './components/AdminRoute';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
+import ClinicalHistoryPage from './pages/ClinicalHistoryPage';
+import RemindersPage from './pages/RemindersPage';
+import PdfExportPage from './pages/PdfExportPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -73,9 +76,12 @@ export default function App() {
           <Route path="/dogs/:dogId/appointments" element={<AppointmentListPage />} />
           <Route path="/dogs/:dogId/symptoms" element={<SymptomLogPage />} />
           <Route path="/dogs/:dogId/history" element={<HealthHistoryPage />} />
+          <Route path="/dogs/:dogId/clinical-history" element={<ClinicalHistoryPage />} />
+          <Route path="/dogs/:dogId/pdf-export" element={<PdfExportPage />} />
           <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
+          <Route path="/reminders" element={<RemindersPage />} />
         </Route>
 
         {/* Admin routes */}
