@@ -1485,6 +1485,55 @@ button.btn-secondary:hover { background: var(--color-bg); }
   color: var(--color-muted);
 }
 
+/* ── Brand Story ─────────────────────────────────────────── */
+.landing-brand-story-section {
+  background: linear-gradient(160deg, #f0f6ff 0%, #fff 70%);
+  border-top: 1px solid #bfdbfe;
+  border-bottom: 1px solid #bfdbfe;
+}
+
+.landing-brand-story-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.landing-brand-story-paw {
+  font-size: 2.8rem;
+  margin-bottom: 12px;
+  display: block;
+}
+
+.landing-brand-story-title {
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -.02em;
+  margin: 0 0 32px;
+}
+
+.landing-brand-story-text {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-bottom: 28px;
+}
+
+.landing-brand-story-text p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #374151;
+  margin: 0;
+}
+
+.landing-brand-story-sig {
+  font-size: .95rem;
+  font-style: italic;
+  color: var(--color-primary);
+  font-weight: 600;
+  margin: 0;
+}
+
 /* ── Final CTA section ───────────────────────────────────── */
 .landing-cta-section {
   background: linear-gradient(145deg, #1e3a8a 0%, #2563eb 45%, #4f8ef7 100%);

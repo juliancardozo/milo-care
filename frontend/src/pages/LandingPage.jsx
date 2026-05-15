@@ -304,6 +304,40 @@ function HowItWorks() {
   );
 }
 
+function BrandStory() {
+  return (
+    <section className="landing-section landing-brand-story-section">
+      <div className="landing-container">
+        <div className="landing-brand-story-inner">
+          <div className="landing-brand-story-paw" aria-hidden="true">🐾</div>
+          <span className="landing-eyebrow">Por qué existe Milo Care</span>
+          <h2 className="landing-brand-story-title">Nació para cuidar mejor a Milo.</h2>
+          <div className="landing-brand-story-text">
+            <p>
+              Cuando nos mudamos de Uruguay a Argentina, Milo venía de ser socio de una
+              veterinaria en Montevideo que ofrecía un programa preventivo completo: vacunas,
+              desparasitaciones, controles y recordatorios coordinados. Cruzar el Río de la Plata
+              significó perder toda esa continuidad.
+            </p>
+            <p>
+              En Argentina no encontramos ninguna herramienta que nos permitiera llevar su
+              historial, saber qué vacunas le correspondían según su edad y el nuevo país, o
+              recibir un aviso antes de que venciera algo importante. Todo lo que el programa
+              de Uruguay hacía por nosotros, ahora lo teníamos que recordar solos.
+            </p>
+            <p>
+              Milo Care nació de esa necesidad concreta. No para reemplazar al veterinario —
+              sino para ser el copiloto que te ayuda a no olvidar nada, a llegar mejor preparado
+              a cada consulta, y a darle a tu perro la continuidad que se merece, estés donde estés.
+            </p>
+          </div>
+          <p className="landing-brand-story-sig">— El equipo de Milo Care 🐾</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function Pricing() {
   return (
     <section className="landing-section" id="precios">
@@ -422,6 +456,7 @@ export default function LandingPage() {
         <Problem />
         <Features />
         <HowItWorks />
+        <BrandStory />
         <Pricing />
         <FinalCTA />
       </main>
