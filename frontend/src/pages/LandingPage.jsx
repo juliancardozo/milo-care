@@ -54,7 +54,6 @@ const PAW_SVG_INLINE = (
 function Hero() {
   return (
     <section className="landing-hero">
-      {/* Floating paw background */}
       <div aria-hidden="true" className="landing-hero-paws-bg">
         {FLOATING_PAWS.map((p, i) => (
           <span
@@ -77,25 +76,26 @@ function Hero() {
       </div>
 
       <div className="landing-container" style={{ position: 'relative', zIndex: 1 }}>
-        <div className="landing-hero-badge">🐾 Salud preventiva para tu perro</div>
+        <div className="landing-hero-badge">🐾 El copiloto de salud preventiva para tu perro</div>
         <h1 className="landing-hero-title">
-          El cuidado que tu perro<br className="landing-br"/>
-          <span className="landing-hero-accent"> se merece</span>
+          Organizá la salud de tu perro,<br className="landing-br"/>
+          <span className="landing-hero-accent"> sin olvidos ni estrés</span>
         </h1>
         <p className="landing-hero-sub">
-          Vacunas, medicamentos, citas y recordatorios. Todo organizado,
-          todo a tiempo. Nunca más te olvidés de una dosis o un refuerzo.
+          Vacunas, medicamentos, síntomas e historial clínico en un solo lugar.
+          Te ayudamos a organizarte, recordarte lo importante y prepararte mejor
+          para cada visita al veterinario.
         </p>
         <div className="landing-hero-ctas">
           <Link to="/register" className="landing-btn-primary landing-btn-lg">
             Empezar gratis →
           </Link>
-          <a href="#como-funciona" className="landing-btn-ghost landing-btn-lg">
-            Ver cómo funciona
+          <a href="#para-quien" className="landing-btn-ghost landing-btn-lg">
+            Ver para quién es
           </a>
         </div>
         <p className="landing-hero-footnote">Sin tarjeta de crédito · Plan gratuito incluye 1 perro</p>
-      </div>  {/* end landing-container */}
+      </div>
     </section>
   );
 }
@@ -121,6 +121,55 @@ function TrustBar() {
         </ul>
       </div>
     </div>
+  );
+}
+
+const SEGMENTS = [
+  {
+    icon: '🐶',
+    tag: 'Tenés un cachorro',
+    title: 'Sabé qué vacunas van, cuándo desparasitar y qué controles hacer',
+    pain: 'No saber qué es normal y qué no genera mucha ansiedad en los primeros meses.',
+    message: 'Cargá la edad de tu cachorro y Milo Care te arma el calendario inicial de cuidado.',
+  },
+  {
+    icon: '💊',
+    tag: 'Perro adulto con tratamiento',
+    title: 'Tené el tratamiento, síntomas y evolución en un solo lugar',
+    pain: 'Medicamentos, gotas, controles, alergias — demasiadas cosas para rastrear en el día a día.',
+    message: 'Tené el tratamiento, síntomas y evolución de tu perro en un solo lugar.',
+  },
+  {
+    icon: '🧳',
+    tag: 'Viajás o te mudás con tu perro',
+    title: 'Llevá el historial de tu perro siempre con vos',
+    pain: 'Vacunas, carnet, antiparasitarios, certificados — cada veterinaria nueva pide la historia desde cero.',
+    message: 'Llevá el historial de tu perro siempre contigo, ordenado y listo para compartir.',
+  },
+];
+
+function Segments() {
+  return (
+    <section className="landing-section" id="para-quien">
+      <div className="landing-container">
+        <span className="landing-eyebrow">¿Para quién es Milo Care?</span>
+        <h2 className="landing-section-title">Diseñado para cada etapa de la vida de tu perro</h2>
+        <p className="landing-section-sub">
+          No importa si es cachorro, adulto o viejo — siempre hay algo que organizar.
+        </p>
+        <div className="landing-segments-grid">
+          {SEGMENTS.map((s) => (
+            <div key={s.tag} className="landing-segment-card">
+              <div className="landing-segment-icon">{s.icon}</div>
+              <span className="landing-segment-tag">{s.tag}</span>
+              <h3>{s.title}</h3>
+              <p className="landing-segment-pain">{s.pain}</p>
+              <blockquote className="landing-segment-quote">{s.message}</blockquote>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 
@@ -172,8 +221,8 @@ function Problem() {
 const FEATURES = [
   {
     icon: '💉',
-    title: 'Calendario vacunal inteligente',
-    desc: 'Esquema personalizado según edad, raza y país. Basado en normativa SENASA y guías WSAVA 2022. Diferencia vacunas aplicadas de las sugeridas.',
+    title: 'Calendario vacunal personalizado',
+    desc: 'Esquema adaptado a la edad, raza y país. Basado en normativa SENASA y guías WSAVA 2022. Separa vacunas aplicadas de las sugeridas.',
   },
   {
     icon: '🔔',
@@ -183,22 +232,22 @@ const FEATURES = [
   {
     icon: '💊',
     title: 'Control de medicamentos',
-    desc: 'Registrá cada medicamento con dosis, frecuencia y fecha de fin. El sistema avisa cuándo es cada toma y marca el estado activo/completado.',
+    desc: 'Registrá cada medicamento con dosis, frecuencia y fecha de fin. El sistema avisa cuándo es cada toma y lleva el estado activo/completado.',
   },
   {
     icon: '🏥',
     title: 'Historial de consultas',
-    desc: 'Organizá todas las visitas al veterinario con tipo de consulta (control sano, urgencia, seguimiento), checklist clínico y notas.',
+    desc: 'Organizá todas las visitas al veterinario con tipo de consulta, checklist clínico y notas. Separado por fechas y listo para compartir.',
   },
   {
     icon: '🩺',
     title: 'Registro de síntomas',
-    desc: 'Documentá síntomas con severidad. El sistema aplica alertas adaptadas al fenotipo y raza de tu perro para detectar señales de riesgo a tiempo.',
+    desc: 'Documentá síntomas con severidad y notas. Te ayuda a prepararte para hablar con el veterinario con información precisa y ordenada.',
   },
   {
-    icon: '📋',
-    title: 'Historial clínico completo',
-    desc: 'Toda la historia de salud de tu perro en un solo lugar. Vacunas, medicamentos, citas y síntomas, separados por fechas y ordenados.',
+    icon: '📄',
+    title: 'Exportar historial en PDF',
+    desc: 'Generá el resumen de salud de tu perro para llevarlo al veterinario. Toda la historia organizada en un documento, siempre lista para compartir.',
   },
 ];
 
@@ -209,7 +258,7 @@ function Features() {
         <span className="landing-eyebrow">Funcionalidades</span>
         <h2 className="landing-section-title">Todo lo que necesitás para cuidar bien a tu perro</h2>
         <p className="landing-section-sub">
-          Diseñado para tutores que quieren prevenir antes que curar.
+          Te ayudamos a organizarte, recordarte lo importante y reducir la ansiedad del día a día.
         </p>
         <div className="landing-features-grid">
           {FEATURES.map((f) => (
@@ -227,7 +276,7 @@ function Features() {
 
 const STEPS = [
   { n: '1', title: 'Creá tu cuenta', desc: 'Gratis, en menos de un minuto. Sin tarjeta de crédito.' },
-  { n: '2', title: 'Cargá el perfil de tu perro', desc: 'Raza, edad, historial de vacunas y estilo de vida.' },
+  { n: '2', title: 'Cargá el perfil de tu perro', desc: 'Edad, raza e historial. Si es cachorro, el calendario se arma solo.' },
   { n: '3', title: 'El sistema genera el calendario', desc: 'Personalizado según normativa y perfil de riesgo de tu perro.' },
   { n: '4', title: 'Recibís recordatorios a tiempo', desc: 'Por email, antes de cada vencimiento. Todo automático.' },
 ];
@@ -278,8 +327,8 @@ function Pricing() {
               <li>✓ Recordatorios por email</li>
               <li>✓ Historial completo</li>
               <li>✓ Registro de síntomas</li>
+              <li className="landing-pricing-no">✗ Exportar historial en PDF</li>
               <li className="landing-pricing-no">✗ Citas con checklist WSAVA</li>
-              <li className="landing-pricing-no">✗ Alertas por raza</li>
               <li className="landing-pricing-no">✗ Múltiples perros</li>
             </ul>
             <Link to="/register" className="landing-btn-ghost landing-btn-full">
@@ -300,8 +349,8 @@ function Pricing() {
               <li>✓ Recordatorios por email</li>
               <li>✓ Historial completo</li>
               <li>✓ Registro de síntomas</li>
+              <li>✓ <strong>Exportar historial en PDF</strong></li>
               <li>✓ <strong>Citas con checklist WSAVA</strong></li>
-              <li>✓ <strong>Alertas por raza y fenotipo</strong></li>
               <li>✓ <strong>Soporte prioritario</strong></li>
             </ul>
             <Link to="/register" className="landing-btn-primary landing-btn-full">
@@ -323,9 +372,10 @@ function FinalCTA() {
     <section className="landing-cta-section">
       <div className="landing-container landing-cta-inner">
         <span style={{ fontSize: '3rem' }} aria-hidden="true">🐾</span>
-        <h2>Tu perro te lo va a agradecer</h2>
+        <h2>Empezá hoy, es gratis</h2>
         <p>
-          Registrate hoy en menos de un minuto. Es gratis y no necesitás tarjeta de crédito.
+          Cargá a tu perro en minutos y tené el control de su salud siempre con vos.
+          Sin tarjeta de crédito, sin compromisos.
         </p>
         <Link to="/register" className="landing-btn-white landing-btn-lg">
           Crear cuenta gratuita →
@@ -346,7 +396,7 @@ function LandingFooter() {
           🐾 <span>Milo Care</span>
         </div>
         <p className="landing-footer-copy">
-          © {new Date().getFullYear()} Milo Care. Salud preventiva para tu perro.<br/>
+          © {new Date().getFullYear()} Milo Care. El copiloto de salud preventiva para tu perro.<br/>
           Basado en guías WSAVA 2022 · Normativa SENASA · MGAP Uruguay
         </p>
         <div className="landing-footer-links">
@@ -368,6 +418,7 @@ export default function LandingPage() {
       <main>
         <Hero />
         <TrustBar />
+        <Segments />
         <Problem />
         <Features />
         <HowItWorks />
