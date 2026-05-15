@@ -41,7 +41,7 @@ export default function PawCursorTrail() {
         width: `${size}px`,
         height: `${size}px`,
         color: '#4f8ef7',
-        opacity: '0.65',
+        opacity: '0.35',
         pointerEvents: 'none',
         zIndex: '9998',
         transform: `rotate(${angle + side}deg)`,

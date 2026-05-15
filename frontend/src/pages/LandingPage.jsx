@@ -330,7 +330,7 @@ function FinalCTA() {
         <Link to="/register" className="landing-btn-white landing-btn-lg">
           Crear cuenta gratuita →
         </Link>
-        <p style={{ marginTop: '12px', fontSize: '0.875rem', opacity: 0.75 }}>
+        <p style={{ marginTop: '12px', fontSize: '0.875rem', color: '#bfdbfe' }}>
           ¿Ya tenés cuenta? <Link to="/login" style={{ color: '#fff', fontWeight: 600 }}>Iniciá sesión</Link>
         </p>
       </div>
@@ -342,7 +342,7 @@ function LandingFooter() {
   return (
     <footer className="landing-footer">
       <div className="landing-container landing-footer-inner">
-        <div className="landing-brand" style={{ color: 'var(--color-muted)' }}>
+        <div className="landing-brand" style={{ color: '#7dd3fc' }}>
           🐾 <span>Milo Care</span>
         </div>
         <p className="landing-footer-copy">

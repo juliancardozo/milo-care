@@ -1421,7 +1421,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
 
 /* ── Final CTA section ───────────────────────────────────── */
 .landing-cta-section {
-  background: linear-gradient(135deg, #1a1a2e 0%, #4f8ef7 100%);
+  background: linear-gradient(145deg, #1e3a8a 0%, #2563eb 45%, #4f8ef7 100%);
   color: #fff;
   padding: 80px 0;
   text-align: center;
@@ -1439,31 +1439,33 @@ button.btn-secondary:hover { background: var(--color-bg); }
   font-weight: 800;
   margin: 0;
   letter-spacing: -.02em;
+  text-shadow: 0 2px 12px rgba(0,0,0,.25);
 }
 
 .landing-cta-inner > p {
   font-size: 1.05rem;
-  opacity: .85;
+  color: #dbeafe;
   max-width: 480px;
   margin: 0;
 }
 
 /* ── Footer ──────────────────────────────────────────────── */
 .landing-footer {
-  background: #1a1a2e;
-  color: var(--color-muted);
-  padding: 32px 0;
+  background: #0f172a;
+  color: #94a3b8;
+  padding: 36px 0;
+  border-top: 1px solid #1e3a8a;
 }
 
 .landing-footer-inner {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   text-align: center;
 }
 
-.landing-footer-copy { font-size: .8rem; line-height: 1.6; margin: 0; }
+.landing-footer-copy { font-size: .82rem; line-height: 1.7; margin: 0; color: #94a3b8; }
 
 .landing-footer-links {
   display: flex;
@@ -1471,7 +1473,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
   font-size: .85rem;
 }
 
-.landing-footer-links a { color: var(--color-muted); text-decoration: none; }
+.landing-footer-links a { color: #7dd3fc; text-decoration: none; transition: color .15s; }
 .landing-footer-links a:hover { color: #fff; }
 
 /* ── Responsive ──────────────────────────────────────────── */
