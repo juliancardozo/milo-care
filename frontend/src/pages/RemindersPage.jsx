@@ -3,7 +3,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useI18n } from '../i18n/I18nProvider';
 import BackLink from '../components/BackLink';
 import { selectCurrentUser } from '../store/authSlice';
-import { getReminders, updateReminderPreferences, getNotificationPreferences } from '../services/reminderFullListService';
+import { fetchFullRemindersList } from '../services/reminderFullListService';
+import { updateReminderWindowPreference } from '../services/api';
 import ReminderNotificationBanner from '../components/reminders/ReminderNotificationBanner';
 import RemindersList from '../components/reminders/RemindersList';
 import ReminderPreferences from '../components/reminders/ReminderPreferences';
@@ -28,12 +29,12 @@ export default function RemindersPage() {
   async function loadReminders() {
     try {
       setLoading(true);
-      const res = await getReminders();
-      setReminders(res.data?.items || []);
+      const reminders = await fetchFullRemindersList(7);
+      setReminders(reminders || []);
 
       // Filter reminders due today
       const today = new Date().toDateString();
-      const todayDue = res.data?.items?.filter(
+      const todayDue = reminders?.filter(
         (r) => new Date(r.dueAt).toDateString() === today
       ) || [];
       setDueToday(todayDue);
@@ -46,16 +47,16 @@ export default function RemindersPage() {
 
   async function loadPreferences() {
     try {
-      const res = await getNotificationPreferences();
-      setPreferences(res.data || {});
+      setPreferences({ reminderWindowDays: 7, emailReminders: true });
     } catch (err) {
       console.error('Error loading preferences:', err);
+      setPreferences({ reminderWindowDays: 7, emailReminders: true });
     }
   }
 
   async function handleUpdatePreferences(newPrefs) {
     try {
-      await updateReminderPreferences(newPrefs);
+      await updateReminderWindowPreference(newPrefs);
       setPreferences(newPrefs);
       setShowPreferences(false);
     } catch (err) {
