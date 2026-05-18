@@ -4,6 +4,7 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 const User = require('../models/User');
+const Lead = require('../models/Lead');
 const EmailService = require('../services/EmailService');
 
 const router = express.Router();
@@ -36,14 +37,15 @@ router.use(authenticate, adminAuth);
 
 router.get('/stats', async (_req, res, next) => {
   try {
-    const [totalUsers, totalAdmins, freeUsers, premiumUsers] = await Promise.all([
+    const [totalUsers, totalAdmins, freeUsers, premiumUsers, totalSignups, totalFounders] = await Promise.all([
       User.countDocuments({}),
       User.countDocuments({ role: 'admin' }),
       User.countDocuments({ tier: 'free' }),
       User.countDocuments({ tier: 'premium' }),
+      Lead.countDocuments({ tipo: 'signup' }),
+      Lead.countDocuments({ tipo: 'founder' }),
     ]);
 
-    // Aggregate dog counts
     const dogAgg = await User.aggregate([
       { $project: { dogCount: { $size: '$dogs' } } },
       { $group: { _id: null, total: { $sum: '$dogCount' } } },
@@ -53,6 +55,7 @@ router.get('/stats', async (_req, res, next) => {
     return res.json({
       users: { total: totalUsers, admins: totalAdmins, free: freeUsers, premium: premiumUsers },
       dogs: { total: totalDogs },
+      leads: { total: totalSignups + totalFounders, signups: totalSignups, founders: totalFounders },
     });
   } catch (err) {
     next(err);
@@ -220,6 +223,31 @@ router.post('/email/test', async (req, res, next) => {
         detail: msg,
       });
     }
+    next(err);
+  }
+});
+
+// ── GET /api/admin/leads ─────────────────────────────────────────────────────
+
+router.get('/leads', async (req, res, next) => {
+  try {
+    const page = Math.max(1, Number(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+    const tipo = req.query.tipo;
+
+    const filter = tipo && ['signup', 'founder'].includes(tipo) ? { tipo } : {};
+
+    const [leads, total] = await Promise.all([
+      Lead.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      Lead.countDocuments(filter),
+    ]);
+
+    return res.json({ leads, total, page, pages: Math.ceil(total / limit) });
+  } catch (err) {
     next(err);
   }
 });

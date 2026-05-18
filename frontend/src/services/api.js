@@ -31,6 +31,7 @@ export const getAdminUsers = (params) => api.get('/admin/users', { params });
 export const getAdminUser = (id) => api.get(`/admin/users/${id}`);
 export const updateAdminUser = (id, data) => api.patch(`/admin/users/${id}`, data);
 export const deleteAdminUser = (id) => api.delete(`/admin/users/${id}`);
+export const getAdminLeads = (params) => api.get('/admin/leads', { params });
 export const previewAdminEmail = (type) => `/api/admin/email/preview/${type}`;
 export const sendAdminTestEmail = (type) => api.post('/admin/email/test', { type });
 

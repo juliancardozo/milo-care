@@ -56,10 +56,29 @@ export default function AdminDashboardPage() {
             <StatCard label="Perros registrados" value={stats.dogs.total} />
           </section>
 
+          <section className="admin-stat-grid" style={{ marginTop: '8px' }}>
+            <StatCard
+              label="Leads totales"
+              value={stats.leads?.total ?? 0}
+              sub="landing page"
+            />
+            <StatCard
+              label="Beta gratuita"
+              value={stats.leads?.signups ?? 0}
+              sub="signup form"
+            />
+            <StatCard
+              label="Founder Plan"
+              value={stats.leads?.founders ?? 0}
+              sub="acceso pago"
+            />
+          </section>
+
           <nav className="card" style={{ marginTop: '16px' }}>
             <h2>Gestión</h2>
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
               <li><Link to="/admin/users">👥 Gestionar usuarios →</Link></li>
+              <li><Link to="/admin/leads">📋 Ver leads de la landing →</Link></li>
             </ul>
           </nav>
 

@@ -28,6 +28,7 @@ import AdminRoute from './components/AdminRoute';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
+import AdminLeadsPage from './pages/admin/AdminLeadsPage';
 import ClinicalHistoryPage from './pages/ClinicalHistoryPage';
 import RemindersPage from './pages/RemindersPage';
 import PdfExportPage from './pages/PdfExportPage';
@@ -89,6 +90,7 @@ export default function App() {
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+          <Route path="/admin/leads" element={<AdminLeadsPage />} />
         </Route>
 
         {/* Root: landing for guests, dashboard for authenticated users */}
