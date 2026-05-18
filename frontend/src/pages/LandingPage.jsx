@@ -14,34 +14,21 @@ function getVariant() {
   return variant;
 }
 
+const SUBHEAD =
+  'Milo Care te ayuda a registrar vacunas, medicamentos, síntomas, citas y recordatorios para que tengas siempre a mano la historia de salud de tu perro.';
+
 const HERO_VARIANTS = {
   a: {
-    headline: (
-      <>
-        Acaba de llegar tu cachorro.<br />
-        Y nadie te avisó que en su primer año vienen 14 fechas que no podés olvidar.
-      </>
-    ),
-    subhead:
-      'Milo Care arma el calendario de vacunas, desparasitaciones y controles de tu cachorro. Te avisa antes de cada uno. Lo compartís con tu veterinario en un toque. Empezá gratis.',
+    headline: 'Todo lo importante de tu perro, en un solo lugar.',
+    subhead: SUBHEAD,
   },
   b: {
-    headline: (
-      <>
-        Tu cachorro está sano. Que tu cabeza también lo esté.
-      </>
-    ),
-    subhead:
-      'La agenda de salud de tu perro, sin libretas mojadas ni "creo que era el martes".',
+    headline: 'Cuidar a tu perro no debería depender de acordarte de todo.',
+    subhead: SUBHEAD,
   },
   c: {
-    headline: (
-      <>
-        Las 14 fechas médicas que tu cachorro necesita en su primer año, en una agenda que te avisa.
-      </>
-    ),
-    subhead:
-      'Vacunas, desparasitaciones, refuerzos y controles, ordenados según el calendario de Argentina y Uruguay.',
+    headline: 'La forma más simple de organizar la salud y el cuidado diario de tu mascota.',
+    subhead: SUBHEAD,
   },
 };
 
@@ -76,7 +63,7 @@ function LandingNav({ variant }) {
             className="landing-btn-primary landing-btn-sm"
             onClick={() => track('cta_signup_click', { position: 'nav', headline_variant: variant })}
           >
-            Crear cuenta gratis
+            Empezar gratis
           </Link>
         </div>
       </div>
@@ -111,14 +98,8 @@ const PAW_SVG = (
   </svg>
 );
 
-function Hero({ variant, onCtaClick, signupFormRef }) {
+function Hero({ variant, onCtaClick }) {
   const { headline, subhead } = HERO_VARIANTS[variant];
-
-  function handleCta(e) {
-    e.preventDefault();
-    onCtaClick('hero');
-    signupFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
 
   return (
     <section className="landing-hero">
@@ -128,14 +109,8 @@ function Hero({ variant, onCtaClick, signupFormRef }) {
             key={i}
             className="landing-hero-paw-float"
             style={{
-              left: p.x,
-              top: p.y,
-              width: p.size,
-              height: p.size,
-              opacity: p.opacity,
-              '--delay': p.delay,
-              '--dur': p.dur,
-              '--rotate': `${p.rotate}deg`,
+              left: p.x, top: p.y, width: p.size, height: p.size, opacity: p.opacity,
+              '--delay': p.delay, '--dur': p.dur, '--rotate': `${p.rotate}deg`,
             }}
           >
             {PAW_SVG}
@@ -147,127 +122,173 @@ function Hero({ variant, onCtaClick, signupFormRef }) {
         <h1 className="landing-hero-title">{headline}</h1>
         <p className="landing-hero-sub">{subhead}</p>
         <div className="landing-hero-ctas">
-          <button className="landing-btn-primary landing-btn-lg" onClick={handleCta}>
-            Armá el calendario de tu cachorro · es gratis
-          </button>
+          <Link
+            to="/register"
+            className="landing-btn-primary landing-btn-lg"
+            onClick={() => onCtaClick('hero')}
+          >
+            Crear el perfil de mi perro →
+          </Link>
+          <a href="#como-funciona" className="landing-btn-ghost landing-btn-lg landing-hero-ghost">
+            Ver cómo funciona
+          </a>
         </div>
-        <p className="landing-hero-footnote">90 segundos. Sin tarjeta. En español rioplatense.</p>
+        <p className="landing-hero-footnote">Sin cita previa. Sin plan obligatorio. Empezás en minutos.</p>
       </div>
     </section>
   );
 }
 
-// ── Problem resonance ─────────────────────────────────────────────────────────
+// ── Problem ───────────────────────────────────────────────────────────────────
 
-const PROBLEM_CARDS = [
+const PROBLEM_BULLETS = [
+  '¿Cuándo fue la última vacuna?',
+  '¿Qué medicamento le dimos?',
+  '¿Cuándo toca desparasitar?',
+  '¿Qué síntoma apareció y cuándo?',
+  '¿Qué le tengo que contar al veterinario?',
+];
+
+function Problem() {
+  return (
+    <section className="landing-section landing-section-alt" aria-labelledby="problem-title">
+      <div className="landing-container landing-problem-layout">
+        <div className="landing-problem-copy">
+          <h2 id="problem-title" className="landing-problem-title">
+            Entre vacunas, síntomas, remedios y controles, es fácil olvidarse de algo.
+          </h2>
+          <p className="landing-problem-body">
+            Muchas veces la información de tu perro queda repartida entre mensajes de WhatsApp,
+            papeles, fotos del carnet de vacunas, recuerdos sueltos y notas mentales. Milo Care
+            nace para ordenar todo eso en un lugar simple, accesible y pensado para el día a día.
+          </p>
+        </div>
+        <div className="landing-problem-bullets-wrap" aria-label="Preguntas frecuentes sin respuesta">
+          <ul className="landing-problem-bullets">
+            {PROBLEM_BULLETS.map((b) => (
+              <li key={b} className="landing-problem-bullet">
+                <span className="landing-problem-bullet-icon" aria-hidden="true">?</span>
+                <span>{b}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Solution ──────────────────────────────────────────────────────────────────
+
+const FEATURES = [
   {
-    id: 'papelito',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-        <polyline points="14 2 14 8 20 8" />
-        <line x1="16" y1="13" x2="8" y2="13" />
-        <line x1="16" y1="17" x2="8" y2="17" />
-        <polyline points="10 9 9 9 8 9" />
-      </svg>
-    ),
-    title: 'El papelito en la guantera.',
-    body: 'El vet te entrega la libreta sanitaria. Hoy está perfecta. En tres meses, está abajo del asiento o se mojó cuando bañaste al perro.',
+    icon: '🐾',
+    title: 'Perfil de mascota',
+    desc: 'Toda la info de tu perro en un solo lugar: nombre, raza, edad, foto y datos importantes.',
   },
   {
-    id: 'sesenta-o-setenta',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
-    ),
-    title: '"¿Era a los 60 o a los 75 días?"',
-    body: 'Sabés que toca la segunda vacuna pronto. No sabés exactamente cuándo. Buscás en Google, leés cinco respuestas distintas, llamás al vet, te dice "esta semana o la próxima". Decidís a ojo.',
+    icon: '💉',
+    title: 'Calendario de vacunas',
+    desc: 'Registrá las vacunas aplicadas y las que vienen para tener el historial siempre al día.',
   },
   {
-    id: 'desparasitacion',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-        <line x1="10" y1="14" x2="14" y2="18" />
-        <line x1="14" y1="14" x2="10" y2="18" />
-      </svg>
-    ),
-    title: 'La desparasitación que se escapó.',
-    body: 'Era mensual. Pasaron 45 días. Te das cuenta cuando le ves algo raro en la caca. Otra vez.',
+    icon: '🐛',
+    title: 'Desparasitación',
+    desc: 'Programá recordatorios para no olvidarte de las desparasitaciones internas y externas.',
   },
   {
-    id: 'consulta-ciegas',
-    icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-      </svg>
-    ),
-    title: 'La consulta a ciegas.',
-    body: 'Llegás al veterinario y el primer minuto es reconstruir: "le di una pastilla creo que el miércoles", "se rascaba desde el fin de semana", "lo de las orejas ya pasó otra vez". Empezás la consulta perdiendo tiempo.',
+    icon: '💊',
+    title: 'Medicamentos',
+    desc: 'Llevá el registro de cada medicamento: dosis, frecuencia y duración del tratamiento.',
+  },
+  {
+    icon: '🩺',
+    title: 'Síntomas',
+    desc: 'Anotá síntomas con fecha para tener contexto claro antes de cada consulta veterinaria.',
+  },
+  {
+    icon: '📅',
+    title: 'Citas veterinarias',
+    desc: 'Guardá tus citas y recibí recordatorios para que no se te pase ninguna consulta importante.',
+  },
+  {
+    icon: '📝',
+    title: 'Notas importantes',
+    desc: 'Espacio libre para registrar lo que el veterinario dijo y lo que querés recordar.',
+  },
+  {
+    icon: '📋',
+    title: 'Historial de cuidado',
+    desc: 'Toda la historia de tu perro organizada y lista para compartir cuando la necesités.',
   },
 ];
 
-function ProblemResonance() {
+function Solution() {
   return (
-    <section className="landing-section landing-section-alt" aria-labelledby="problem-title">
+    <section className="landing-section" id="como-funciona" aria-labelledby="solution-title">
       <div className="landing-container">
-        <h2 id="problem-title" className="landing-section-title">¿Te suena alguna de estas?</h2>
-        <div className="landing-problem-cards-grid">
-          {PROBLEM_CARDS.map((card) => (
-            <div key={card.id} className="landing-problem-resonance-card">
-              <div className="landing-problem-resonance-icon">{card.icon}</div>
-              <h3>{card.title}</h3>
-              <p>{card.body}</p>
+        <span className="landing-eyebrow">Para qué sirve</span>
+        <h2 id="solution-title" className="landing-section-title">
+          Un perfil simple para acompañar toda la vida de tu mascota.
+        </h2>
+        <p className="landing-section-sub">
+          Creá el perfil de tu perro, cargá sus datos principales y empezá a construir su historial
+          de cuidado. Desde el primer día podés registrar eventos importantes, programar recordatorios
+          y tener toda la información lista cuando la necesités.
+        </p>
+        <div className="landing-features-grid landing-features-grid-4">
+          {FEATURES.map((f) => (
+            <div key={f.title} className="landing-feature-card">
+              <div className="landing-feature-icon">{f.icon}</div>
+              <h3>{f.title}</h3>
+              <p>{f.desc}</p>
             </div>
           ))}
         </div>
-        <p className="landing-problem-close">
-          No es que cuides mal. Es que nadie te dio el sistema para cuidar bien.
-        </p>
       </div>
     </section>
   );
 }
 
-// ── Benefits ──────────────────────────────────────────────────────────────────
+// ── Differential ──────────────────────────────────────────────────────────────
 
-const BENEFITS = [
+const DIFF_CARDS = [
   {
     num: '01',
-    title: 'Nunca más "creo que era el martes".',
-    body: 'Cargás la primera vacuna y la app calcula automáticamente las siguientes según la edad de tu cachorro y el calendario local. Te avisa por mail o notificación tres días antes. No te avisa siete veces, no te avisa tarde.',
+    title: 'Empezás en minutos',
+    body: 'Registrá a tu perro y cargá lo esencial sin procesos largos ni complicados.',
   },
   {
     num: '02',
-    title: 'Toda la historia de tu perro, en un toque.',
-    body: 'Vacunas, medicamentos, síntomas y consultas en un solo lugar. Cuando vas al veterinario, abrís la app, mostrás la pantalla, ahorrás cinco minutos de reconstrucción mental.',
+    title: 'Todo queda ordenado',
+    body: 'Vacunas, medicamentos, síntomas y citas en un historial claro y fácil de consultar.',
   },
   {
     num: '03',
-    title: 'Hecha para vos, no para la clínica.',
-    body: 'La interfaz se siente como abrir un álbum, no como llenar una planilla médica. Si es tu primer perro, no asumimos que sabés qué es una "polivalente" — te lo explicamos en cristiano.',
+    title: 'Llegás mejor preparado',
+    body: 'Cuando tengas una consulta veterinaria, vas a tener información concreta para compartir.',
   },
 ];
 
-function Benefits() {
+function Differential() {
   return (
-    <section className="landing-section" aria-labelledby="benefits-title">
+    <section className="landing-section landing-section-alt" aria-labelledby="diff-title">
       <div className="landing-container">
-        <h2 id="benefits-title" className="landing-section-title">
-          Milo Care: la cabeza ordenada de los primeros 12 meses.
+        <span className="landing-eyebrow">Por qué Milo Care</span>
+        <h2 id="diff-title" className="landing-section-title">
+          Autogestivo, liviano y pensado para el cuidado cotidiano.
         </h2>
+        <p className="landing-section-sub">
+          Milo Care está diseñado para que puedas empezar sin depender de nadie. No necesitás
+          agendar una consulta, contratar un plan ni esperar a tener una urgencia. Simplemente
+          registrás a tu mascota y empezás a cuidar con más orden y tranquilidad.
+        </p>
         <div className="landing-benefits-grid">
-          {BENEFITS.map((b) => (
-            <div key={b.num} className="landing-benefit-card">
-              <div className="landing-benefit-num" aria-hidden="true">{b.num}</div>
-              <h3>{b.title}</h3>
-              <p>{b.body}</p>
+          {DIFF_CARDS.map((c) => (
+            <div key={c.num} className="landing-benefit-card">
+              <div className="landing-benefit-num" aria-hidden="true">{c.num}</div>
+              <h3>{c.title}</h3>
+              <p>{c.body}</p>
             </div>
           ))}
         </div>
@@ -276,49 +297,80 @@ function Benefits() {
   );
 }
 
-// ── How it works ──────────────────────────────────────────────────────────────
+// ── No-vet disclaimer ─────────────────────────────────────────────────────────
 
-const STEPS = [
-  {
-    n: '1',
-    title: 'Creás su perfil.',
-    desc: 'Nombre, raza, edad, foto. Como abrir un álbum nuevo.',
-  },
-  {
-    n: '2',
-    title: 'Cargás lo que tenés.',
-    desc: 'Las vacunas que ya recibió, si está con algún medicamento, la próxima cita si la tenés agendada. Si no tenés nada, cargás solo la edad y Milo Care te arma el resto.',
-  },
-  {
-    n: '3',
-    title: 'Empezás a recibir avisos.',
-    desc: 'Tres días antes de cada vacuna, dosis o control. Por mail, por notificación, como prefieras.',
-  },
-  {
-    n: '4',
-    title: 'Lo llevás a cada consulta.',
-    desc: 'Abrís la app en el veterinario, mostrás el historial. O exportás un PDF y se lo mandás antes por WhatsApp.',
-  },
+function NoVet() {
+  return (
+    <section className="landing-section landing-novet-section" aria-labelledby="novet-title">
+      <div className="landing-container">
+        <div className="landing-novet-box">
+          <div className="landing-novet-icon" aria-hidden="true">🩺</div>
+          <h2 id="novet-title" className="landing-novet-title">
+            Una herramienta para cuidar mejor, no para diagnosticar.
+          </h2>
+          <p className="landing-novet-body">
+            Milo Care no reemplaza la mirada profesional de un veterinario. Te ayuda a registrar,
+            recordar y ordenar información para que puedas tomar mejores decisiones y consultar a
+            tiempo cuando sea necesario.
+          </p>
+          <p className="landing-novet-micro">
+            Ante síntomas importantes, urgencias o dudas médicas, siempre consultá con un
+            profesional veterinario.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ── Use cases ─────────────────────────────────────────────────────────────────
+
+const USE_CASES = [
+  'Cuando toca vacunar o desparasitar.',
+  'Cuando tu perro empieza con un síntoma.',
+  'Cuando le indican un medicamento.',
+  'Cuando querés recordar qué dijo el veterinario.',
+  'Cuando cambiás de veterinaria.',
+  'Cuando viajás o te mudás.',
+  'Cuando otra persona también cuida a tu mascota.',
 ];
 
-function HowItWorks() {
+function UseCases() {
   return (
-    <section className="landing-section landing-section-alt" id="como-funciona" aria-labelledby="how-title">
+    <section className="landing-section" aria-labelledby="usecases-title">
       <div className="landing-container">
-        <h2 id="how-title" className="landing-section-title">
-          Tu cachorro en Milo Care, en 90 segundos.
+        <h2 id="usecases-title" className="landing-section-title">
+          Usalo en esos momentos donde normalmente confiás en la memoria.
         </h2>
-        <div className="landing-steps">
-          {STEPS.map((s, i) => (
-            <div key={s.n} className="landing-step">
-              <div className="landing-step-number">{s.n}</div>
-              {i < STEPS.length - 1 && <div className="landing-step-connector" aria-hidden="true" />}
-              <div className="landing-step-content">
-                <h3>{s.title}</h3>
-                <p>{s.desc}</p>
-              </div>
-            </div>
+        <ul className="landing-usecases-grid" aria-label="Casos de uso">
+          {USE_CASES.map((u) => (
+            <li key={u} className="landing-usecase-item">
+              <span className="landing-usecase-check" aria-hidden="true">✓</span>
+              <span>{u}</span>
+            </li>
           ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
+// ── Emotional ─────────────────────────────────────────────────────────────────
+
+function Emotional() {
+  return (
+    <section className="landing-section landing-emotional-section" aria-labelledby="emotional-title">
+      <div className="landing-container">
+        <div className="landing-emotional-inner">
+          <div className="landing-emotional-paw" aria-hidden="true">🐾</div>
+          <h2 id="emotional-title" className="landing-emotional-title">
+            Porque tu perro no es una tarea más. Es parte de tu vida.
+          </h2>
+          <p className="landing-emotional-body">
+            El cuidado de una mascota está lleno de pequeños momentos: controles, remedios, comidas,
+            paseos, sustos, mejoras y aprendizajes. Milo Care te ayuda a guardar esa historia con
+            orden, simpleza y cariño.
+          </p>
         </div>
       </div>
     </section>
@@ -330,7 +382,7 @@ function HowItWorks() {
 function SignupForm({ variant, formRef }) {
   const [email, setEmail] = useState('');
   const [dogName, setDogName] = useState('');
-  const [status, setStatus] = useState('idle'); // idle | loading | success | error
+  const [status, setStatus] = useState('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
   async function handleSubmit(e) {
@@ -361,7 +413,7 @@ function SignupForm({ variant, formRef }) {
   if (status === 'success') {
     return (
       <p className="landing-signup-success" role="status">
-        ¡Listo! Te mandamos un mail para empezar. Si no lo ves en 2 minutos, mirá en spam.
+        ¡Listo! Te anotamos. Te vamos a escribir cuando podás empezar a usar Milo Care.
       </p>
     );
   }
@@ -372,13 +424,11 @@ function SignupForm({ variant, formRef }) {
       className="landing-signup-form"
       onSubmit={handleSubmit}
       noValidate
-      aria-label="Formulario de registro gratuito"
+      aria-label="Formulario para sumarte a la beta"
     >
       <div className="landing-signup-fields">
         <div className="landing-signup-field">
-          <label htmlFor="signup-email" className="landing-signup-label">
-            Tu email
-          </label>
+          <label htmlFor="signup-email" className="landing-signup-label">Tu email</label>
           <input
             id="signup-email"
             type="email"
@@ -392,7 +442,7 @@ function SignupForm({ variant, formRef }) {
         </div>
         <div className="landing-signup-field">
           <label htmlFor="signup-dog-name" className="landing-signup-label">
-            Nombre de tu cachorro <span className="landing-signup-optional">(opcional)</span>
+            ¿Cómo se llama tu perro? <span className="landing-signup-optional">(opcional)</span>
           </label>
           <input
             id="signup-dog-name"
@@ -413,54 +463,16 @@ function SignupForm({ variant, formRef }) {
         className="landing-btn-primary landing-btn-lg landing-signup-submit"
         disabled={status === 'loading'}
       >
-        {status === 'loading' ? 'Enviando...' : 'Armá el calendario de tu cachorro · es gratis'}
+        {status === 'loading' ? 'Enviando...' : 'Quiero probar Milo Care'}
       </button>
       <p className="landing-hero-footnote" style={{ textAlign: 'center' }}>
-        90 segundos. Sin tarjeta. En español rioplatense.
+        Sin cita previa. Sin plan obligatorio. Empezás en minutos.
       </p>
     </form>
   );
 }
 
-// ── Founder story ─────────────────────────────────────────────────────────────
-
-function FounderStory() {
-  return (
-    <section className="landing-section landing-brand-story-section" aria-labelledby="story-title">
-      <div className="landing-container">
-        <div className="landing-brand-story-inner">
-          <div className="landing-brand-story-paw" aria-hidden="true">🐾</div>
-          <h2 id="story-title" className="landing-brand-story-title">¿Por qué se llama Milo Care?</h2>
-          <div className="landing-brand-story-text">
-            <p>
-              Por mi perro. Una tarde lo vi rascarse sin parar. Llegamos al veterinario y la primera pregunta fue:
-              ¿cuándo le diste la última pastilla antiparasitaria? No me acordaba. Después: ¿qué vacunas tiene al día?
-              Tampoco. El veterinario fue paciente, pero yo me fui de ahí con la sensación de que amar a mi perro no
-              alcanzaba si no tenía la información a mano.
-            </p>
-            <p>
-              Milo Care es la app que me hubiera gustado tener esa tarde. La hicimos primero para Milo. Ahora queremos
-              que sirva para tu cachorro también.
-            </p>
-          </div>
-          {/* TODO: replace with real founder name and photo */}
-          <div className="landing-founder-profile">
-            <img
-              src="/images/founder-placeholder.jpg"
-              alt="Fundador con Milo"
-              className="landing-founder-photo"
-              loading="lazy"
-              onError={(e) => { e.currentTarget.style.display = 'none'; }}
-            />
-            <p className="landing-brand-story-sig">— [PLACEHOLDER: nombre del fundador], fundador</p>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ── Founder Plan ──────────────────────────────────────────────────────────────
+// ── Founder modal ─────────────────────────────────────────────────────────────
 
 function FounderModal({ onClose, variant }) {
   const [email, setEmail] = useState('');
@@ -471,9 +483,7 @@ function FounderModal({ onClose, variant }) {
 
   useEffect(() => {
     firstFieldRef.current?.focus();
-    function onKeyDown(e) {
-      if (e.key === 'Escape') onClose();
-    }
+    function onKeyDown(e) { if (e.key === 'Escape') onClose(); }
     document.addEventListener('keydown', onKeyDown);
     return () => document.removeEventListener('keydown', onKeyDown);
   }, [onClose]);
@@ -509,24 +519,16 @@ function FounderModal({ onClose, variant }) {
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div className="landing-modal">
-        <button
-          className="landing-modal-close"
-          aria-label="Cerrar"
-          onClick={onClose}
-        >
-          ×
-        </button>
+        <button className="landing-modal-close" aria-label="Cerrar" onClick={onClose}>×</button>
         {status === 'success' ? (
           <div className="landing-modal-success" role="status">
             <div style={{ fontSize: '2.5rem' }} aria-hidden="true">🎉</div>
             <h3>¡Reserva recibida!</h3>
-            <p>
-              Te contactamos en las próximas 24 horas con los detalles del pago. Gracias por ser uno de los primeros.
-            </p>
+            <p>Te contactamos en las próximas 24 horas con los detalles del acceso. Gracias por creer en Milo Care desde el principio.</p>
           </div>
         ) : (
           <>
-            <h3 id="modal-title" className="landing-modal-title">Reservar mi lugar en el Founder Plan</h3>
+            <h3 id="modal-title" className="landing-modal-title">Acceso anticipado · Founder Plan</h3>
             <p className="landing-modal-sub">
               US$25/año vitalicio · sin aumentos · quedan {FOUNDER_SLOTS_AVAILABLE} cupos
             </p>
@@ -577,50 +579,49 @@ function FounderModal({ onClose, variant }) {
   );
 }
 
-function FounderPlan({ variant }) {
+// ── Beta / MVP section ────────────────────────────────────────────────────────
+
+function BetaSection({ variant, formRef }) {
   const [modalOpen, setModalOpen] = useState(false);
 
-  function handleCtaClick() {
+  function handleFounderClick() {
     track('cta_founder_click', { headline_variant: variant });
     setModalOpen(true);
   }
 
   return (
     <>
-      <section className="landing-section landing-founder-section" aria-labelledby="founder-title">
+      <section className="landing-section landing-beta-section" aria-labelledby="beta-title">
         <div className="landing-container">
-          <div className="landing-founder-inner">
-            <h2 id="founder-title" className="landing-founder-title">¿Querés ser uno de los primeros 200?</h2>
-            <div className="landing-founder-body">
-              <p>
-                Estamos buscando 200 dueños fundadores que crean en lo que estamos construyendo. No tenemos producto
-                perfecto. Tenemos un MVP que funciona y un equipo que va a escuchar cada cosa que digas.
-              </p>
-              <p>A cambio te ofrecemos:</p>
-              <ul className="landing-founder-bullets">
-                <li>
-                  <strong>Acceso vitalicio a Premium por US$25 al año.</strong> Pagás una vez, queda fijo de por vida,
-                  sin aumentos.
-                </li>
-                <li>
-                  <strong>Tu nombre en la pantalla de &quot;Founders&quot; de la app.</strong> Para que tu nieto vea que
-                  estuviste desde el día uno.
-                </li>
-                <li>
-                  <strong>Línea directa con el equipo.</strong> Grupo de WhatsApp privado. Lo que pidas, entra al
-                  roadmap o te explicamos por qué no.
-                </li>
-              </ul>
-            </div>
-            <button
-              className="landing-btn-primary landing-btn-lg landing-founder-cta"
-              onClick={handleCtaClick}
-            >
-              Sumate al Founder Plan · US$25/año vitalicio · quedan {FOUNDER_SLOTS_AVAILABLE} cupos
-            </button>
-            <p className="landing-founder-guarantee">
-              Si no te enamorás en 30 días, te devolvemos el dinero sin preguntas.
+          <div className="landing-beta-inner">
+            <span className="landing-eyebrow landing-eyebrow-light">Beta abierta</span>
+            <h2 id="beta-title" className="landing-beta-title">
+              Estamos construyendo Milo Care con tutores reales.
+            </h2>
+            <p className="landing-beta-body">
+              Queremos crear una herramienta simple, útil y cercana para personas que aman a sus
+              perros y quieren cuidarlos mejor. Sumate a la primera versión y ayudanos a mejorar
+              la experiencia.
             </p>
+            <SignupForm variant={variant} formRef={formRef} />
+            <div className="landing-beta-divider">
+              <span>¿Querés ir un paso más?</span>
+            </div>
+            <div className="landing-beta-founder">
+              <p className="landing-beta-founder-text">
+                El <strong>Founder Plan</strong> te da acceso vitalicio a Premium por US$25/año —
+                un pago único, sin aumentos. Quedan {FOUNDER_SLOTS_AVAILABLE} cupos.
+              </p>
+              <button
+                className="landing-beta-founder-btn"
+                onClick={handleFounderClick}
+              >
+                Conocer el Founder Plan →
+              </button>
+              <p className="landing-founder-guarantee">
+                Si no te enamorás en 30 días, te devolvemos el dinero sin preguntas.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -635,34 +636,29 @@ function FounderPlan({ variant }) {
 
 const FAQ_ITEMS = [
   {
-    id: 'gratis',
-    q: '¿Es realmente gratis?',
-    a: 'Sí. El plan gratuito incluye perfil del perro, recordatorios de vacunas y citas, bitácora de síntomas y medicamentos. Si querés más (copiloto IA, carnet PDF exportable, multi-mascota), está el Premium. No te vamos a pedir tarjeta para registrarte.',
+    id: 'reemplaza-vet',
+    q: '¿Milo Care reemplaza al veterinario?',
+    a: 'No. Milo Care te ayuda a organizar información, recordatorios e historial de cuidado. Para diagnósticos, tratamientos o urgencias, siempre tenés que consultar con un veterinario.',
   },
   {
-    id: 'datos',
-    q: '¿Qué pasa con los datos de mi perro?',
-    a: 'Viven cifrados en tu cuenta. Nadie del equipo de Milo Care puede leerlos. Si querés irte, exportás todo en PDF y borrás la cuenta en un click. Sin preguntas.',
+    id: 'necesito-consulta',
+    q: '¿Necesito agendar una consulta para usarlo?',
+    a: 'No. Milo Care es autogestivo. Podés registrar a tu mascota y empezar a cargar información en minutos, sin depender de nadie.',
   },
   {
-    id: 'whatsapp',
-    q: 'Ya uso WhatsApp con mi veterinario. ¿Necesito esto?',
-    a: 'WhatsApp sirve para hablar. No para acordarse de cosas. La diferencia es que Milo Care te avisa antes de que se te olvide, no cuando ya pasó. Y cuando vas al vet, le compartís el historial entero, no fotos sueltas que tenés que buscar entre 2.000 mensajes.',
+    id: 'ya-tengo-vet',
+    q: '¿Puedo usarlo aunque ya tenga veterinario?',
+    a: 'Sí. De hecho, Milo Care puede ayudarte a llegar mejor preparado a cada consulta, con datos claros sobre vacunas, síntomas, medicamentos y eventos importantes.',
   },
   {
-    id: 'tres-meses',
-    q: 'Mi cachorro tiene 3 meses. ¿Es muy temprano para usarlo?',
-    a: 'Es el momento ideal. Justo estás arrancando con el ciclo de vacunas, la desparasitación mensual y la planificación de la castración. Cargás lo que tenés en 2 minutos y la app calcula el resto.',
+    id: 'solo-perros',
+    q: '¿Sirve solo para perros?',
+    a: 'En la primera versión estamos enfocados en perros para crear una experiencia simple y bien cuidada. Más adelante podremos sumar otras mascotas.',
   },
   {
-    id: 'uruguay',
-    q: '¿Funciona si vivo en Uruguay?',
-    a: 'Sí. Tenemos calendarios vacunales separados para Argentina y Uruguay, hechos con veterinarios locales.',
-  },
-  {
-    id: 'dispositivos',
-    q: '¿En qué dispositivos funciona?',
-    a: 'Cualquier celular con navegador. iOS y Android. App nativa en camino.',
+    id: 'no-se-fecha',
+    q: '¿Qué pasa si no sé cuándo fue la última vacuna?',
+    a: 'Podés cargar la información que tengas y completar el historial de a poco. Milo Care está pensado para ayudarte a ordenar, no para exigirte tener todo perfecto desde el primer día.',
   },
 ];
 
@@ -680,7 +676,7 @@ function FAQ({ variant }) {
   return (
     <section className="landing-section landing-section-alt" aria-labelledby="faq-title">
       <div className="landing-container">
-        <h2 id="faq-title" className="landing-section-title">Preguntas que nos hicieron antes que vos.</h2>
+        <h2 id="faq-title" className="landing-section-title">Preguntas frecuentes</h2>
         <div className="landing-faq-list">
           {FAQ_ITEMS.map((item) => {
             const isOpen = openId === item.id;
@@ -693,9 +689,7 @@ function FAQ({ variant }) {
                   onClick={() => toggle(item.id)}
                 >
                   <span>{item.q}</span>
-                  <span className="landing-faq-chevron" aria-hidden="true">
-                    {isOpen ? '−' : '+'}
-                  </span>
+                  <span className="landing-faq-chevron" aria-hidden="true">{isOpen ? '−' : '+'}</span>
                 </button>
                 <div
                   id={`faq-answer-${item.id}`}
@@ -715,41 +709,24 @@ function FAQ({ variant }) {
 
 // ── Final CTA ─────────────────────────────────────────────────────────────────
 
-function FinalCTA({ onCtaClick, signupFormRef }) {
-  function handleCta(e) {
-    e.preventDefault();
-    onCtaClick('footer');
-    signupFormRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
+function FinalCTA({ onCtaClick }) {
   return (
     <section className="landing-cta-section" aria-labelledby="final-cta-title">
       <div className="landing-container landing-cta-inner">
-        <h2 id="final-cta-title">Tu cachorro ya creció una semana mientras leías esto.</h2>
-        <p>Empezá gratis. Cargás su perfil en 90 segundos. Te avisamos antes de la próxima vacuna.</p>
-        <button className="landing-btn-white landing-btn-lg" onClick={handleCta}>
-          Armá el calendario de tu cachorro · es gratis
-        </button>
+        <h2 id="final-cta-title">Cuidar mejor empieza por tener la información ordenada.</h2>
+        <p>Menos papeles, menos olvidos, más tranquilidad. Tu perro lo merece.</p>
+        <Link
+          to="/register"
+          className="landing-btn-white landing-btn-lg"
+          onClick={() => onCtaClick('footer')}
+        >
+          Crear el perfil de mi perro →
+        </Link>
         <p style={{ marginTop: '14px', fontSize: '0.875rem', color: '#bfdbfe' }}>
           <a href="mailto:hola@milocare.app" style={{ color: '#fff', fontWeight: 600 }}>
             ¿Sos veterinario? Tenemos un programa para clínicas.
           </a>
         </p>
-      </div>
-    </section>
-  );
-}
-
-// ── Signup section (middle of page) ──────────────────────────────────────────
-
-function SignupSection({ variant, formRef }) {
-  return (
-    <section className="landing-section landing-signup-section" aria-labelledby="signup-section-title">
-      <div className="landing-container">
-        <h2 id="signup-section-title" className="landing-section-title">
-          Empezá gratis. Tu cachorro lo necesita ahora.
-        </h2>
-        <SignupForm variant={variant} formRef={formRef} />
       </div>
     </section>
   );
@@ -771,9 +748,7 @@ function LandingFooter() {
           </svg>
           <span>Milo Care</span>
         </div>
-        <p className="landing-footer-copy">
-          © 2026 Milocura. Hecho en Buenos Aires y Montevideo.
-        </p>
+        <p className="landing-footer-copy">© 2026 Milocura. Hecho en Buenos Aires y Montevideo.</p>
         <div className="landing-footer-links">
           <a href="/terminos.pdf">Términos</a>
           <a href="/privacidad.pdf">Privacidad</a>
@@ -806,15 +781,16 @@ export default function LandingPage() {
       <PawCursorTrail />
       <LandingNav variant={variant} />
       <main>
-        <Hero variant={variant} onCtaClick={handleCtaClick} signupFormRef={signupFormRef} />
-        <ProblemResonance />
-        <Benefits />
-        <HowItWorks />
-        <SignupSection variant={variant} formRef={signupFormRef} />
-        <FounderStory />
-        <FounderPlan variant={variant} />
+        <Hero variant={variant} onCtaClick={handleCtaClick} />
+        <Problem />
+        <Solution />
+        <Differential />
+        <NoVet />
+        <UseCases />
+        <Emotional />
+        <BetaSection variant={variant} formRef={signupFormRef} />
         <FAQ variant={variant} />
-        <FinalCTA variant={variant} onCtaClick={handleCtaClick} signupFormRef={signupFormRef} />
+        <FinalCTA onCtaClick={handleCtaClick} />
       </main>
       <LandingFooter />
     </div>
