@@ -1,6 +1,9 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectIsAuthenticated } from './store/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
+import LandingPage from './pages/LandingPage';
 import LanguageSwitcher from './components/LanguageSwitcher';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -25,12 +28,18 @@ import AdminRoute from './components/AdminRoute';
 import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
+import ClinicalHistoryPage from './pages/ClinicalHistoryPage';
+import RemindersPage from './pages/RemindersPage';
+import PdfExportPage from './pages/PdfExportPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
   const location = useLocation();
   const { t } = useI18n();
-  const showGlobalHeader = location.pathname !== '/dashboard';
+  const isAuthenticated = useSelector(selectIsAuthenticated);
+  const isLanding = location.pathname === '/';
+  // Hide the global app header on dashboard and landing (both have their own nav)
+  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard';
 
   return (
     <>
@@ -67,9 +76,12 @@ export default function App() {
           <Route path="/dogs/:dogId/appointments" element={<AppointmentListPage />} />
           <Route path="/dogs/:dogId/symptoms" element={<SymptomLogPage />} />
           <Route path="/dogs/:dogId/history" element={<HealthHistoryPage />} />
+          <Route path="/dogs/:dogId/clinical-history" element={<ClinicalHistoryPage />} />
+          <Route path="/dogs/:dogId/pdf-export" element={<PdfExportPage />} />
           <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
+          <Route path="/reminders" element={<RemindersPage />} />
         </Route>
 
         {/* Admin routes */}
@@ -79,8 +91,12 @@ export default function App() {
           <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
         </Route>
 
-        <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        {/* Root: landing for guests, dashboard for authenticated users */}
+        <Route
+          path="/"
+          element={isAuthenticated ? <Navigate to="/dashboard" replace /> : <LandingPage />}
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </>
   );

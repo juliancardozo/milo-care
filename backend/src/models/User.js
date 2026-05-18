@@ -110,6 +110,18 @@ const symptomSchema = new Schema(
   { timestamps: true }
 );
 
+const consultationSchema = new Schema(
+  {
+    vetName: { type: String, trim: true, default: '' },
+    clinicName: { type: String, trim: true, default: '' },
+    reason: { type: String, required: true, trim: true },
+    dateOfConsult: { type: Date, required: true },
+    findings: { type: String, trim: true, default: '' },
+    recommendations: { type: String, trim: true, default: '' },
+  },
+  { timestamps: true }
+);
+
 const dogSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 100 },
@@ -142,6 +154,7 @@ const dogSchema = new Schema(
     dewormingHistory: [dewormingSchema],
     medications: [medicationSchema],
     appointments: [appointmentSchema],
+    consultations: [consultationSchema],
     symptoms: [symptomSchema],
   },
   { timestamps: true }

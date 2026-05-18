@@ -16,6 +16,7 @@ const translations = {
       delete: 'Eliminar',
       notesOptional: 'Notas (opcional)',
       backToDashboard: '← Volver al panel',
+      backToDog: '← Volver al perro',
       logout: 'Cerrar sesion',
       viewAll: 'Ver todo',
       settings: 'Configuracion',
@@ -76,6 +77,13 @@ const translations = {
         history: { label: 'Historial completo', desc: 'Expediente de salud completo' },
       },
     },
+      pdf: {
+        title: 'Resumen de salud en PDF',
+        download: 'Descargar PDF',
+        generating: 'Generando...',
+        settings: 'Ajustes del PDF',
+        settingsDesc: 'Genera un resumen imprimible del historial de salud del perro.',
+      },
     dogs: {
       setupTitle: 'Configura el perfil de tu perro',
       dogName: 'Nombre del perro',
@@ -255,6 +263,7 @@ const translations = {
       delete: 'Delete',
       notesOptional: 'Notes (optional)',
       backToDashboard: '← Back to dashboard',
+      backToDog: '← Back to dog',
       logout: 'Log out',
       viewAll: 'View all',
       settings: 'Settings',
@@ -315,6 +324,13 @@ const translations = {
         history: { label: 'Full History', desc: 'Complete health record' },
       },
     },
+      pdf: {
+        title: 'Health summary PDF',
+        download: 'Download PDF',
+        generating: 'Generating...',
+        settings: 'PDF settings',
+        settingsDesc: 'Generate a printable summary of the dog health history.',
+      },
     dogs: {
       setupTitle: "Set up your dog's profile",
       dogName: "Dog's name",

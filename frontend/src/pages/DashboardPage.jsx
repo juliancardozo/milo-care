@@ -39,13 +39,15 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  getFullRemindersList()
+  useEffect(() => {
+    getFullRemindersList()
       .then(({ data }) => {
         setRemindersPreview((data.reminders || []).slice(0, 5));
       })
       .catch(() => {
         setRemindersPreview([]);
       });
+  }, []);
   const activeDog = dogs.find((d) => d.id === activeDogId);
 
   if (loading) {
@@ -139,6 +141,20 @@ export default function DashboardPage() {
                 ))}
               </div>
             </section>
+
+            {activeDog && (
+              <section className="card" style={{ marginTop: 16 }}>
+                <div className="page-header" style={{ marginBottom: 8 }}>
+                  <h2>📄 {t('pdf.title') || 'Health Summary PDF'}</h2>
+                  <Link to={`/dogs/${activeDog.id}/pdf-export`} className="btn">
+                    {t('pdf.download') || 'Download PDF'}
+                  </Link>
+                </div>
+                <p className="list-empty" style={{ marginBottom: 0 }}>
+                  {t('pdf.settingsDesc') || 'Generate a printable summary of the dog health history.'}
+                </p>
+              </section>
+            )}
 
             {/* Quick links */}
             <section className="card" style={{ marginTop: 16 }}>
