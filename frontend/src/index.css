@@ -41,7 +41,10 @@ body {
   align-items: center;
   gap: 8px;
   font-weight: 700;
+  color: var(--color-text);
+  text-decoration: none;
 }
+.app-header-brand:hover { text-decoration: none; opacity: .8; }
 
 .language-switcher {
   display: inline-flex;
@@ -63,6 +66,17 @@ body {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 2px rgba(79,142,247,.2);
 }
+
+.language-flag-home {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: .9rem;
+  font-weight: 700;
+  color: var(--color-muted);
+  text-decoration: none;
+}
+.language-flag-home:hover { color: var(--color-primary); text-decoration: none; opacity: 1; }
 
 a { color: var(--color-primary); text-decoration: none; }
 a:hover { text-decoration: underline; }

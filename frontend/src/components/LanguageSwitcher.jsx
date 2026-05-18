@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
 
 export default function LanguageSwitcher() {
@@ -5,6 +6,9 @@ export default function LanguageSwitcher() {
 
   return (
     <div className="language-switcher" aria-label="Language switcher">
+      <Link to="/" className="language-flag language-flag-home" aria-label="Volver al inicio" title="Inicio">
+        ←
+      </Link>
       <button
         type="button"
         className={`language-flag ${language === 'es' ? 'active' : ''}`}

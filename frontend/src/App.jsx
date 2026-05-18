@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { selectIsAuthenticated } from './store/authSlice';
@@ -45,10 +45,10 @@ export default function App() {
     <>
       {showGlobalHeader && (
         <header className="app-header">
-          <div className="app-header-brand">
+          <Link to="/" className="app-header-brand" aria-label="Volver a la página principal">
             <span aria-hidden="true">🐾</span>
             <span>{t('appName')}</span>
-          </div>
+          </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <LanguageSwitcher />
             <UserMenu />
