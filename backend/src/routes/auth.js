@@ -21,14 +21,14 @@ const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 function signToken(user) {
   return jwt.sign(
-    { sub: user._id.toString(), email: user.email, tier: user.tier },
+    { sub: user._id.toString(), email: user.email, tier: user.tier, role: user.role || 'user' },
     process.env.JWT_SECRET,
     { expiresIn: process.env.JWT_EXPIRES_IN || '7d' }
   );
 }
 
 function userResponse(user) {
-  return { id: user._id, name: user.name, email: user.email, tier: user.tier };
+  return { id: user._id, name: user.name, email: user.email, tier: user.tier, role: user.role || 'user' };
 }
 
 // ── Rate limiter for password reset ──────────────────────────────────────────
@@ -70,6 +70,11 @@ router.post('/register', async (req, res, next) => {
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await User.create({ name: name.trim(), email: email.toLowerCase(), passwordHash });
+
+    // Fire-and-forget — welcome email must not block or fail the registration response
+    EmailService.sendWelcome({ to: user.email, userName: user.name }).catch((err) => {
+      console.error('[Auth] Welcome email failed:', err.message);
+    });
 
     const token = signToken(user);
     return res.status(201).json({ user: userResponse(user), token });
@@ -176,6 +181,30 @@ router.post('/reset-password', async (req, res, next) => {
 
 router.post('/logout', authenticate, (_req, res) => {
   return res.json({ message: 'Logged out successfully.' });
+});
+
+// ── PATCH /api/auth/me/profile ───────────────────────────────────────────────
+
+router.patch('/me/profile', authenticate, async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    if (name !== undefined) {
+      const trimmed = String(name).trim();
+      if (trimmed.length < 1 || trimmed.length > 100) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'El nombre debe tener entre 1 y 100 caracteres.' });
+      }
+    }
+
+    const user = await User.findById(req.user.id);
+    if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
+
+    if (name !== undefined) user.name = String(name).trim();
+    await user.save();
+
+    return res.json(userResponse(user));
+  } catch (err) {
+    next(err);
+  }
 });
 
 // ── PATCH /api/auth/me/notifications ────────────────────────────────────────

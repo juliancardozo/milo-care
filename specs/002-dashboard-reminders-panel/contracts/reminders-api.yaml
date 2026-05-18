@@ -1,0 +1,174 @@
+openapi: 3.0.3
+info:
+  title: Milo Care Dashboard Reminders API
+  version: 0.1.0
+  description: >-
+    Contracts for dashboard reminder projection and dismissal.
+    Clinical messages are informational and should always advise consulting a trusted veterinarian.
+servers:
+  - url: /api
+paths:
+  /dashboard/reminders:
+    get:
+      summary: Get upcoming and overdue dashboard reminders
+      parameters:
+        - in: query
+          name: windowDays
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+            default: 7
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 50
+            default: 5
+        - in: query
+          name: includeOverdue
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Reminder projection response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reminders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Reminder'
+                  truncated:
+                    type: boolean
+                  total:
+                    type: integer
+  /dashboard/reminders/{reminderId}/dismiss:
+    post:
+      summary: Dismiss one reminder item for current user
+      parameters:
+        - in: path
+          name: reminderId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                reason:
+                  type: string
+                  enum: [completed, acknowledged, other]
+      responses:
+        '200':
+          description: Reminder dismissed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  reminderId:
+                    type: string
+                  dismissedAt:
+                    type: string
+                    format: date-time
+        '404':
+          description: Reminder not found or already expired from projection
+  /clinical/templates/{countryCode}:
+    get:
+      summary: Get country clinical guidance template for reminder copy
+      parameters:
+        - in: path
+          name: countryCode
+          required: true
+          schema:
+            type: string
+            enum: [AR, UY]
+      responses:
+        '200':
+          description: Country template payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CountryTemplate'
+components:
+  schemas:
+    Reminder:
+      type: object
+      required:
+        - id
+        - sourceType
+        - sourceId
+        - petId
+        - petName
+        - title
+        - dueAt
+        - status
+        - clickTarget
+        - guidanceText
+      properties:
+        id:
+          type: string
+        sourceType:
+          type: string
+          enum: [vaccination, medication, appointment]
+        sourceId:
+          type: string
+        petId:
+          type: string
+        petName:
+          type: string
+        title:
+          type: string
+        subtitle:
+          type: string
+        dueAt:
+          type: string
+          format: date-time
+        status:
+          type: string
+          enum: [upcoming, overdue]
+        priority:
+          type: string
+          enum: [low, medium, high]
+        clickTarget:
+          type: string
+        countryProfile:
+          type: string
+          enum: [AR, UY]
+        guidanceText:
+          type: string
+          description: Must include recommendation to consult a trusted veterinarian.
+    CountryTemplate:
+      type: object
+      required:
+        - countryCode
+        - locale
+        - mandatoryVetDisclaimer
+      properties:
+        countryCode:
+          type: string
+          enum: [AR, UY]
+        locale:
+          type: string
+          enum: [es-AR, es-UY]
+        defaultWindowDays:
+          type: integer
+          default: 7
+        vaccineGuidance:
+          type: string
+        consultationGuidance:
+          type: string
+        medicationGuidance:
+          type: string
+        mandatoryVetDisclaimer:
+          type: string

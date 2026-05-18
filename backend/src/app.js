@@ -12,6 +12,14 @@ const vaccinationsRoutes = require('./routes/vaccinations');
 const medicationsRoutes = require('./routes/medications');
 const appointmentsRoutes = require('./routes/appointments');
 const symptomsRoutes = require('./routes/symptoms');
+const consultationsRoutes = require('./routes/consultations');
+const remindersRoutes = require('./routes/reminders');
+const usersRoutes = require('./routes/users');
+const onboardingRoutes = require('./routes/onboarding');
+const calendarRoutes = require('./routes/calendar');
+const eventsRoutes = require('./routes/events');
+const vaccinesRoutes = require('./routes/vaccines');
+const adminRoutes = require('./routes/admin');
 
 const app = express();
 
@@ -26,6 +34,14 @@ app.use('/api/dogs/:dogId/vaccinations', vaccinationsRoutes);
 app.use('/api/dogs/:dogId/medications', medicationsRoutes);
 app.use('/api/dogs/:dogId/appointments', appointmentsRoutes);
 app.use('/api/dogs/:dogId/symptoms', symptomsRoutes);
+app.use('/api/dogs/:dogId/consultations', consultationsRoutes);
+app.use('/api/dashboard/reminders', remindersRoutes);
+app.use('/api/user', usersRoutes);
+app.use('/api/onboarding', onboardingRoutes);
+app.use('/api', calendarRoutes);
+app.use('/api/events', eventsRoutes);
+app.use('/api/vaccines', vaccinesRoutes);
+app.use('/api/admin', adminRoutes);
 
 // 404 fallback
 app.use((_req, res) => {

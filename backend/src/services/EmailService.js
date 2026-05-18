@@ -1,12 +1,23 @@
 'use strict';
 
 const { Resend } = require('resend');
+const { layout } = require('./emailLayout');
 
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
-const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.RESEND_FROM_EMAIL || 'noreply@milocura.com';
+
+// Lazy client — only instantiated when actually needed so missing
+// RESEND_API_KEY in dev doesn't crash the server on startup.
+let _resend = null;
+function getResend() {
+  if (!process.env.RESEND_API_KEY) {
+    throw new Error('RESEND_API_KEY is not set. Add it to backend/.env to send emails.');
+  }
+  if (!_resend) _resend = new Resend(process.env.RESEND_API_KEY);
+  return _resend;
+}
 
 async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
@@ -14,7 +25,7 @@ async function sleep(ms) {
 
 async function sendWithRetry(payload, attempt = 1) {
   try {
-    const { error } = await resend.emails.send(payload);
+    const { error } = await getResend().emails.send(payload);
     if (error) throw new Error(error.message);
   } catch (err) {
     if (attempt < MAX_RETRIES) {
@@ -25,70 +36,227 @@ async function sendWithRetry(payload, attempt = 1) {
   }
 }
 
+function fmtDate(date) {
+  return new Date(date).toLocaleDateString('es-AR', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+  });
+}
+
+function fmtDateTime(date) {
+  return new Date(date).toLocaleString('es-AR', {
+    weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    hour: '2-digit', minute: '2-digit',
+  });
+}
+
+// ── Templates ────────────────────────────────────────────────────────────────
+
+function tplWelcome({ userName }) {
+  return layout({
+    title: 'Bienvenido a Milo Care',
+    preheader: `¡Hola ${userName}! Tu cuenta está lista.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">¡Bienvenido a Milo Care, ${userName}! 🐾</h2>
+      <p>Tu cuenta fue creada exitosamente. A partir de ahora podés:</p>
+      <ul style="padding-left:20px;margin:12px 0;">
+        <li>Registrar el perfil de tu perro</li>
+        <li>Cargar su historial de vacunas, medicamentos y citas</li>
+        <li>Recibir recordatorios automáticos por correo</li>
+        <li>Consultar su historial completo de salud</li>
+      </ul>
+      <p>Ingresá a la app para comenzar.</p>
+    `,
+    ctaUrl: process.env.APP_URL || 'http://localhost:5173',
+    ctaLabel: 'Ir a Milo Care',
+  });
+}
+
+function tplVaccinationReminder({ userName, dogName, vaccineName, nextDueDate }) {
+  const dateStr = fmtDate(nextDueDate);
+  return layout({
+    title: `Recordatorio de vacuna — ${dogName}`,
+    preheader: `La vacuna ${vaccineName} de ${dogName} vence el ${dateStr}.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Recordatorio de vacuna 💉</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        La vacuna <strong>${vaccineName}</strong> de <strong>${dogName}</strong>
+        está próxima a vencer el <strong>${dateStr}</strong>.
+      </p>
+      <div style="background:#eff6ff;border-left:4px solid #4f8ef7;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🐕 ${dogName}</strong><br/>
+        Vacuna: ${vaccineName}<br/>
+        Fecha límite: ${dateStr}
+      </div>
+      <p>Contactá a tu veterinario de confianza para coordinar el turno a tiempo.</p>
+      <p style="color:#6b7280;font-size:13px;">
+        Esta recomendación es informativa. Siempre consultá con un veterinario licenciado.
+      </p>
+    `,
+  });
+}
+
+function tplDewormingReminder({ userName, dogName, productName, nextDueDate }) {
+  const dateStr = nextDueDate ? fmtDate(nextDueDate) : null;
+  return layout({
+    title: `Recordatorio de desparasitación — ${dogName}`,
+    preheader: `Es momento de desparasitar a ${dogName}.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Recordatorio de desparasitación 🐛</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        Es hora de la próxima desparasitación de <strong>${dogName}</strong>
+        ${productName ? `con <strong>${productName}</strong>` : ''}.
+        ${dateStr ? `La fecha programada es el <strong>${dateStr}</strong>.` : ''}
+      </p>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🐕 ${dogName}</strong><br/>
+        ${productName ? `Producto: ${productName}<br/>` : ''}
+        ${dateStr ? `Fecha: ${dateStr}` : 'Coordinar con veterinario'}
+      </div>
+      <p>Consultá con tu veterinario si tenés dudas sobre el producto o la dosis.</p>
+      <p style="color:#6b7280;font-size:13px;">
+        Esta recomendación es informativa. Seguí siempre la indicación de tu veterinario.
+      </p>
+    `,
+  });
+}
+
+function tplMedicationReminder({ userName, dogName, medicationName, dosage }) {
+  return layout({
+    title: `Recordatorio de medicación — ${dogName}`,
+    preheader: `Hora de la dosis de ${medicationName} para ${dogName}.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Hora de la medicación 💊</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        Es momento de darle a <strong>${dogName}</strong> su dosis de
+        <strong>${medicationName}</strong>${dosage ? ` (${dosage})` : ''}.
+      </p>
+      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🐕 ${dogName}</strong><br/>
+        Medicamento: ${medicationName}<br/>
+        ${dosage ? `Dosis: ${dosage}` : ''}
+      </div>
+      <p>Si tenés alguna duda sobre la medicación, contactá a tu veterinario.</p>
+    `,
+  });
+}
+
+function tplAppointmentReminder({ userName, dogName, appointmentTitle, clinicName, appointmentDate }) {
+  const dateStr = fmtDateTime(appointmentDate);
+  const clinic = clinicName || 'tu veterinario';
+  return layout({
+    title: `Recordatorio de cita — ${dogName}`,
+    preheader: `${dogName} tiene una cita mañana: ${appointmentTitle || 'consulta veterinaria'}.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Recordatorio de cita veterinaria 🏥</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        <strong>${dogName}</strong> tiene una cita programada para mañana.
+      </p>
+      <div style="background:#f0f6ff;border-left:4px solid #4f8ef7;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🐕 ${dogName}</strong><br/>
+        ${appointmentTitle ? `Tipo: ${appointmentTitle}<br/>` : ''}
+        Lugar: ${clinic}<br/>
+        Fecha y hora: ${dateStr}
+      </div>
+      <p>Recordá llevar la cartilla de vacunas y cualquier estudio previo que tengas.</p>
+    `,
+  });
+}
+
+function tplPasswordReset({ resetUrl }) {
+  return layout({
+    title: 'Restablecer contraseña — Milo Care',
+    preheader: 'Solicitaste restablecer tu contraseña. El enlace vence en 1 hora.',
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Restablecer contraseña 🔐</h2>
+      <p>Recibimos una solicitud para restablecer la contraseña de tu cuenta.</p>
+      <p>Hacé clic en el botón de abajo para crear una nueva contraseña. El enlace es válido por <strong>1 hora</strong>.</p>
+      <p>Si no solicitaste esto, podés ignorar este correo con total seguridad.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:20px;">
+        Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br/>
+        <a href="${resetUrl}" style="word-break:break-all;">${resetUrl}</a>
+      </p>
+    `,
+    ctaUrl: resetUrl,
+    ctaLabel: 'Restablecer contraseña',
+  });
+}
+
+// ── EmailService ─────────────────────────────────────────────────────────────
+
 const EmailService = {
-  /**
-   * Send a vaccination due-date reminder.
-   */
-  async sendVaccinationReminder({ to, userName, dogName, vaccineName, nextDueDate }) {
-    const dueDateStr = new Date(nextDueDate).toLocaleDateString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric',
-    });
+
+  /** Bienvenida post-registro */
+  async sendWelcome({ to, userName }) {
     await sendWithRetry({
       from: FROM,
       to,
-      subject: `Reminder: ${dogName}'s ${vaccineName} vaccination is due soon`,
-      html: `<p>Hi ${userName},</p>
-<p>This is a reminder that <strong>${dogName}</strong>'s <strong>${vaccineName}</strong> vaccination is due on <strong>${dueDateStr}</strong>.</p>
-<p>Please schedule an appointment with your veterinarian.</p>
-<p>— The Milo Care Team</p>`,
+      subject: `¡Bienvenido a Milo Care, ${userName}!`,
+      html: tplWelcome({ userName }),
     });
   },
 
-  /**
-   * Send a medication dosage reminder.
-   */
+  /** Recordatorio de vacuna próxima a vencer */
+  async sendVaccinationReminder({ to, userName, dogName, vaccineName, nextDueDate }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `Recordatorio: vacuna ${vaccineName} de ${dogName}`,
+      html: tplVaccinationReminder({ userName, dogName, vaccineName, nextDueDate }),
+    });
+  },
+
+  /** Recordatorio de desparasitación */
+  async sendDewormingReminder({ to, userName, dogName, productName, nextDueDate }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `Recordatorio: desparasitación de ${dogName}`,
+      html: tplDewormingReminder({ userName, dogName, productName, nextDueDate }),
+    });
+  },
+
+  /** Recordatorio de dosis de medicamento */
   async sendMedicationReminder({ to, userName, dogName, medicationName, dosage }) {
     await sendWithRetry({
       from: FROM,
       to,
-      subject: `Reminder: ${dogName}'s medication dose`,
-      html: `<p>Hi ${userName},</p>
-<p>Time to give <strong>${dogName}</strong> their dose of <strong>${medicationName}</strong> (${dosage}).</p>
-<p>— The Milo Care Team</p>`,
+      subject: `Recordatorio: medicación de ${dogName}`,
+      html: tplMedicationReminder({ userName, dogName, medicationName, dosage }),
     });
   },
 
-  /**
-   * Send a vet appointment reminder.
-   */
-  async sendAppointmentReminder({ to, userName, dogName, clinicName, appointmentDate }) {
-    const dateStr = new Date(appointmentDate).toLocaleString('en-US', {
-      year: 'numeric', month: 'long', day: 'numeric',
-      hour: '2-digit', minute: '2-digit',
-    });
+  /** Recordatorio de cita veterinaria */
+  async sendAppointmentReminder({ to, userName, dogName, appointmentTitle, clinicName, appointmentDate }) {
     await sendWithRetry({
       from: FROM,
       to,
-      subject: `Reminder: ${dogName}'s vet appointment tomorrow`,
-      html: `<p>Hi ${userName},</p>
-<p>Reminder: <strong>${dogName}</strong> has a vet appointment at <strong>${clinicName}</strong> on <strong>${dateStr}</strong>.</p>
-<p>— The Milo Care Team</p>`,
+      subject: `Recordatorio: cita de ${dogName} mañana`,
+      html: tplAppointmentReminder({ userName, dogName, appointmentTitle, clinicName, appointmentDate }),
     });
   },
 
-  /**
-   * Send a password reset email.
-   */
+  /** Restablecimiento de contraseña */
   async sendPasswordReset({ to, resetUrl }) {
     await sendWithRetry({
       from: FROM,
       to,
-      subject: 'Reset your Milo Care password',
-      html: `<p>You requested a password reset. Click the link below to set a new password. This link expires in 1 hour.</p>
-<p><a href="${resetUrl}">${resetUrl}</a></p>
-<p>If you did not request this, you can safely ignore this email.</p>
-<p>— The Milo Care Team</p>`,
+      subject: 'Restablecer tu contraseña de Milo Care',
+      html: tplPasswordReset({ resetUrl }),
     });
+  },
+
+  // Expose templates for admin preview
+  _templates: {
+    welcome: tplWelcome,
+    vaccination: tplVaccinationReminder,
+    deworming: tplDewormingReminder,
+    medication: tplMedicationReminder,
+    appointment: tplAppointmentReminder,
+    passwordReset: tplPasswordReset,
   },
 };
 

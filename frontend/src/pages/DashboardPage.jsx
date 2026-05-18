@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useDispatch, useSelector } from 'react-redux';
-import { clearCredentials, selectCurrentUser } from '../store/authSlice';
-import { getDogs, logout } from '../services/api';
+import { useSelector } from 'react-redux';
+import { selectCurrentUser } from '../store/authSlice';
+import { getDogs, getFullRemindersList } from '../services/api';
 import OfflineIndicator from '../components/OfflineIndicator';
 import LanguageSwitcher from '../components/LanguageSwitcher';
+import UserMenu from '../components/UserMenu';
 import { useI18n } from '../i18n/I18nProvider';
 
 const HEALTH_SECTION_KEYS = ['vaccinations', 'medications', 'appointments', 'symptoms', 'history'];
@@ -22,12 +23,11 @@ function DogAvatar({ dog }) {
 
 export default function DashboardPage() {
   const { t } = useI18n();
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
   const user = useSelector(selectCurrentUser);
   const [dogs, setDogs] = useState([]);
   const [activeDogId, setActiveDogId] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [remindersPreview, setRemindersPreview] = useState([]);
 
   useEffect(() => {
     getDogs()
@@ -39,12 +39,15 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  async function handleLogout() {
-    try { await logout(); } catch { /* ignore */ }
-    dispatch(clearCredentials());
-    navigate('/login');
-  }
-
+  useEffect(() => {
+    getFullRemindersList()
+      .then(({ data }) => {
+        setRemindersPreview((data.reminders || []).slice(0, 5));
+      })
+      .catch(() => {
+        setRemindersPreview([]);
+      });
+  }, []);
   const activeDog = dogs.find((d) => d.id === activeDogId);
 
   if (loading) {
@@ -69,9 +72,8 @@ export default function DashboardPage() {
           <span className="dashboard-brand-name">{t('appName')}</span>
         </div>
         <div className="dashboard-topbar-right">
-          {user && <span className="dashboard-username">{t('dashboard.hi')}, {user.name?.split(' ')[0]}</span>}
           <LanguageSwitcher />
-          <button className="btn btn-secondary btn-sm" onClick={handleLogout}>{t('common.logout')}</button>
+          <UserMenu dogs={dogs} />
         </div>
       </header>
 
@@ -109,10 +111,10 @@ export default function DashboardPage() {
                   <h1 className="dog-profile-name">{activeDog.name}</h1>
                   <p className="dog-profile-meta">{activeDog.breed}</p>
                   <p className="dog-profile-age">
-                    {activeDog.ageYears} {t('dashboard.yearsOld')}
+                    {activeDog.ageDisplay ?? `${activeDog.ageYears} ${t('dashboard.yearsOld')}`}
                   </p>
                 </div>
-                <Link to="/dogs" className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
+                <Link to={`/dogs/${activeDog.id}/edit`} className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
               </div>
             )}
 
@@ -140,9 +142,50 @@ export default function DashboardPage() {
               </div>
             </section>
 
+            {activeDog && (
+              <section className="card" style={{ marginTop: 16 }}>
+                <div className="page-header" style={{ marginBottom: 8 }}>
+                  <h2>📄 {t('pdf.title') || 'Health Summary PDF'}</h2>
+                  <Link to={`/dogs/${activeDog.id}/pdf-export`} className="btn">
+                    {t('pdf.download') || 'Download PDF'}
+                  </Link>
+                </div>
+                <p className="list-empty" style={{ marginBottom: 0 }}>
+                  {t('pdf.settingsDesc') || 'Generate a printable summary of the dog health history.'}
+                </p>
+              </section>
+            )}
+
             {/* Quick links */}
+            <section className="card" style={{ marginTop: 16 }}>
+              <div className="page-header" style={{ marginBottom: 8 }}>
+                <h2>{t('remindersFullList.previewTitle')}</h2>
+                <Link to="/dashboard/reminders/full">{t('common.viewAll')}</Link>
+              </div>
+              {remindersPreview.length === 0 ? (
+                <p className="list-empty">{t('remindersFullList.empty')}</p>
+              ) : (
+                <ul className="record-list">
+                  {remindersPreview.map((r) => (
+                    <li key={r.id} className="record-item">
+                      <div className="record-info">
+                        <h3>{r.title}</h3>
+                        <p>{r.petName}</p>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+
             <section className="dashboard-footer-links">
-              <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
+              {user?.tier === 'premium' || dogs.length === 0 ? (
+                <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
+              ) : (
+                <button disabled className="footer-link" style={{ cursor: 'not-allowed', opacity: 0.5 }} title={t('dogs.errors.tierLimitReached') || 'Free accounts limited to 1 dog'}>
+                  {t('dashboard.addAnotherDog')}
+                </button>
+              )}
               <Link to="/settings/notifications" className="footer-link">{t('dashboard.notificationSettings')}</Link>
             </section>
           </>

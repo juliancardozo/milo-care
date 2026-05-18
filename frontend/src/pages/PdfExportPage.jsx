@@ -1,0 +1,159 @@
+import { useEffect, useRef, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
+import { useI18n } from '../i18n/I18nProvider';
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import BackLink from '../components/BackLink';
+import { getDog } from '../services/api';
+import {
+  getAppointments,
+  getConsultations,
+  getMedications,
+  getSymptoms,
+  getVaccinations,
+} from '../services/clinicalHistoryApi';
+import {
+  setAppointments,
+  setConsultations,
+  setMedications,
+  setSymptoms,
+  setVaccinations,
+} from '../store/clinicalHistorySlice';
+import { selectSymptoms, selectConsultations, selectVaccinations, selectMedications, selectAppointments } from '../store/clinicalHistorySlice';
+import PdfTemplate from '../components/pdf/PdfTemplate';
+import '../styles/pdf-export.css';
+
+export default function PdfExportPage() {
+  const { t } = useI18n();
+  const { dogId } = useParams();
+  const dispatch = useDispatch();
+  const templateRef = useRef(null);
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [dog, setDog] = useState(null);
+
+  const symptoms = useSelector(selectSymptoms);
+  const consultations = useSelector(selectConsultations);
+  const vaccinations = useSelector(selectVaccinations);
+  const medications = useSelector(selectMedications);
+  const appointments = useSelector(selectAppointments);
+
+  useEffect(() => {
+    async function loadPdfData() {
+      if (!dogId) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [dogRes, symptomsRes, consultationsRes, vaccinationsRes, medicationsRes, appointmentsRes] = await Promise.all([
+          getDog(dogId),
+          getSymptoms(dogId),
+          getConsultations(dogId),
+          getVaccinations(dogId),
+          getMedications(dogId),
+          getAppointments(dogId),
+        ]);
+
+        setDog(dogRes.data || null);
+        dispatch(setSymptoms(symptomsRes.data || []));
+        dispatch(setConsultations(consultationsRes.data || []));
+        dispatch(setVaccinations(vaccinationsRes.data || []));
+        dispatch(setMedications(medicationsRes.data || []));
+        dispatch(setAppointments(appointmentsRes.data || []));
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Error loading PDF data');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPdfData();
+  }, [dogId]);
+
+  async function handleGeneratePdf() {
+    if (!templateRef.current) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const canvas = await html2canvas(templateRef.current, {
+        scale: 2,
+        logging: false,
+        backgroundColor: '#ffffff',
+      });
+
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      const imgWidth = 210; // A4 width in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= 297; // A4 height in mm
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= 297;
+      }
+
+      // Download
+      pdf.save(`${dog?.name || 'Health-Summary'}-${new Date().toISOString().split('T')[0]}.pdf`);
+    } catch (err) {
+      setError(err.message || 'Error generating PDF');
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="pdf-export-page">
+      <BackLink to={`/dogs/${dogId}`} label={t('common.backToDog') || 'Back to Dog'} />
+
+      <header className="page-header">
+        <h1>{t('pdf.title') || 'Health Summary PDF'}</h1>
+        <div className="header-actions">
+          <button
+            className="btn btn-primary"
+            onClick={handleGeneratePdf}
+            disabled={loading}
+          >
+            {loading
+              ? t('pdf.generating') || 'Generating...'
+              : `📥 ${t('pdf.download') || 'Download PDF'}`}
+          </button>
+        </div>
+      </header>
+
+      {error && <div className="alert alert-danger">{error}</div>}
+
+      {!error && loading && <div className="loading">{t('common.loading') || 'Loading...'}</div>}
+
+      {!loading ? (
+        <div className="pdf-preview">
+          <PdfTemplate
+            ref={templateRef}
+            dog={dog}
+            symptoms={symptoms}
+            consultations={consultations}
+            vaccinations={vaccinations}
+            medications={medications}
+            appointments={appointments}
+          />
+        </div>
+      ) : null}
+    </div>
+  );
+}

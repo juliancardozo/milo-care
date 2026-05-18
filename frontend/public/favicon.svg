@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <!-- Toe pads: 4 small ovals fanned across the top -->
+  <ellipse cx="12" cy="19" rx="6.5" ry="8.5" fill="#4f8ef7"/>
+  <ellipse cx="25" cy="11" rx="6.5" ry="8.5" fill="#4f8ef7"/>
+  <ellipse cx="39" cy="11" rx="6.5" ry="8.5" fill="#4f8ef7"/>
+  <ellipse cx="52" cy="19" rx="6.5" ry="8.5" fill="#4f8ef7"/>
+  <!-- Main pad: wide rounded shape -->
+  <path d="M32 27
+    C20 27 12 34 12 43
+    C12 52 20 57 32 57
+    C44 57 52 52 52 43
+    C52 34 44 27 32 27Z"
+    fill="#4f8ef7"/>
+</svg>

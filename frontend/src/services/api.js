@@ -20,7 +20,24 @@ export const logout = () => api.post('/auth/logout');
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
 export const deleteAccount = () => api.delete('/auth/me');
+export const updateProfile = (data) => api.patch('/auth/me/profile', data);
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);
+export const updateReminderWindowPreference = (data) => api.patch('/user/preferences/reminderWindow', data);
+
+// ── Admin ─────────────────────────────────────────────────────────────────────
+
+export const getAdminStats = () => api.get('/admin/stats');
+export const getAdminUsers = (params) => api.get('/admin/users', { params });
+export const getAdminUser = (id) => api.get(`/admin/users/${id}`);
+export const updateAdminUser = (id, data) => api.patch(`/admin/users/${id}`, data);
+export const deleteAdminUser = (id) => api.delete(`/admin/users/${id}`);
+export const previewAdminEmail = (type) => `/api/admin/email/preview/${type}`;
+export const sendAdminTestEmail = (type) => api.post('/admin/email/test', { type });
+
+// ── Vaccine catalog ───────────────────────────────────────────────────────────
+
+export const getVaccineCatalog = (country = 'AR') => api.get('/vaccines/catalog', { params: { country } });
+export const getAppointmentCatalog = () => api.get('/vaccines/appointments/catalog');
 
 // ── Dogs ─────────────────────────────────────────────────────────────────────
 
@@ -57,5 +74,12 @@ export const getSymptoms = (dogId) => api.get(`/dogs/${dogId}/symptoms`);
 export const createSymptom = (dogId, data) => api.post(`/dogs/${dogId}/symptoms`, data);
 export const updateSymptom = (dogId, symId, data) => api.patch(`/dogs/${dogId}/symptoms/${symId}`, data);
 export const deleteSymptom = (dogId, symId) => api.delete(`/dogs/${dogId}/symptoms/${symId}`);
+
+// ── Dashboard Reminders ──────────────────────────────────────────────────────
+
+export const getFullRemindersList = (windowDays) =>
+  api.get('/dashboard/reminders/full', {
+    params: windowDays ? { windowDays } : undefined,
+  });
 
 export default api;

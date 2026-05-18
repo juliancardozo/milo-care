@@ -1,0 +1,115 @@
+openapi: 3.0.3
+info:
+  title: Full Reminders List API
+  version: 0.1.0
+  description: >-
+    Contract for dashboard full reminders list retrieval, incorporating 
+    clarified precedence rules and deterministic ordering.
+servers:
+  - url: /api
+paths:
+  /dashboard/reminders/full:
+    get:
+      summary: Get full reminders list with applied precedence rules
+      parameters:
+        - in: query
+          name: windowDays
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 60
+          description: >-
+            Optional temporary override for look-ahead window (current-view value).
+            If not provided, will use user's saved preference or default (7 days).
+        - in: query
+          name: includeOverdue
+          schema:
+            type: boolean
+            default: true
+          description: Whether to include overdue undismissed reminders
+      responses:
+        '200':
+          description: Full reminders list with all eligible items in deterministic order
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reminders:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ReminderItem'
+                    description: All eligible reminders sorted by due date, then type order, then record ID
+                  total:
+                    type: integer
+                    description: Total count of reminders in this list
+                  windowDays:
+                    type: integer
+                    description: Resolved look-ahead window in days (1-60)
+                  windowSource:
+                    type: string
+                    enum: [temporary-override, user-preference, default]
+                    description: Which precedence level provided the resolved window value
+                  appliedAt:
+                    type: string
+                    format: date-time
+                    description: UTC timestamp when look-ahead window was evaluated
+        '400':
+          description: Invalid parameters (e.g., windowDays out of bounds)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+                  appliedFallback:
+                    type: string
+                    description: Explanation of fallback applied (e.g., "invalid windowDays 100, using default 7")
+
+components:
+  schemas:
+    ReminderItem:
+      type: object
+      required:
+        - id
+        - sourceType
+        - sourceId
+        - petId
+        - petName
+        - title
+        - dueAt
+        - status
+      properties:
+        id:
+          type: string
+          description: Unique reminder identifier (deterministic based on source record)
+        sourceType:
+          type: string
+          enum: [vaccination, medication, appointment]
+        sourceId:
+          type: string
+          description: Reference to source health record
+        petId:
+          type: string
+        petName:
+          type: string
+        title:
+          type: string
+          description: Vaccine/medication/clinic name
+        subtitle:
+          type: string
+          description: Optional dosage, clinic address, or supporting text
+        dueAt:
+          type: string
+          format: date-time
+          description: Due date/time in ISO 8601 (UTC)
+        status:
+          type: string
+          enum: [upcoming, overdue]
+        priority:
+          type: string
+          enum: [low, medium, high]
+        guidanceText:
+          type: string
+          description: Informational guidance; must include veterinarian consultation recommendation

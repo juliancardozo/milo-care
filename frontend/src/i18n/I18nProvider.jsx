@@ -16,6 +16,7 @@ const translations = {
       delete: 'Eliminar',
       notesOptional: 'Notas (opcional)',
       backToDashboard: '← Volver al panel',
+      backToDog: '← Volver al perro',
       logout: 'Cerrar sesion',
       viewAll: 'Ver todo',
       settings: 'Configuracion',
@@ -76,6 +77,13 @@ const translations = {
         history: { label: 'Historial completo', desc: 'Expediente de salud completo' },
       },
     },
+      pdf: {
+        title: 'Resumen de salud en PDF',
+        download: 'Descargar PDF',
+        generating: 'Generando...',
+        settings: 'Ajustes del PDF',
+        settingsDesc: 'Genera un resumen imprimible del historial de salud del perro.',
+      },
     dogs: {
       setupTitle: 'Configura el perfil de tu perro',
       dogName: 'Nombre del perro',
@@ -100,6 +108,7 @@ const translations = {
         breedRequired: 'La raza es obligatoria.',
         dobRequired: 'La fecha de nacimiento es obligatoria.',
         dobPast: 'La fecha de nacimiento debe estar en el pasado.',
+        tierLimitReached: 'Las cuentas gratuitas están limitadas a 1 perro. Actualiza a premium para agregar mas.',
       },
     },
     vaccinations: {
@@ -215,6 +224,31 @@ const translations = {
         save: 'No se pudieron guardar las preferencias.',
       },
     },
+    remindersFullList: {
+      title: 'Lista completa de recordatorios',
+      previewTitle: 'Recordatorios proximos',
+      total: 'Total',
+      dueAt: 'Vence',
+      empty: 'No hay recordatorios elegibles por ahora.',
+      overdueLabel: 'Vencido',
+      preferenceLabel: 'Ventana preferida de recordatorios (dias)',
+      savePreference: 'Guardar preferencia',
+      windowInfo: 'Ventana aplicada: {days} dias · origen: {source}',
+      sources: {
+        'temporary-override': 'valor temporal',
+        'user-preference': 'preferencia guardada',
+        default: 'valor por defecto',
+      },
+      types: {
+        vaccination: 'Vacuna',
+        medication: 'Medicamento',
+        appointment: 'Cita',
+      },
+      errors: {
+        load: 'No se pudo cargar la lista de recordatorios.',
+        savePreference: 'No se pudo guardar la preferencia de ventana.',
+      },
+    },
   },
   en: {
     appName: 'Milo Care',
@@ -229,6 +263,7 @@ const translations = {
       delete: 'Delete',
       notesOptional: 'Notes (optional)',
       backToDashboard: '← Back to dashboard',
+      backToDog: '← Back to dog',
       logout: 'Log out',
       viewAll: 'View all',
       settings: 'Settings',
@@ -289,6 +324,13 @@ const translations = {
         history: { label: 'Full History', desc: 'Complete health record' },
       },
     },
+      pdf: {
+        title: 'Health summary PDF',
+        download: 'Download PDF',
+        generating: 'Generating...',
+        settings: 'PDF settings',
+        settingsDesc: 'Generate a printable summary of the dog health history.',
+      },
     dogs: {
       setupTitle: "Set up your dog's profile",
       dogName: "Dog's name",
@@ -313,6 +355,7 @@ const translations = {
         breedRequired: 'Breed is required.',
         dobRequired: 'Date of birth is required.',
         dobPast: 'Date of birth must be in the past.',
+        tierLimitReached: 'Free accounts are limited to 1 dog. Upgrade to premium for unlimited.',
       },
     },
     vaccinations: {
@@ -426,6 +469,31 @@ const translations = {
       saved: 'Preferences saved.',
       errors: {
         save: 'Failed to save preferences.',
+      },
+    },
+    remindersFullList: {
+      title: 'Full reminders list',
+      previewTitle: 'Upcoming reminders',
+      total: 'Total',
+      dueAt: 'Due at',
+      empty: 'No eligible reminders right now.',
+      overdueLabel: 'Overdue',
+      preferenceLabel: 'Preferred reminder window (days)',
+      savePreference: 'Save preference',
+      windowInfo: 'Applied window: {days} days · source: {source}',
+      sources: {
+        'temporary-override': 'temporary value',
+        'user-preference': 'saved preference',
+        default: 'default value',
+      },
+      types: {
+        vaccination: 'Vaccination',
+        medication: 'Medication',
+        appointment: 'Appointment',
+      },
+      errors: {
+        load: 'Failed to load reminders list.',
+        savePreference: 'Failed to save window preference.',
       },
     },
   },

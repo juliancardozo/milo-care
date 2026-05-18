@@ -1,0 +1,24 @@
+{
+  "es": {
+    "viewAll": "Ver todos los recordatorios",
+    "empty": "No hay recordatorios elegibles por ahora.",
+    "headers": {
+      "dog": "Perro",
+      "type": "Tipo",
+      "dueDate": "Fecha de vencimiento"
+    },
+    "overdueLabel": "Recordatorio vencido",
+    "overdueMessage": "Este recordatorio esta vencido. Toma accion o descartalo."
+  },
+  "en": {
+    "viewAll": "View all reminders",
+    "empty": "No eligible reminders right now.",
+    "headers": {
+      "dog": "Dog",
+      "type": "Type",
+      "dueDate": "Due date"
+    },
+    "overdueLabel": "Overdue reminder",
+    "overdueMessage": "This reminder is past due. Please take action or dismiss it."
+  }
+}
