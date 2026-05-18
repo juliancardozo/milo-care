@@ -1,10 +1,25 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { useSelector } from 'react-redux';
+import { useParams } from 'react-router-dom';
+import { useDispatch, useSelector } from 'react-redux';
 import { useI18n } from '../i18n/I18nProvider';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
 import BackLink from '../components/BackLink';
+import { getDog } from '../services/api';
+import {
+  getAppointments,
+  getConsultations,
+  getMedications,
+  getSymptoms,
+  getVaccinations,
+} from '../services/clinicalHistoryApi';
+import {
+  setAppointments,
+  setConsultations,
+  setMedications,
+  setSymptoms,
+  setVaccinations,
+} from '../store/clinicalHistorySlice';
 import { selectSymptoms, selectConsultations, selectVaccinations, selectMedications, selectAppointments } from '../store/clinicalHistorySlice';
 import PdfTemplate from '../components/pdf/PdfTemplate';
 import '../styles/pdf-export.css';
@@ -12,13 +27,12 @@ import '../styles/pdf-export.css';
 export default function PdfExportPage() {
   const { t } = useI18n();
   const { dogId } = useParams();
-  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const templateRef = useRef(null);
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dog, setDog] = useState(null);
-  const [previewMode, setPreviewMode] = useState(true);
 
   const symptoms = useSelector(selectSymptoms);
   const consultations = useSelector(selectConsultations);
@@ -27,17 +41,36 @@ export default function PdfExportPage() {
   const appointments = useSelector(selectAppointments);
 
   useEffect(() => {
-    // Load dog data
-    // TODO: Fetch dog data from API
-    setDog({
-      name: 'Milo',
-      breed: 'Labrador',
-      dateOfBirth: '2020-01-15',
-      sex: 'male',
-      weightKg: 28,
-      microchipId: '123456789',
-      riskProfile: 'low',
-    });
+    async function loadPdfData() {
+      if (!dogId) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const [dogRes, symptomsRes, consultationsRes, vaccinationsRes, medicationsRes, appointmentsRes] = await Promise.all([
+          getDog(dogId),
+          getSymptoms(dogId),
+          getConsultations(dogId),
+          getVaccinations(dogId),
+          getMedications(dogId),
+          getAppointments(dogId),
+        ]);
+
+        setDog(dogRes.data || null);
+        dispatch(setSymptoms(symptomsRes.data || []));
+        dispatch(setConsultations(consultationsRes.data || []));
+        dispatch(setVaccinations(vaccinationsRes.data || []));
+        dispatch(setMedications(medicationsRes.data || []));
+        dispatch(setAppointments(appointmentsRes.data || []));
+      } catch (err) {
+        setError(err.response?.data?.message || err.message || 'Error loading PDF data');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadPdfData();
   }, [dogId]);
 
   async function handleGeneratePdf() {
@@ -93,18 +126,6 @@ export default function PdfExportPage() {
         <h1>{t('pdf.title') || 'Health Summary PDF'}</h1>
         <div className="header-actions">
           <button
-            className={`btn ${previewMode ? 'btn-secondary' : 'btn-outline'}`}
-            onClick={() => setPreviewMode(true)}
-          >
-            👁️ Preview
-          </button>
-          <button
-            className={`btn ${!previewMode ? 'btn-secondary' : 'btn-outline'}`}
-            onClick={() => setPreviewMode(false)}
-          >
-            ⚙️ Settings
-          </button>
-          <button
             className="btn btn-primary"
             onClick={handleGeneratePdf}
             disabled={loading}
@@ -118,7 +139,9 @@ export default function PdfExportPage() {
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {previewMode ? (
+      {!error && loading && <div className="loading">{t('common.loading') || 'Loading...'}</div>}
+
+      {!loading ? (
         <div className="pdf-preview">
           <PdfTemplate
             ref={templateRef}
@@ -130,15 +153,7 @@ export default function PdfExportPage() {
             appointments={appointments}
           />
         </div>
-      ) : (
-        <div className="pdf-settings">
-          <h3>{t('pdf.settings') || 'PDF Settings'}</h3>
-          <p>{t('pdf.settingsDesc') || 'Customize what sections to include in the PDF'}</p>
-          <div className="settings-coming-soon">
-            Coming soon: customize sections, colors, branding
-          </div>
-        </div>
-      )}
+      ) : null}
     </div>
   );
 }

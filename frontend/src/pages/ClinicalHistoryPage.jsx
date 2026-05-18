@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useI18n } from '../i18n/I18nProvider';
 import BackLink from '../components/BackLink';
@@ -106,16 +106,21 @@ export default function ClinicalHistoryPage() {
 
       <header className="page-header">
         <h1>{t('clinical.title') || 'Clinical History'}</h1>
-        <button
-          className="btn btn-primary"
-          onClick={() => {
-            setFormType('symptom');
-            setEditingEvent(null);
-            setShowForm(true);
-          }}
-        >
-          {t('clinical.addEvent') || '+ Add Event'}
-        </button>
+        <div className="page-header-actions">
+          <Link to={`/dogs/${dogId}/pdf-export`} className="btn btn-secondary">
+            {t('pdf.download') || 'Download PDF'}
+          </Link>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setFormType('symptom');
+              setEditingEvent(null);
+              setShowForm(true);
+            }}
+          >
+            {t('clinical.addEvent') || '+ Add Event'}
+          </button>
+        </div>
       </header>
 
       {error && <div className="alert alert-danger">{error}</div>}

@@ -55,6 +55,12 @@ const PdfTemplate = React.forwardRef(
                 {dog?.riskProfile?.toUpperCase()}
               </span>
             </div>
+            <div className="profile-item">
+              <strong>Alergias:</strong> {dog?.allergies?.length ? dog.allergies.join(', ') : 'Sin registrar'}
+            </div>
+            <div className="profile-item">
+              <strong>Condiciones:</strong> {dog?.conditions?.length ? dog.conditions.join(', ') : 'Sin registrar'}
+            </div>
           </div>
         </section>
 
@@ -147,6 +153,32 @@ const PdfTemplate = React.forwardRef(
           </section>
         )}
 
+        {appointments && appointments.length > 0 && (
+          <section className="pdf-section">
+            <h2>📅 Próximos Turnos y Controles</h2>
+            <table className="pdf-table">
+              <thead>
+                <tr>
+                  <th>Título</th>
+                  <th>Fecha</th>
+                  <th>Clínica</th>
+                  <th>Veterinario</th>
+                </tr>
+              </thead>
+              <tbody>
+                {appointments.map((appointment, idx) => (
+                  <tr key={idx}>
+                    <td>{appointment.title || 'Consulta'}</td>
+                    <td>{formatDate(appointment.appointmentDate)}</td>
+                    <td>{appointment.clinicName || '—'}</td>
+                    <td>{appointment.vetName || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
         {/* Vet Checklist */}
         <section className="pdf-section vet-checklist">
           <h2>✓ Checklist para la Consulta Veterinaria</h2>
@@ -184,7 +216,7 @@ const PdfTemplate = React.forwardRef(
             </label>
             <label className="checklist-item">
               <input type="checkbox" />
-              Ohne Juckreiz
+              Sin picazón
             </label>
           </div>
         </section>
