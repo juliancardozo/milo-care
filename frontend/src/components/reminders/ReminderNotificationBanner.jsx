@@ -3,7 +3,7 @@ import { useI18n } from '../../i18n/I18nProvider';
 
 export default function ReminderNotificationBanner({ items, onDismiss }) {
   const { t } = useI18n();
-  const [snoozeHours, setSnoozeHours] = useState(null);
+  const [_snoozeHours, setSnoozeHours] = useState(null);
 
   if (!items || items.length === 0) return null;
 

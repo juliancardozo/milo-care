@@ -1,4 +1,3 @@
-import { useI18n } from '../../i18n/I18nProvider';
 import { formatDate } from '../../utils/dateUtils';
 
 const EVENT_TYPE_ICONS = {
@@ -17,14 +16,7 @@ const EVENT_TYPE_LABELS = {
   appointment: 'Cita',
 };
 
-const SEVERITY_COLORS = {
-  mild: '#90EE90',
-  moderate: '#FFD700',
-  severe: '#FF6347',
-};
-
 export default function EventTimeline({ events, onEdit, onDelete }) {
-  const { t } = useI18n();
 
   const getSeverityBadge = (severity) => {
     const colors = { mild: 'green', moderate: 'warning', severe: 'danger' };

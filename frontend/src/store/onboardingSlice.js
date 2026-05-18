@@ -26,7 +26,7 @@ function loadPersistedState() {
 
 function persistState(state) {
   try {
-    const { loading, ...stateToPersist } = state;
+    const { loading: _loading, ...stateToPersist } = state;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToPersist));
   } catch {
     // Ignore persistence errors.
@@ -188,14 +188,10 @@ const onboardingSlice = createSlice({
       // Filter incomplete vaccine records
       if (Array.isArray(draft.vaccines)) {
         state.values.vaccines = draft.vaccines.filter(v => v.vaccineName && v.dateAdministered);
-      } else {
-        state.values.vaccines = state.values.vaccines;
       }
       // Filter incomplete deworming records
       if (Array.isArray(draft.deworming)) {
         state.values.deworming = draft.deworming.filter(v => v.productName && v.dateAdministered);
-      } else {
-        state.values.deworming = state.values.deworming;
       }
       persistState(state);
     },

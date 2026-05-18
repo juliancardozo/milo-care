@@ -2,7 +2,6 @@ import { useEffect, useState, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { getAdminUsers, updateAdminUser, deleteAdminUser } from '../../services/api';
 
-const TIER_LABELS = { free: 'Free', premium: 'Premium' };
 const ROLE_LABELS = { user: 'Usuario', admin: 'Admin' };
 
 export default function AdminUsersPage() {

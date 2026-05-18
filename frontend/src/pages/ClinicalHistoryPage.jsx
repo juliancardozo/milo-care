@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useParams, useNavigate } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useI18n } from '../i18n/I18nProvider';
 import BackLink from '../components/BackLink';
@@ -35,7 +35,6 @@ import '../styles/clinical-history.css';
 export default function ClinicalHistoryPage() {
   const { t } = useI18n();
   const { dogId } = useParams();
-  const navigate = useNavigate();
   const dispatch = useDispatch();
 
   const loading = useSelector(selectLoading);

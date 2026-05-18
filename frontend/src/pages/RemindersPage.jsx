@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useI18n } from '../i18n/I18nProvider';
 import BackLink from '../components/BackLink';
 import { selectCurrentUser } from '../store/authSlice';
