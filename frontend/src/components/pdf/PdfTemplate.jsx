@@ -138,7 +138,7 @@ const PdfTemplate = React.forwardRef(
           <section className="pdf-section">
             <h2>👨‍⚕️ Consultas Recientes</h2>
             <div className="consultations-list">
-              {consultations.slice(0, 5).map((cons, idx) => (
+              {consultations.slice().reverse().slice(0, 5).map((cons, idx) => (
                 <div key={idx} className="consultation-item">
                   <div className="cons-header">
                     <strong>{cons.reason}</strong>
