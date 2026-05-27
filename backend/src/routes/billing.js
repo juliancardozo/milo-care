@@ -97,4 +97,29 @@ router.delete('/subscription', authenticate, async (req, res, next) => {
   }
 });
 
+// POST /api/billing/webhooks/mercadopago
+// Receives MP preapproval events directly (when notification_url points here in prod).
+// Always responds 200 immediately; syncs pending/past_due users in the background.
+router.post('/webhooks/mercadopago', async (req, res) => {
+  res.sendStatus(200);
+
+  setImmediate(async () => {
+    try {
+      const users = await User.find({
+        billingSubscriptionStatus: { $in: ['pending', 'past_due'] },
+        billingSubscriptionId: { $ne: null },
+      });
+      if (users.length === 0) return;
+      console.log(`[Webhook/MP] Syncing ${users.length} subscription(s) triggered by webhook`);
+      for (const user of users) {
+        await BillingService.syncUserTier(user).catch((err) =>
+          console.error(`[Webhook/MP] Failed to sync user ${user._id}: ${err.message}`)
+        );
+      }
+    } catch (err) {
+      console.error('[Webhook/MP] Background sync error:', err.message);
+    }
+  });
+});
+
 module.exports = router;

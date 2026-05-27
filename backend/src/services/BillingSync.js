@@ -24,13 +24,26 @@ async function processPendingSubscriptions() {
 }
 
 function startBillingSync() {
-  // Run every hour at minute 0
+  // Every 5 min: sync users who just subscribed (pending) — catches MP confirmation fast
+  cron.schedule('*/5 * * * *', () => {
+    User.find({ billingSubscriptionStatus: 'pending', billingSubscriptionId: { $ne: null } })
+      .then((users) => {
+        if (users.length === 0) return;
+        console.log(`[BillingSync] Fast-sync ${users.length} pending subscription(s)`);
+        return Promise.all(users.map((u) => BillingService.syncUserTier(u).catch((err) =>
+          console.error(`[BillingSync] Failed to sync user ${u._id}: ${err.message}`)
+        )));
+      })
+      .catch((err) => console.error('[BillingSync] Fast-sync error:', err.message));
+  });
+
+  // Hourly: catch past_due and any pending missed by the fast cron
   cron.schedule('0 * * * *', () => {
     processPendingSubscriptions().catch((err) =>
       console.error('[BillingSync] Unexpected error:', err.message)
     );
   });
-  console.log('[BillingSync] Hourly sync scheduled.');
+  console.log('[BillingSync] Sync scheduled (5-min for pending, hourly for all).');
 }
 
 module.exports = { startBillingSync };
