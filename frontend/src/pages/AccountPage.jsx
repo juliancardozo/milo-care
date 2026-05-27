@@ -62,7 +62,14 @@ export default function AccountPage() {
 
         <div className="field">
           <label>Plan</label>
-          <input value={user?.tier === 'premium' ? 'Premium' : 'Free'} disabled style={{ opacity: 0.6 }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input value={user?.tier === 'premium' ? 'Milo Care Premium' : 'Milo Care Free'} disabled style={{ opacity: 0.6 }} />
+            {user?.tier === 'premium' ? (
+              <Link to="/subscription" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>Gestionar</Link>
+            ) : (
+              <Link to="/upgrade" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>⭐ Mejorar plan</Link>
+            )}
+          </div>
         </div>
 
         {error && <p className="field-error">{error}</p>}

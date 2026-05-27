@@ -21,6 +21,7 @@ const eventsRoutes = require('./routes/events');
 const vaccinesRoutes = require('./routes/vaccines');
 const adminRoutes = require('./routes/admin');
 const landingRoutes = require('./routes/landing');
+const billingRoutes = require('./routes/billing');
 
 const app = express();
 
@@ -43,6 +44,7 @@ app.use('/api', calendarRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/billing', billingRoutes);
 app.use('/api', landingRoutes);
 
 // 404 fallback

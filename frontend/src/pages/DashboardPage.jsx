@@ -6,6 +6,7 @@ import { getDogs, getFullRemindersList } from '../services/api';
 import OfflineIndicator from '../components/OfflineIndicator';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserMenu from '../components/UserMenu';
+import UpgradeBanner from '../components/UpgradeBanner';
 import { useI18n } from '../i18n/I18nProvider';
 
 const HEALTH_SECTION_KEYS = ['vaccinations', 'medications', 'appointments', 'symptoms', 'history'];
@@ -88,6 +89,8 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
+            {user?.tier === 'free' && dogs.length >= 1 && <UpgradeBanner />}
+
             {/* Dog switcher tabs */}
             {dogs.length > 1 && (
               <nav className="dog-tabs">
@@ -179,12 +182,10 @@ export default function DashboardPage() {
             </section>
 
             <section className="dashboard-footer-links">
-              {user?.tier === 'premium' || dogs.length === 0 ? (
+              {user?.tier === 'premium' ? (
                 <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
               ) : (
-                <button disabled className="footer-link" style={{ cursor: 'not-allowed', opacity: 0.5 }} title={t('dogs.errors.tierLimitReached') || 'Free accounts limited to 1 dog'}>
-                  {t('dashboard.addAnotherDog')}
-                </button>
+                <Link to="/upgrade" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
               )}
               <Link to="/settings/notifications" className="footer-link">{t('dashboard.notificationSettings')}</Link>
             </section>

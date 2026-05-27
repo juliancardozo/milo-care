@@ -32,6 +32,9 @@ import AdminLeadsPage from './pages/admin/AdminLeadsPage';
 import ClinicalHistoryPage from './pages/ClinicalHistoryPage';
 import RemindersPage from './pages/RemindersPage';
 import PdfExportPage from './pages/PdfExportPage';
+import UpgradePage from './pages/UpgradePage';
+import SubscriptionPage from './pages/SubscriptionPage';
+import SubscriptionCallbackPage from './pages/SubscriptionCallbackPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -83,6 +86,9 @@ export default function App() {
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
           <Route path="/reminders" element={<RemindersPage />} />
+          <Route path="/upgrade" element={<UpgradePage />} />
+          <Route path="/subscription" element={<SubscriptionPage />} />
+          <Route path="/subscription/callback" element={<SubscriptionCallbackPage />} />
         </Route>
 
         {/* Admin routes */}
