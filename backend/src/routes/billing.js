@@ -19,7 +19,8 @@ router.post('/checkout', authenticate, async (req, res, next) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
-    if (user.tier === 'premium' && user.billingSubscriptionStatus === 'active') {
+    const activeStatuses = new Set(['active', 'pending', 'past_due', 'cancel_pending']);
+    if (user.billingSubscriptionId && activeStatuses.has(user.billingSubscriptionStatus)) {
       return res.status(409).json({ code: 'ALREADY_SUBSCRIBED', message: 'User already has an active subscription.' });
     }
 
