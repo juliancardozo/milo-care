@@ -6,16 +6,17 @@ const MP = require('./MercadoPagoGateway');
 // Statuses que mantienen acceso premium activo
 const PREMIUM_STATUSES = new Set(['active', 'past_due', 'cancel_pending']);
 
-async function startCheckout(user, returnUrl) {
-  const data = await MP.createPreapproval({ payerEmail: user.email, returnUrl });
+// Inicia el checkout. Retorna { checkoutUrl, planId }.
+// No almacena billingSubscriptionId todavía — el webhook lo asigna cuando el usuario paga.
+async function startCheckout(user, _returnUrl) {
+  const { planId, initPoint } = await MP.getOrCreatePlan();
 
   await User.findByIdAndUpdate(user._id, {
-    billingSubscriptionId: data.id,
     billingSubscriptionStatus: 'pending',
     billingProvider: 'MERCADOPAGO',
   });
 
-  return { checkoutUrl: data.init_point, subscriptionId: data.id };
+  return { checkoutUrl: initPoint, planId };
 }
 
 async function getSubscriptionStatus(preapprovalId) {
@@ -29,10 +30,11 @@ async function getSubscriptionStatus(preapprovalId) {
 
 async function cancelSubscription(preapprovalId) {
   const data = await MP.cancelPreapproval(preapprovalId);
-  // MP cancela de forma síncrona; si confirma 'cancelled' lo reflejamos de inmediato.
-  return MP.normalizeStatus(data.status); // 'canceled' o 'cancel_pending' como fallback
+  return MP.normalizeStatus(data.status);
 }
 
+// Sincroniza tier y estado del usuario con el preapproval actual en MP.
+// Requiere que user.billingSubscriptionId ya esté asignado (lo hace el webhook).
 async function syncUserTier(user) {
   if (!user.billingSubscriptionId) return user;
 

@@ -21,13 +21,15 @@ router.post('/checkout', authenticate, async (req, res, next) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
+    // Con el flujo de preapproval_plan, billingSubscriptionId solo se asigna
+    // después del webhook — el guard se basa en el status solamente.
     const activeStatuses = new Set(['active', 'pending', 'past_due', 'cancel_pending']);
-    if (user.billingSubscriptionId && activeStatuses.has(user.billingSubscriptionStatus)) {
+    if (activeStatuses.has(user.billingSubscriptionStatus)) {
       return res.status(409).json({ code: 'ALREADY_SUBSCRIBED', message: 'User already has an active subscription.' });
     }
 
-    const result = await BillingService.startCheckout(user, returnUrl);
-    return res.json(result);
+    const { checkoutUrl, planId } = await BillingService.startCheckout(user, returnUrl);
+    return res.json({ checkoutUrl, subscriptionId: planId });
   } catch (err) {
     next(err);
   }
@@ -62,8 +64,17 @@ router.post('/subscription/sync', authenticate, async (req, res, next) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
-    if (!user.billingSubscriptionId) {
+    if (!user.billingSubscriptionStatus || user.billingSubscriptionStatus === 'none') {
+      // Usuario que nunca inició checkout
       return res.status(400).json({ code: 'NO_SUBSCRIPTION', message: 'No subscription found for this user.' });
+    }
+    if (!user.billingSubscriptionId) {
+      // Checkout iniciado pero webhook de MP todavía no llegó
+      return res.json({
+        tier: user.tier,
+        status: user.billingSubscriptionStatus,
+        periodEnd: null,
+      });
     }
 
     const updated = await BillingService.syncUserTier(user);
@@ -135,10 +146,23 @@ router.post('/webhooks/mercadopago', async (req, res) => {
         throw err;
       }
 
-      // Sincronizar el usuario afectado por este preapproval.
-      const user = await User.findOne({ billingSubscriptionId: preapprovalId });
+      // Obtener datos del preapproval de MP para identificar al usuario por payer_email.
+      const preapprovalData = await MP.getPreapproval(preapprovalId);
+      const payerEmail = preapprovalData.payer_email;
+
+      // Buscar usuario por subscription ID (ya vinculado) o por email (primer evento).
+      let user = await User.findOne({ billingSubscriptionId: preapprovalId });
+      if (!user && payerEmail) {
+        user = await User.findOne({ email: payerEmail.toLowerCase() });
+        if (user) {
+          // Primera vez: vincular el preapproval al usuario
+          user.billingSubscriptionId = preapprovalId;
+          await user.save();
+        }
+      }
+
       if (!user) {
-        console.log(`[Webhook/MP] No se encontró usuario para preapproval ${preapprovalId}.`);
+        console.log(`[Webhook/MP] No se encontró usuario para preapproval ${preapprovalId} (email: ${payerEmail}).`);
         return;
       }
 

@@ -5,8 +5,8 @@ const crypto = require('crypto');
 const MP_API = 'https://api.mercadopago.com';
 
 // Normaliza los estados de MP preapproval a los estados internos de Milo Care.
-// MP:       pending   → authorized → paused    → cancelled
-// Milo:     pending   → active     → past_due  → canceled
+// MP:    pending → authorized → paused    → cancelled
+// Milo:  pending → active     → past_due  → canceled
 const MP_STATUS_MAP = {
   pending: 'pending',
   authorized: 'active',
@@ -35,28 +35,36 @@ async function mpRequest(method, path, body) {
   return res.json();
 }
 
-// Crea un preapproval (suscripción recurrente) en MercadoPago.
-// Retorna { id, init_point, status }.
-async function createPreapproval({ payerEmail, returnUrl }) {
-  const reason = process.env.MP_PLAN_REASON || 'Milo Care Premium';
-  const amount = parseFloat(process.env.MP_PLAN_AMOUNT || '299');
-  const currency = process.env.MP_CURRENCY || 'UYU';
+// Obtiene el plan existente (MP_PLAN_ID) o crea uno nuevo si no está configurado.
+// Retorna { planId, initPoint }.
+// Nota: el back_url del plan debe ser HTTPS; para dev local usar MP_CALLBACK_URL.
+async function getOrCreatePlan() {
+  const existingId = process.env.MP_PLAN_ID;
 
-  return mpRequest('POST', '/preapproval', {
-    back_url: returnUrl,
-    reason,
+  if (existingId) {
+    const plan = await mpRequest('GET', `/preapproval_plan/${encodeURIComponent(existingId)}`);
+    return { planId: plan.id, initPoint: plan.init_point };
+  }
+
+  const backUrl =
+    process.env.MP_CALLBACK_URL ||
+    `${process.env.APP_URL || 'http://localhost:5173'}/subscription/callback`;
+
+  const plan = await mpRequest('POST', '/preapproval_plan', {
+    back_url: backUrl,
+    reason: process.env.MP_PLAN_REASON || 'Milo Care Premium',
     auto_recurring: {
       frequency: 1,
       frequency_type: 'months',
-      transaction_amount: amount,
-      currency_id: currency,
+      transaction_amount: parseFloat(process.env.MP_PLAN_AMOUNT || '299'),
+      currency_id: process.env.MP_CURRENCY || 'UYU',
     },
-    payer_email: payerEmail,
-    status: 'pending',
   });
+
+  return { planId: plan.id, initPoint: plan.init_point };
 }
 
-// Obtiene el estado actual de un preapproval desde MercadoPago.
+// Obtiene el estado actual de un preapproval (suscripción instancia) desde MP.
 async function getPreapproval(preapprovalId) {
   return mpRequest('GET', `/preapproval/${encodeURIComponent(preapprovalId)}`);
 }
@@ -86,7 +94,6 @@ function verifyWebhookSignature(headers, rawBody) {
   const xSignature = headers['x-signature'];
   if (!xSignature) return false;
 
-  // Parsear ts y v1 del header
   const parts = {};
   for (const segment of xSignature.split(',')) {
     const [k, v] = segment.trim().split('=');
@@ -95,7 +102,6 @@ function verifyWebhookSignature(headers, rawBody) {
   const { ts, v1 } = parts;
   if (!ts || !v1) return false;
 
-  // Extraer data.id del body para armar el mensaje
   let dataId;
   try {
     const body = rawBody instanceof Buffer ? JSON.parse(rawBody.toString()) : rawBody;
@@ -115,13 +121,12 @@ function verifyWebhookSignature(headers, rawBody) {
   try {
     return crypto.timingSafeEqual(Buffer.from(v1, 'hex'), Buffer.from(expected, 'hex'));
   } catch {
-    // Buffers de distinto largo si los hexs no coinciden
     return false;
   }
 }
 
 module.exports = {
-  createPreapproval,
+  getOrCreatePlan,
   getPreapproval,
   cancelPreapproval,
   normalizeStatus,

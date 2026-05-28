@@ -22,4 +22,18 @@ services:
       - key: RESEND_FROM_EMAIL
         sync: false
       - key: APP_URL
-        sync: false          # URL de Netlify, ej: https://milocura.netlify.app
+        sync: false          # URL del frontend en Amplify, ej: https://main.XXXX.amplifyapp.com
+      - key: MP_ACCESS_TOKEN
+        sync: false          # APP_USR-... del seller (producción) o test user (sandbox)
+      - key: MP_WEBHOOK_SECRET
+        sync: false          # Secret generado por MP en el panel de webhooks
+      - key: MP_PLAN_ID
+        sync: false          # ID del preapproval_plan creado en MP (se crea una vez)
+      - key: MP_CALLBACK_URL
+        sync: false          # URL del frontend + /subscription/callback
+      - key: MP_PLAN_REASON
+        value: Milo Care Premium
+      - key: MP_PLAN_AMOUNT
+        value: "299"
+      - key: MP_CURRENCY
+        value: UYU
