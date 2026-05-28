@@ -21,12 +21,17 @@ const eventsRoutes = require('./routes/events');
 const vaccinesRoutes = require('./routes/vaccines');
 const adminRoutes = require('./routes/admin');
 const landingRoutes = require('./routes/landing');
+const billingRoutes = require('./routes/billing');
 
 const app = express();
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({ origin: process.env.APP_URL || 'http://localhost:5173', credentials: true }));
-app.use(express.json());
+// Captura el raw body antes de parsear JSON — necesario para verificar la firma de
+// los webhooks de MercadoPago (HMAC-SHA256 sobre el payload original).
+app.use(express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
@@ -43,6 +48,7 @@ app.use('/api', calendarRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/billing', billingRoutes);
 app.use('/api', landingRoutes);
 
 // 404 fallback
