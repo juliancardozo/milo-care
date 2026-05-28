@@ -1,68 +1,45 @@
 'use strict';
 
 const User = require('../models/User');
+const MP = require('./MercadoPagoGateway');
 
-const API_URL = process.env.BILLING_API_URL || 'https://micuota-online-2026-backend.onrender.com';
-const AUTH_TOKEN = process.env.BILLING_AUTH_TOKEN || '';
-const PLAN_CODE = process.env.BILLING_PLAN_CODE || 'MILO_PREMIUM';
-
-// Statuses from the payment platform that keep premium access alive
-const PREMIUM_STATUSES = new Set(['ACTIVE', 'PAST_DUE', 'CANCEL_PENDING']);
-
-async function billingRequest(method, path, body) {
-  const res = await fetch(`${API_URL}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Auth-Token': AUTH_TOKEN,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => '');
-    throw new Error(`Billing API ${method} ${path} → ${res.status}: ${text}`);
-  }
-
-  return res.json();
-}
+// Statuses que mantienen acceso premium activo
+const PREMIUM_STATUSES = new Set(['active', 'past_due', 'cancel_pending']);
 
 async function startCheckout(user, returnUrl) {
-  const data = await billingRequest('POST', '/api/billing/subscriptions/checkout', {
-    planCode: PLAN_CODE,
-    countryCode: 'UY',
-    currency: 'UYU',
-    returnUrl,
-    payerEmail: user.email,
-  });
+  const data = await MP.createPreapproval({ payerEmail: user.email, returnUrl });
 
-  // Persist subscription reference immediately so sync can match it on callback
   await User.findByIdAndUpdate(user._id, {
-    billingSubscriptionId: data.subscriptionId,
+    billingSubscriptionId: data.id,
     billingSubscriptionStatus: 'pending',
     billingProvider: 'MERCADOPAGO',
   });
 
-  return { checkoutUrl: data.checkoutUrl, subscriptionId: data.subscriptionId };
+  return { checkoutUrl: data.init_point, subscriptionId: data.id };
 }
 
-async function getSubscriptionStatus(subscriptionId) {
-  return billingRequest('GET', `/api/billing/subscriptions/${encodeURIComponent(subscriptionId)}`);
+async function getSubscriptionStatus(preapprovalId) {
+  const data = await MP.getPreapproval(preapprovalId);
+  return {
+    subscriptionId: data.id,
+    status: MP.normalizeStatus(data.status),
+    currentPeriodEndAt: data.next_payment_date || null,
+  };
 }
 
-async function cancelSubscription(subscriptionId) {
-  return billingRequest('POST', `/api/billing/subscriptions/${encodeURIComponent(subscriptionId)}/cancel`, {});
+async function cancelSubscription(preapprovalId) {
+  const data = await MP.cancelPreapproval(preapprovalId);
+  // MP cancela de forma síncrona; si confirma 'cancelled' lo reflejamos de inmediato.
+  return MP.normalizeStatus(data.status); // 'canceled' o 'cancel_pending' como fallback
 }
 
 async function syncUserTier(user) {
   if (!user.billingSubscriptionId) return user;
 
-  const remote = await getSubscriptionStatus(user.billingSubscriptionId);
-  const remoteStatus = (remote.status || '').toUpperCase();
-
-  const newTier = PREMIUM_STATUSES.has(remoteStatus) ? 'premium' : 'free';
-  const newStatus = remoteStatus.toLowerCase();
-  const newPeriodEnd = remote.currentPeriodEndAt ? new Date(remote.currentPeriodEndAt) : null;
+  const remote = await MP.getPreapproval(user.billingSubscriptionId);
+  const newStatus = MP.normalizeStatus(remote.status);
+  const newTier = PREMIUM_STATUSES.has(newStatus) ? 'premium' : 'free';
+  const newPeriodEnd = remote.next_payment_date ? new Date(remote.next_payment_date) : null;
 
   await User.findByIdAndUpdate(user._id, {
     tier: newTier,
@@ -70,7 +47,12 @@ async function syncUserTier(user) {
     billingPeriodEnd: newPeriodEnd,
   });
 
-  return { ...user.toObject ? user.toObject() : user, tier: newTier, billingSubscriptionStatus: newStatus, billingPeriodEnd: newPeriodEnd };
+  return {
+    ...user.toObject ? user.toObject() : user,
+    tier: newTier,
+    billingSubscriptionStatus: newStatus,
+    billingPeriodEnd: newPeriodEnd,
+  };
 }
 
 module.exports = { startCheckout, getSubscriptionStatus, cancelSubscription, syncUserTier };

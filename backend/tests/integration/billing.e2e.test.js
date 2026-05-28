@@ -1,18 +1,17 @@
 'use strict';
 
 /**
- * E2E integration test: Milo Care ↔ MiCuota billing platform
+ * E2E integration test: Milo Care billing ↔ MercadoPago (sandbox)
  *
- * Requires both services running:
- *   - Milo Care backend: http://localhost:3001
- *   - MiCuota platform:  http://localhost:8080
+ * Requiere:
+ *   - Milo Care backend corriendo: http://localhost:3001
+ *   - MP_ACCESS_TOKEN configurado con credenciales de sandbox (TEST-...)
  *
  * Run: npm test -- --testPathPattern=billing.e2e
  */
 
 const BASE_URL = 'http://localhost:3001';
-const BILLING_URL = process.env.BILLING_API_URL || 'http://localhost:8080';
-const BILLING_TOKEN = process.env.BILLING_AUTH_TOKEN;
+const MP_API = 'https://api.mercadopago.com';
 
 const TEST_EMAIL = `billing-e2e-${Date.now()}@milocura-test.com`;
 const TEST_PASSWORD = 'Test1234!';
@@ -37,14 +36,10 @@ async function mc(method, path, body, jwt) {
   return { status: res.status, body: json };
 }
 
-async function platform(method, path, body) {
-  const res = await fetch(`${BILLING_URL}${path}`, {
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Auth-Token': BILLING_TOKEN,
-    },
-    body: body ? JSON.stringify(body) : undefined,
+async function mpGet(path) {
+  const token = process.env.MP_ACCESS_TOKEN;
+  const res = await fetch(`${MP_API}${path}`, {
+    headers: { Authorization: `Bearer ${token}` },
   });
   const text = await res.text();
   let json;
@@ -55,7 +50,6 @@ async function platform(method, path, body) {
 // ─── setup/teardown ───────────────────────────────────────────────────────────
 
 beforeAll(async () => {
-  // Register a fresh test user
   const reg = await mc('POST', '/api/auth/register', {
     email: TEST_EMAIL,
     password: TEST_PASSWORD,
@@ -63,7 +57,6 @@ beforeAll(async () => {
   });
   expect(reg.status).toBe(201);
 
-  // Login
   const login = await mc('POST', '/api/auth/login', {
     email: TEST_EMAIL,
     password: TEST_PASSWORD,
@@ -74,7 +67,6 @@ beforeAll(async () => {
 });
 
 afterAll(async () => {
-  // Best-effort cleanup: cancel subscription if active
   if (billingSubscriptionId) {
     await mc('DELETE', '/api/billing/subscription', null, milocuraJwt).catch(() => {});
   }
@@ -83,31 +75,21 @@ afterAll(async () => {
 // ─── tests ────────────────────────────────────────────────────────────────────
 
 describe('Prerequisites', () => {
-  test('MiCuota platform is reachable', async () => {
-    // Use /db sub-path to skip slow SMTP probe (mail health check can hang > 5s)
-    const res = await fetch(`${BILLING_URL}/actuator/health/db`);
-    const body = await res.json();
-    expect(body.status).toBe('UP');
-  }, 15000);
-
-  test('BILLING_AUTH_TOKEN is configured and valid', async () => {
-    expect(BILLING_TOKEN).toBeTruthy();
-    const res = await platform('GET', '/api/billing/subscriptions');
-    expect(res.status).toBe(200);
+  test('Milo Care backend responde', async () => {
+    const res = await mc('POST', '/api/auth/login', { email: 'x@x.com', password: 'x' });
+    expect([200, 400, 401]).toContain(res.status);
   });
 
-  test('Milo Care backend is reachable', async () => {
-    const res = await mc('POST', '/api/auth/login', {
-      email: 'nonexistent@test.com',
-      password: 'x',
-    });
-    // 401 means the route exists and the server is responding
-    expect([200, 401, 400]).toContain(res.status);
+  test('MP_ACCESS_TOKEN configurado y válido', async () => {
+    expect(process.env.MP_ACCESS_TOKEN).toBeTruthy();
+    // Llamar a un endpoint público de MP que requiere autenticación
+    const res = await mpGet('/users/me');
+    expect(res.status).toBe(200);
   });
 });
 
 describe('POST /api/billing/checkout', () => {
-  test('returns checkoutUrl pointing to mercadopago.com', async () => {
+  test('retorna checkoutUrl de mercadopago.com', async () => {
     const res = await mc(
       'POST',
       '/api/billing/checkout',
@@ -117,14 +99,14 @@ describe('POST /api/billing/checkout', () => {
 
     expect(res.status).toBe(200);
     expect(res.body.checkoutUrl).toMatch(/mercadopago\.com/);
-    expect(res.body.subscriptionId).toMatch(/^billing-/);
+    expect(res.body.subscriptionId).toBeTruthy();
 
     billingSubscriptionId = res.body.subscriptionId;
     console.log('  checkoutUrl:', res.body.checkoutUrl);
-    console.log('  subscriptionId:', billingSubscriptionId);
+    console.log('  subscriptionId (preapproval MP):', billingSubscriptionId);
   });
 
-  test('user billingSubscriptionStatus is now pending', async () => {
+  test('billingSubscriptionStatus queda en pending', async () => {
     const res = await mc('GET', '/api/billing/subscription', null, milocuraJwt);
     expect(res.status).toBe(200);
     expect(res.body.status).toBe('pending');
@@ -132,7 +114,7 @@ describe('POST /api/billing/checkout', () => {
     expect(res.body.provider).toBe('MERCADOPAGO');
   });
 
-  test('returns 409 if user already has a pending/active subscription', async () => {
+  test('retorna 409 si el usuario ya tiene suscripción pendiente/activa', async () => {
     const res = await mc(
       'POST',
       '/api/billing/checkout',
@@ -143,13 +125,13 @@ describe('POST /api/billing/checkout', () => {
     expect(res.body.code).toBe('ALREADY_SUBSCRIBED');
   });
 
-  test('returns 400 when returnUrl is missing', async () => {
+  test('retorna 400 si falta returnUrl', async () => {
     const res = await mc('POST', '/api/billing/checkout', {}, milocuraJwt);
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('VALIDATION_ERROR');
   });
 
-  test('returns 401 without auth token', async () => {
+  test('retorna 401 sin token', async () => {
     const res = await mc('POST', '/api/billing/checkout', {
       returnUrl: 'https://app.milocura.com/subscription/callback',
     });
@@ -158,46 +140,36 @@ describe('POST /api/billing/checkout', () => {
 });
 
 describe('GET /api/billing/subscription', () => {
-  test('returns subscription details for authenticated user', async () => {
+  test('retorna detalles de suscripción del usuario autenticado', async () => {
     const res = await mc('GET', '/api/billing/subscription', null, milocuraJwt);
     expect(res.status).toBe(200);
     expect(res.body.tier).toMatch(/^(free|premium)$/);
     expect(res.body.status).toMatch(/^(none|pending|active|past_due|cancel_pending|canceled|failed)$/);
-    // provider is null when no subscription exists, or a string when one does
-    expect(res.body.provider === null || typeof res.body.provider === 'string').toBe(true);
   });
 
-  test('returns 401 without auth token', async () => {
+  test('retorna 401 sin token', async () => {
     const res = await mc('GET', '/api/billing/subscription');
     expect(res.status).toBe(401);
   });
 });
 
 describe('POST /api/billing/subscription/sync', () => {
-  test('sync returns current tier and status', async () => {
+  test('sync retorna tier y status actuales', async () => {
     const res = await mc('POST', '/api/billing/subscription/sync', null, milocuraJwt);
     expect(res.status).toBe(200);
     expect(res.body).toMatchObject({
       tier: expect.stringMatching(/^(free|premium)$/),
       status: expect.stringMatching(/^(none|pending|active|past_due|cancel_pending|canceled|failed)$/),
     });
-    // In sandbox without actual payment, status stays pending
+    // En sandbox sin pago real el status se mantiene pending
     expect(res.body.status).toBe('pending');
-    console.log('  After sync — tier:', res.body.tier, '| status:', res.body.status);
+    console.log('  Después de sync — tier:', res.body.tier, '| status:', res.body.status);
   });
 
-  test('returns 400 when user has no subscription', async () => {
-    // Register a fresh user with no subscription
+  test('retorna 400 si el usuario no tiene suscripción', async () => {
     const noSubEmail = `no-sub-${Date.now()}@milocura-test.com`;
-    await mc('POST', '/api/auth/register', {
-      email: noSubEmail,
-      password: TEST_PASSWORD,
-      name: 'No Sub User',
-    });
-    const login = await mc('POST', '/api/auth/login', {
-      email: noSubEmail,
-      password: TEST_PASSWORD,
-    });
+    await mc('POST', '/api/auth/register', { email: noSubEmail, password: TEST_PASSWORD, name: 'No Sub' });
+    const login = await mc('POST', '/api/auth/login', { email: noSubEmail, password: TEST_PASSWORD });
     const jwt = login.body.token;
 
     const res = await mc('POST', '/api/billing/subscription/sync', null, jwt);
@@ -207,12 +179,12 @@ describe('POST /api/billing/subscription/sync', () => {
 });
 
 describe('POST /api/billing/webhooks/mercadopago', () => {
-  test('responds 200 to a simulated MP preapproval event', async () => {
+  test('responde 200 a un evento simulado de preapproval', async () => {
     const mpEvent = {
       id: 999999,
       type: 'subscription_preapproval',
       date_created: new Date().toISOString(),
-      data: { id: 'fake-preapproval-id-for-test' },
+      data: { id: billingSubscriptionId || 'fake-preapproval-id-test' },
     };
 
     const res = await fetch(`${BASE_URL}/api/billing/webhooks/mercadopago`, {
@@ -224,7 +196,7 @@ describe('POST /api/billing/webhooks/mercadopago', () => {
     expect(res.status).toBe(200);
   });
 
-  test('responds 200 to an empty body (MP sometimes sends empty pings)', async () => {
+  test('responde 200 a un body vacío (ping de MP)', async () => {
     const res = await fetch(`${BASE_URL}/api/billing/webhooks/mercadopago`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -234,56 +206,43 @@ describe('POST /api/billing/webhooks/mercadopago', () => {
   });
 });
 
+describe('MP directo: preapproval existe en MercadoPago', () => {
+  test('el preapproval creado existe y tiene status pending en MP', async () => {
+    if (!billingSubscriptionId) {
+      console.log('  No hay subscriptionId — saltando verificación MP directa');
+      return;
+    }
+
+    const res = await mpGet(`/preapproval/${billingSubscriptionId}`);
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(billingSubscriptionId);
+    expect(res.body.status).toBe('pending');
+    console.log('  MP preapproval status:', res.body.status);
+    console.log('  MP preapproval reason:', res.body.reason);
+  });
+});
+
 describe('DELETE /api/billing/subscription (cancel)', () => {
-  test('sets billingSubscriptionStatus to cancel_pending', async () => {
+  test('cancela la suscripción y actualiza el status', async () => {
     const cancel = await mc('DELETE', '/api/billing/subscription', null, milocuraJwt);
     expect(cancel.status).toBe(200);
-    expect(cancel.body.status).toBe('cancel_pending');
+    // MP cancela sincrónicamente → debería llegar a 'canceled'
+    expect(['canceled', 'cancel_pending']).toContain(cancel.body.status);
 
-    // Verify status in GET
     const status = await mc('GET', '/api/billing/subscription', null, milocuraJwt);
-    expect(status.body.status).toBe('cancel_pending');
+    expect(['canceled', 'cancel_pending']).toContain(status.body.status);
 
-    billingSubscriptionId = null; // already handled in teardown
+    billingSubscriptionId = null;
   });
 
-  test('returns 400 when no subscription exists', async () => {
+  test('retorna 400 si no hay suscripción activa', async () => {
     const noSubEmail = `no-sub-cancel-${Date.now()}@milocura-test.com`;
-    await mc('POST', '/api/auth/register', {
-      email: noSubEmail,
-      password: TEST_PASSWORD,
-      name: 'No Sub Cancel User',
-    });
-    const login = await mc('POST', '/api/auth/login', {
-      email: noSubEmail,
-      password: TEST_PASSWORD,
-    });
+    await mc('POST', '/api/auth/register', { email: noSubEmail, password: TEST_PASSWORD, name: 'No Sub Cancel' });
+    const login = await mc('POST', '/api/auth/login', { email: noSubEmail, password: TEST_PASSWORD });
     const jwt = login.body.token;
 
     const res = await mc('DELETE', '/api/billing/subscription', null, jwt);
     expect(res.status).toBe(400);
     expect(res.body.code).toBe('NO_SUBSCRIPTION');
-  });
-});
-
-describe('MiCuota platform direct verification', () => {
-  test('subscription key is registered in MiCuota', async () => {
-    // The subscriptionId was stored before cancel test ran
-    // Re-fetch from Milo Care to get the actual ID
-    const milocuraStatus = await mc('GET', '/api/billing/subscription', null, milocuraJwt);
-    const subId = milocuraStatus.body.subscriptionId;
-
-    if (!subId) {
-      console.log('  No subscriptionId found — skipping platform check');
-      return;
-    }
-
-    const platformRes = await platform('GET', `/api/billing/subscriptions/${subId}`);
-    expect(platformRes.status).toBe(200);
-    expect(platformRes.body.planCode).toBe('PREMIUM');
-    expect(platformRes.body.provider).toBe('MERCADOPAGO');
-    expect(['PENDING', 'CANCEL_PENDING']).toContain(platformRes.body.status);
-    console.log('  MiCuota status:', platformRes.body.status);
-    console.log('  MiCuota planCode:', platformRes.body.planCode);
   });
 });

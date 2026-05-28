@@ -27,7 +27,11 @@ const app = express();
 
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({ origin: process.env.APP_URL || 'http://localhost:5173', credentials: true }));
-app.use(express.json());
+// Captura el raw body antes de parsear JSON — necesario para verificar la firma de
+// los webhooks de MercadoPago (HMAC-SHA256 sobre el payload original).
+app.use(express.json({
+  verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);

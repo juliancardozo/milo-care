@@ -3,7 +3,9 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const User = require('../models/User');
+const BillingWebhookEvent = require('../models/BillingWebhookEvent');
 const BillingService = require('../services/BillingService');
+const MP = require('../services/MercadoPagoGateway');
 
 const router = express.Router();
 
@@ -53,7 +55,7 @@ router.get('/subscription', authenticate, async (req, res, next) => {
 });
 
 // POST /api/billing/subscription/sync
-// Sincroniza el estado de la suscripción con la plataforma de pagos.
+// Sincroniza el estado de la suscripción con MercadoPago.
 // Lo llama la página de callback luego del pago, y el cron job.
 router.post('/subscription/sync', authenticate, async (req, res, next) => {
   try {
@@ -86,39 +88,64 @@ router.delete('/subscription', authenticate, async (req, res, next) => {
       return res.status(400).json({ code: 'NO_SUBSCRIPTION', message: 'No active subscription to cancel.' });
     }
 
-    await BillingService.cancelSubscription(user.billingSubscriptionId);
+    const finalStatus = await BillingService.cancelSubscription(user.billingSubscriptionId);
 
-    await User.findByIdAndUpdate(user._id, {
-      billingSubscriptionStatus: 'cancel_pending',
-    });
+    await User.findByIdAndUpdate(user._id, { billingSubscriptionStatus: finalStatus });
 
-    return res.json({ status: 'cancel_pending' });
+    return res.json({ status: finalStatus });
   } catch (err) {
     next(err);
   }
 });
 
 // POST /api/billing/webhooks/mercadopago
-// Receives MP preapproval events directly (when notification_url points here in prod).
-// Always responds 200 immediately; syncs pending/past_due users in the background.
+// Recibe notificaciones de MercadoPago para suscripciones (preapproval).
+// Responde 200 de inmediato; procesa en background con idempotency + verificación de firma.
 router.post('/webhooks/mercadopago', async (req, res) => {
   res.sendStatus(200);
 
   setImmediate(async () => {
     try {
-      const users = await User.find({
-        billingSubscriptionStatus: { $in: ['pending', 'past_due'] },
-        billingSubscriptionId: { $ne: null },
-      });
-      if (users.length === 0) return;
-      console.log(`[Webhook/MP] Syncing ${users.length} subscription(s) triggered by webhook`);
-      for (const user of users) {
-        await BillingService.syncUserTier(user).catch((err) =>
-          console.error(`[Webhook/MP] Failed to sync user ${user._id}: ${err.message}`)
-        );
+      // Verificar firma HMAC. req.rawBody lo inyecta el middleware en app.js.
+      if (!MP.verifyWebhookSignature(req.headers, req.rawBody || req.body)) {
+        console.warn('[Webhook/MP] Firma inválida — evento ignorado.');
+        return;
       }
+
+      const payload = req.body || {};
+      const preapprovalId = payload.data?.id;
+      if (!preapprovalId) return; // ping vacío
+
+      // Idempotency: registrar el evento; si ya existe, ignorar.
+      const idempotencyKey = `mercadopago:${preapprovalId}`;
+      try {
+        await BillingWebhookEvent.create({
+          idempotencyKey,
+          provider: 'MERCADOPAGO',
+          providerEventId: String(preapprovalId),
+          processingStatus: 'accepted',
+          processedAt: new Date(),
+        });
+      } catch (err) {
+        if (err.code === 11000) {
+          // Evento duplicado — MP puede re-enviar; ignorar es correcto.
+          console.log(`[Webhook/MP] Evento duplicado ${idempotencyKey} — ignorado.`);
+          return;
+        }
+        throw err;
+      }
+
+      // Sincronizar el usuario afectado por este preapproval.
+      const user = await User.findOne({ billingSubscriptionId: preapprovalId });
+      if (!user) {
+        console.log(`[Webhook/MP] No se encontró usuario para preapproval ${preapprovalId}.`);
+        return;
+      }
+
+      await BillingService.syncUserTier(user);
+      console.log(`[Webhook/MP] Usuario ${user._id} sincronizado (preapproval ${preapprovalId}).`);
     } catch (err) {
-      console.error('[Webhook/MP] Background sync error:', err.message);
+      console.error('[Webhook/MP] Error en background sync:', err.message);
     }
   });
 });

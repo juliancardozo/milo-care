@@ -13,8 +13,9 @@ export default function SubscriptionCallbackPage() {
   useEffect(() => {
     syncSubscription()
       .then(({ data }) => {
-        if (data.tier === 'premium' && data.status === 'active') {
-          dispatch(updateUser({ tier: 'premium', billingSubscriptionStatus: 'active' }));
+        const premiumStatuses = new Set(['active', 'past_due', 'cancel_pending']);
+        if (data.tier === 'premium' || premiumStatuses.has(data.status)) {
+          dispatch(updateUser({ tier: 'premium', billingSubscriptionStatus: data.status }));
           setStatus('success');
         } else if (data.status === 'pending') {
           setStatus('pending');
