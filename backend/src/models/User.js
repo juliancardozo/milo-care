@@ -197,14 +197,9 @@ const userSchema = new Schema(
     name: { type: String, required: true, trim: true, maxlength: 100 },
     tier: { type: String, enum: ['free', 'premium'], default: 'free' },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
-    billingSubscriptionId: { type: String, default: null },
-    billingSubscriptionStatus: {
-      type: String,
-      enum: ['none', 'pending', 'active', 'past_due', 'cancel_pending', 'canceled', 'failed'],
-      default: 'none',
-    },
-    billingPeriodEnd: { type: Date, default: null },
-    billingProvider: { type: String, default: null },
+    // Último pedido de interés en Premium (se notifica al admin por email).
+    // Agnóstico al proveedor de pago: usado para deduplicar pedidos dentro de 24h.
+    premiumInterestAt: { type: Date, default: null },
     reminderWindowPreference: {
       type: Number,
       default: null,

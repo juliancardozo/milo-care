@@ -1,27 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { updateUser } from '../store/authSlice';
 import { useI18n } from '../i18n/I18nProvider';
-import { getSubscriptionStatus, cancelSubscription } from '../services/billingApi';
-
-const STATUS_LABEL = {
-  none:           'billing.statusNone',
-  pending:        'billing.statusPending',
-  active:         'billing.statusActive',
-  past_due:       'billing.statusPastDue',
-  cancel_pending: 'billing.statusCancelPending',
-  canceled:       'billing.statusCanceled',
-  failed:         'billing.statusFailed',
-};
+import { getSubscriptionStatus } from '../services/billingApi';
 
 export default function SubscriptionPage() {
   const { t } = useI18n();
-  const dispatch = useDispatch();
   const [sub, setSub] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [canceling, setCanceling] = useState(false);
-  const [confirmCancel, setConfirmCancel] = useState(false);
   const [error, setError] = useState(null);
 
   useEffect(() => {
@@ -31,21 +16,6 @@ export default function SubscriptionPage() {
       .finally(() => setLoading(false));
   }, [t]);
 
-  async function handleCancel() {
-    setCanceling(true);
-    setError(null);
-    try {
-      await cancelSubscription();
-      dispatch(updateUser({ tier: 'free', billingSubscriptionStatus: 'cancel_pending' }));
-      setSub((prev) => ({ ...prev, status: 'cancel_pending' }));
-      setConfirmCancel(false);
-    } catch {
-      setError(t('billing.cancelError'));
-    } finally {
-      setCanceling(false);
-    }
-  }
-
   if (loading) {
     return (
       <div className="page-container">
@@ -54,9 +24,7 @@ export default function SubscriptionPage() {
     );
   }
 
-  const isActive = sub?.status === 'active' || sub?.status === 'past_due';
-  const canCancel = isActive && sub?.status !== 'cancel_pending';
-  const periodEnd = sub?.periodEnd ? new Date(sub.periodEnd).toLocaleDateString() : null;
+  const isPremium = sub?.tier === 'premium';
 
   return (
     <div className="page-container">
@@ -71,64 +39,19 @@ export default function SubscriptionPage() {
           <div className="subscription-row">
             <span className="subscription-label">{t('billing.plan')}</span>
             <span className="subscription-value">
-              {sub?.tier === 'premium' ? 'Milo Care Premium' : 'Milo Care Free'}
+              {isPremium ? 'Milo Care Premium' : 'Milo Care Free'}
             </span>
           </div>
-
-          <div className="subscription-row">
-            <span className="subscription-label">{t('billing.status')}</span>
-            <span className={`subscription-badge subscription-badge--${sub?.status || 'none'}`}>
-              {t(STATUS_LABEL[sub?.status] || 'billing.statusNone')}
-            </span>
-          </div>
-
-          {periodEnd && (
-            <div className="subscription-row">
-              <span className="subscription-label">{t('billing.nextBilling')}</span>
-              <span className="subscription-value">{periodEnd}</span>
-            </div>
-          )}
         </div>
 
-        {sub?.tier === 'free' && sub?.status === 'none' && (
+        {!isPremium && (
           <Link to="/upgrade" className="btn btn-primary" style={{ marginTop: '1.5rem' }}>
             {t('billing.upgradeBtn')}
           </Link>
         )}
 
-        {canCancel && !confirmCancel && (
-          <button
-            className="btn btn-ghost subscription-cancel-btn"
-            onClick={() => setConfirmCancel(true)}
-          >
-            {t('billing.cancelSubscription')}
-          </button>
-        )}
-
-        {confirmCancel && (
-          <div className="subscription-confirm-cancel">
-            <p>{t('billing.cancelConfirm')}</p>
-            <div className="subscription-confirm-actions">
-              <button
-                className="btn btn-danger"
-                onClick={handleCancel}
-                disabled={canceling}
-              >
-                {canceling ? t('billing.canceling') : t('billing.confirmYes')}
-              </button>
-              <button
-                className="btn btn-ghost"
-                onClick={() => setConfirmCancel(false)}
-                disabled={canceling}
-              >
-                {t('common.cancel')}
-              </button>
-            </div>
-          </div>
-        )}
-
-        {sub?.status === 'cancel_pending' && (
-          <p className="subscription-info-note">{t('billing.cancelPendingNote')}</p>
+        {isPremium && (
+          <p className="subscription-info-note">{t('billing.manageNote')}</p>
         )}
       </div>
     </div>

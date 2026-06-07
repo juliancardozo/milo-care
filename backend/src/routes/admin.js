@@ -206,6 +206,8 @@ router.post('/email/test', async (req, res, next) => {
       medication:   () => EmailService.sendMedicationReminder({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', medicationName: 'Carprofen', dosage: '25 mg' }),
       appointment:  () => EmailService.sendAppointmentReminder({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', appointmentTitle: 'Control sano adulto', clinicName: 'Clínica Veterinaria Central', appointmentDate: new Date(Date.now() + 864e5) }),
       passwordReset: () => EmailService.sendPasswordReset({ to: admin.email, resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=test` }),
+      premiumInterest: () => EmailService.sendPremiumInterestNotification({ to: admin.email, userName: admin.name, userEmail: admin.email, userId: String(admin._id), dogsCount: 2, requestedAt: new Date() }),
+      premiumInterestConfirmation: () => EmailService.sendPremiumInterestConfirmation({ to: admin.email, userName: admin.name }),
     };
 
     const send = map[type];

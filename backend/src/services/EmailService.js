@@ -185,6 +185,47 @@ function tplPasswordReset({ resetUrl }) {
   });
 }
 
+function tplPremiumInterest({ userName, userEmail, userId, dogsCount, requestedAt }) {
+  const dateStr = fmtDateTime(requestedAt || new Date());
+  return layout({
+    title: 'Nuevo interés en Premium',
+    preheader: `${userName} está interesado en Milo Care Premium.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Nuevo interés en Premium ⭐</h2>
+      <p>Un usuario expresó interés en pasarse a <strong>Milo Care Premium</strong>:</p>
+      <div style="background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>Nombre:</strong> ${userName || '(sin nombre)'}<br/>
+        <strong>Email:</strong> <a href="mailto:${userEmail}">${userEmail}</a><br/>
+        <strong>Perros registrados:</strong> ${dogsCount != null ? dogsCount : '—'}<br/>
+        <strong>Fecha:</strong> ${dateStr}<br/>
+        <strong>User ID:</strong> ${userId}
+      </div>
+      <p>Contactá al usuario para coordinar el alta de Premium.</p>
+    `,
+  });
+}
+
+function tplPremiumInterestConfirmation({ userName }) {
+  return layout({
+    title: 'Recibimos tu interés en Premium',
+    preheader: 'Gracias por tu interés en Milo Care Premium. Te vamos a contactar.',
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">¡Gracias por tu interés! ⭐</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        Recibimos tu interés en <strong>Milo Care Premium</strong>. Nuestro equipo se va a
+        poner en contacto con vos a la brevedad para ayudarte con el alta.
+      </p>
+      <div style="background:#eff6ff;border-left:4px solid #4f8ef7;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        Mientras tanto, podés seguir usando tu cuenta con normalidad. 🐾
+      </div>
+      <p>¡Gracias por confiar en Milo Care!</p>
+    `,
+    ctaUrl: process.env.APP_URL || 'http://localhost:5173',
+    ctaLabel: 'Ir a Milo Care',
+  });
+}
+
 // ── EmailService ─────────────────────────────────────────────────────────────
 
 const EmailService = {
@@ -249,6 +290,26 @@ const EmailService = {
     });
   },
 
+  /** Aviso interno al admin: un usuario quiere Premium */
+  async sendPremiumInterestNotification({ to, userName, userEmail, userId, dogsCount, requestedAt }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `Nuevo interés en Premium: ${userName || userEmail}`,
+      html: tplPremiumInterest({ userName, userEmail, userId, dogsCount, requestedAt }),
+    });
+  },
+
+  /** Confirmación al usuario de que recibimos su interés en Premium */
+  async sendPremiumInterestConfirmation({ to, userName }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: 'Recibimos tu interés en Milo Care Premium',
+      html: tplPremiumInterestConfirmation({ userName }),
+    });
+  },
+
   // Expose templates for admin preview
   _templates: {
     welcome: tplWelcome,
@@ -257,6 +318,8 @@ const EmailService = {
     medication: tplMedicationReminder,
     appointment: tplAppointmentReminder,
     passwordReset: tplPasswordReset,
+    premiumInterest: tplPremiumInterest,
+    premiumInterestConfirmation: tplPremiumInterestConfirmation,
   },
 };
 

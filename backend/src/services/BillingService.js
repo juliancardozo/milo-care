@@ -1,60 +1,44 @@
 'use strict';
 
 const User = require('../models/User');
-const MP = require('./MercadoPagoGateway');
+const EmailService = require('./EmailService');
 
-// Statuses que mantienen acceso premium activo
-const PREMIUM_STATUSES = new Set(['active', 'past_due', 'cancel_pending']);
+// Email interno que recibe los avisos de interés en Premium.
+const ADMIN_EMAIL = process.env.BILLING_NOTIFY_EMAIL || 'julian.cardozo.viggiano@gmail.com';
 
-// Inicia el checkout. Retorna { checkoutUrl, planId }.
-// No almacena billingSubscriptionId todavía — el webhook lo asigna cuando el usuario paga.
-async function startCheckout(user, _returnUrl) {
-  const { planId, initPoint } = await MP.getOrCreatePlan();
+// Ventana de deduplicación: no reenviar el aviso si el usuario ya pidió en las últimas 24h.
+const DEDUPE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
-  await User.findByIdAndUpdate(user._id, {
-    billingSubscriptionStatus: 'pending',
-    billingProvider: 'MERCADOPAGO',
-  });
+// Registra el interés de un usuario en el plan Premium.
+//
+// Billing agnóstico: hoy el "proveedor" activo es email-interés (alta manual). En el futuro,
+// un proveedor de pago real implementaría esta misma operación devolviendo, por ejemplo,
+// { checkoutUrl } para redirigir al checkout. El resto de la app no debería cambiar.
+async function requestUpgrade(user, { dogsCount } = {}) {
+  const now = new Date();
+  const deduped =
+    !!user.premiumInterestAt && (now - user.premiumInterestAt) < DEDUPE_WINDOW_MS;
 
-  return { checkoutUrl: initPoint, planId };
+  if (!deduped) {
+    // 1) Notificar al admin (bloqueante: si falla, el caller responde el error).
+    await EmailService.sendPremiumInterestNotification({
+      to: ADMIN_EMAIL,
+      userName: user.name,
+      userEmail: user.email,
+      userId: String(user._id),
+      dogsCount,
+      requestedAt: now,
+    });
+
+    // 2) Confirmar al usuario (fire-and-forget: no bloquear el flujo si falla).
+    EmailService.sendPremiumInterestConfirmation({ to: user.email, userName: user.name })
+      .catch((err) => console.error('[Billing] Confirmation email failed:', err.message));
+
+    // 3) Registrar el pedido para deduplicar futuros clics.
+    await User.findByIdAndUpdate(user._id, { premiumInterestAt: now });
+  }
+
+  return { status: 'interest_registered', deduped };
 }
 
-async function getSubscriptionStatus(preapprovalId) {
-  const data = await MP.getPreapproval(preapprovalId);
-  return {
-    subscriptionId: data.id,
-    status: MP.normalizeStatus(data.status),
-    currentPeriodEndAt: data.next_payment_date || null,
-  };
-}
-
-async function cancelSubscription(preapprovalId) {
-  const data = await MP.cancelPreapproval(preapprovalId);
-  return MP.normalizeStatus(data.status);
-}
-
-// Sincroniza tier y estado del usuario con el preapproval actual en MP.
-// Requiere que user.billingSubscriptionId ya esté asignado (lo hace el webhook).
-async function syncUserTier(user) {
-  if (!user.billingSubscriptionId) return user;
-
-  const remote = await MP.getPreapproval(user.billingSubscriptionId);
-  const newStatus = MP.normalizeStatus(remote.status);
-  const newTier = PREMIUM_STATUSES.has(newStatus) ? 'premium' : 'free';
-  const newPeriodEnd = remote.next_payment_date ? new Date(remote.next_payment_date) : null;
-
-  await User.findByIdAndUpdate(user._id, {
-    tier: newTier,
-    billingSubscriptionStatus: newStatus,
-    billingPeriodEnd: newPeriodEnd,
-  });
-
-  return {
-    ...user.toObject ? user.toObject() : user,
-    tier: newTier,
-    billingSubscriptionStatus: newStatus,
-    billingPeriodEnd: newPeriodEnd,
-  };
-}
-
-module.exports = { startCheckout, getSubscriptionStatus, cancelSubscription, syncUserTier };
+module.exports = { requestUpgrade };
