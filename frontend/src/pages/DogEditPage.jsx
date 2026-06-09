@@ -47,10 +47,12 @@ export default function DogEditPage() {
           countryProfile: data.countryProfile || 'AR',
           city: data.city || '',
           timezone: data.timezone || '',
+          ownerPhone: data.ownerPhone || '',
         });
         vet.setForm({
           hasVeterinarian: Boolean(data.hasVeterinarian),
           veterinarianName: data.veterinarianName || '',
+          veterinarianPhone: data.veterinarianPhone || '',
           allergies: (data.allergies || []).join(', '),
           conditions: (data.conditions || []).join(', '),
         });
@@ -94,6 +96,7 @@ export default function DogEditPage() {
       countryProfile: owner.form.countryProfile,
       city: owner.form.city,
       timezone: owner.form.timezone,
+      ownerPhone: owner.form.ownerPhone,
     });
   }
 
@@ -102,6 +105,7 @@ export default function DogEditPage() {
     save(vet, {
       hasVeterinarian: vet.form.hasVeterinarian,
       veterinarianName: vet.form.veterinarianName,
+      veterinarianPhone: vet.form.veterinarianPhone,
       allergies: vet.form.allergies
         .split(',').map((s) => s.trim()).filter(Boolean),
       conditions: vet.form.conditions
@@ -192,6 +196,11 @@ export default function DogEditPage() {
           <input id="owner-city" value={owner.form.city} onChange={owner.field('city')} placeholder="Ej: Buenos Aires" />
         </div>
         <div className="field">
+          <label htmlFor="owner-phone">Teléfono de contacto</label>
+          <input id="owner-phone" type="tel" value={owner.form.ownerPhone} onChange={owner.field('ownerPhone')} placeholder="Ej: +598 99 123 456" />
+          <p className="field-hint">Aparece en la ficha pública del QR para que te contacten si encuentran a tu perro.</p>
+        </div>
+        <div className="field">
           <label htmlFor="owner-tz">Zona horaria</label>
           <input id="owner-tz" value={owner.form.timezone} onChange={owner.field('timezone')} placeholder="Ej: America/Argentina/Buenos_Aires" />
         </div>
@@ -214,10 +223,16 @@ export default function DogEditPage() {
           </label>
         </div>
         {vet.form.hasVeterinarian && (
-          <div className="field">
-            <label htmlFor="vet-name">Nombre del veterinario</label>
-            <input id="vet-name" value={vet.form.veterinarianName} onChange={vet.field('veterinarianName')} placeholder="Nombre o clínica" />
-          </div>
+          <>
+            <div className="field">
+              <label htmlFor="vet-name">Nombre del veterinario</label>
+              <input id="vet-name" value={vet.form.veterinarianName} onChange={vet.field('veterinarianName')} placeholder="Nombre o clínica" />
+            </div>
+            <div className="field">
+              <label htmlFor="vet-phone">Teléfono del veterinario</label>
+              <input id="vet-phone" type="tel" value={vet.form.veterinarianPhone} onChange={vet.field('veterinarianPhone')} placeholder="Ej: +598 2 480 0000" />
+            </div>
+          </>
         )}
         <div className="field">
           <label htmlFor="vet-allergies">Alergias conocidas</label>

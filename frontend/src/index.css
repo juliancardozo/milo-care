@@ -2640,3 +2640,109 @@ button.btn-secondary:hover { background: var(--color-bg); }
   .upgrade-hero-title { font-size: 1.4rem; }
   .upgrade-cta-btn { font-size: 1rem; }
 }
+
+/* ── Form hint ─────────────────────────────────────────── */
+.field-hint {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* ── Public pet page (QR del pase) ─────────────────────── */
+.public-pet {
+  min-height: 100vh;
+  background: linear-gradient(160deg, #eff6ff 0%, #f8fafc 100%);
+  padding: 24px 16px 48px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.public-pet-langbar {
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+.public-pet-loading {
+  margin-top: 80px;
+  color: #6b7280;
+}
+.public-pet-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
+  padding: 28px 24px 32px;
+  text-align: center;
+}
+.public-pet-brand {
+  display: inline-block;
+  font-weight: 600;
+  color: #4f8ef7;
+  margin-bottom: 16px;
+}
+.public-pet-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 12px;
+  display: block;
+  border: 4px solid #eff6ff;
+}
+.public-pet-photo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.6rem;
+  background: #eff6ff;
+}
+.public-pet-name {
+  margin: 0;
+  font-size: 1.7rem;
+}
+.public-pet-breed {
+  margin: 2px 0 0;
+  color: #6b7280;
+}
+.public-pet-lost {
+  margin: 16px 0;
+  padding: 10px 14px;
+  background: #fef3c7;
+  border-radius: 10px;
+  color: #92400e;
+  font-size: 0.92rem;
+}
+.public-pet-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.public-pet-call {
+  width: 100%;
+  text-align: center;
+}
+.public-pet-data {
+  margin: 0;
+  text-align: left;
+  border-top: 1px solid #f1f5f9;
+}
+.public-pet-data > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.public-pet-data dt {
+  color: #6b7280;
+  font-size: 0.9rem;
+}
+.public-pet-data dd {
+  margin: 0;
+  font-weight: 600;
+  text-align: right;
+}

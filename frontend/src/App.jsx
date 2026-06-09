@@ -34,6 +34,7 @@ import RemindersPage from './pages/RemindersPage';
 import PdfExportPage from './pages/PdfExportPage';
 import UpgradePage from './pages/UpgradePage';
 import SubscriptionPage from './pages/SubscriptionPage';
+import PublicPetPage from './pages/PublicPetPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -41,8 +42,10 @@ export default function App() {
   const { t } = useI18n();
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isLanding = location.pathname === '/';
-  // Hide the global app header on dashboard and landing (both have their own nav)
-  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard';
+  const isPublicPet = location.pathname.startsWith('/p/');
+  // Hide the global app header on dashboard, landing, and the public pet page
+  // (each has its own chrome / is meant for logged-out visitors).
+  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard' && !isPublicPet;
 
   return (
     <>
@@ -65,6 +68,7 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/p/:dogId" element={<PublicPetPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>

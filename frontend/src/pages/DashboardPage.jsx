@@ -7,6 +7,7 @@ import OfflineIndicator from '../components/OfflineIndicator';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserMenu from '../components/UserMenu';
 import UpgradeBanner from '../components/UpgradeBanner';
+import AddToWalletButton from '../components/AddToWalletButton';
 import { useI18n } from '../i18n/I18nProvider';
 
 const HEALTH_SECTION_KEYS = ['vaccinations', 'medications', 'appointments', 'symptoms', 'history'];
@@ -118,6 +119,7 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <Link to={`/dogs/${activeDog.id}/edit`} className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
+                <AddToWalletButton dogId={activeDog.id} className="dog-profile-wallet" />
               </div>
             )}
 

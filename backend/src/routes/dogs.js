@@ -77,8 +77,10 @@ function dogResponse(dog) {
     countryProfile: obj.countryProfile || 'AR',
     city: obj.city || '',
     timezone: obj.timezone || '',
+    ownerPhone: obj.ownerPhone || '',
     hasVeterinarian: Boolean(obj.hasVeterinarian),
     veterinarianName: obj.veterinarianName || '',
+    veterinarianPhone: obj.veterinarianPhone || '',
     allergies: obj.allergies || [],
     conditions: obj.conditions || [],
   };
@@ -155,7 +157,7 @@ router.patch('/:dogId', authenticate, async (req, res, next) => {
       name, breed, dateOfBirth, photoUrl,
       sex, neutered, weightKg, microchipId, birthDateConfidence, estimatedAgeMonths,
       countryProfile, city, timezone,
-      hasVeterinarian, veterinarianName,
+      ownerPhone, hasVeterinarian, veterinarianName, veterinarianPhone,
       allergies, conditions,
     } = req.body;
 
@@ -202,8 +204,10 @@ router.patch('/:dogId', authenticate, async (req, res, next) => {
     if (city !== undefined) dog.city = String(city).trim();
     if (timezone !== undefined) dog.timezone = String(timezone).trim();
 
+    if (ownerPhone !== undefined) dog.ownerPhone = String(ownerPhone).trim();
     if (hasVeterinarian !== undefined) dog.hasVeterinarian = Boolean(hasVeterinarian);
     if (veterinarianName !== undefined) dog.veterinarianName = String(veterinarianName).trim();
+    if (veterinarianPhone !== undefined) dog.veterinarianPhone = String(veterinarianPhone).trim();
 
     if (Array.isArray(allergies)) dog.allergies = allergies.map((a) => String(a).trim()).filter(Boolean);
     if (Array.isArray(conditions)) dog.conditions = conditions.map((c) => String(c).trim()).filter(Boolean);

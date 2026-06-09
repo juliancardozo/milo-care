@@ -13,6 +13,8 @@ const medicationsRoutes = require('./routes/medications');
 const appointmentsRoutes = require('./routes/appointments');
 const symptomsRoutes = require('./routes/symptoms');
 const consultationsRoutes = require('./routes/consultations');
+const walletPassesRoutes = require('./routes/walletPasses');
+const publicDogsRoutes = require('./routes/publicDogs');
 const remindersRoutes = require('./routes/reminders');
 const usersRoutes = require('./routes/users');
 const onboardingRoutes = require('./routes/onboarding');
@@ -37,6 +39,7 @@ app.use('/api/dogs/:dogId/medications', medicationsRoutes);
 app.use('/api/dogs/:dogId/appointments', appointmentsRoutes);
 app.use('/api/dogs/:dogId/symptoms', symptomsRoutes);
 app.use('/api/dogs/:dogId/consultations', consultationsRoutes);
+app.use('/api/dogs/:dogId/wallet-pass', walletPassesRoutes);
 app.use('/api/dashboard/reminders', remindersRoutes);
 app.use('/api/user', usersRoutes);
 app.use('/api/onboarding', onboardingRoutes);
@@ -45,6 +48,7 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/public', publicDogsRoutes);
 app.use('/api', landingRoutes);
 
 // 404 fallback
