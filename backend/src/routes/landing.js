@@ -32,7 +32,7 @@ router.post('/founder-interest', async (req, res, next) => {
   }
   try {
     await Lead.create({ email: email.trim(), tipo: 'founder', nombre: name || '' });
-    // TODO: wire up payment provider (Stripe / Mercado Pago) and notify team
+    // TODO: wire up payment provider and notify team
     return res.status(200).json({ ok: true });
   } catch (err) {
     next(err);
