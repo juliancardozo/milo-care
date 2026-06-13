@@ -19,6 +19,14 @@ export default function CardsPage() {
 
   const templates = loveTemplates(language);
 
+  // Frase cálida que rota en cada visita (toca el vínculo, no la vanidad).
+  const [heartfelt] = useState(() => {
+    const phrases = t('milestones.cardsPhrases');
+    return Array.isArray(phrases) && phrases.length
+      ? phrases[Math.floor(Math.random() * phrases.length)]
+      : t('milestones.cardsSubtitle');
+  });
+
   useEffect(() => {
     getDog(dogId).then(({ data }) => setDog(data)).catch(() => setDog(null));
   }, [dogId]);
@@ -40,7 +48,7 @@ export default function CardsPage() {
       <BackLink to="/dashboard" />
       <div className="cards-head">
         <h1>{t('milestones.cardsTitle')}</h1>
-        <p className="list-empty" style={{ margin: 0 }}>{t('milestones.cardsSubtitle')}</p>
+        <p className="list-empty" style={{ margin: 0 }}>{heartfelt}</p>
       </div>
 
       <div className="cards-templates">

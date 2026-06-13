@@ -1,82 +1,74 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { getAppointments, createAppointment, updateAppointment, deleteAppointment } from '../services/api';
+import { getAppointments, createAppointment, updateAppointment, deleteAppointment, getDog } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
 import AppointmentCatalogSelect from '../components/AppointmentCatalogSelect';
 import BackLink from '../components/BackLink';
+import '../styles/appointments.css';
 
 const now = new Date();
+function isUpcoming(a) { return !a.isCancelled && new Date(a.appointmentDate) >= now; }
 
-function isUpcoming(a) {
-  return !a.isCancelled && new Date(a.appointmentDate) >= now;
+function countdown(dateStr) {
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const ad = new Date(dateStr); ad.setHours(0, 0, 0, 0);
+  const days = Math.round((ad - today) / 86400000);
+  if (days < 0) return { label: `Hace ${Math.abs(days)} d`, tone: 'gray' };
+  if (days === 0) return { label: 'Hoy', tone: 'red' };
+  if (days === 1) return { label: 'Mañana', tone: 'amber' };
+  if (days < 7) return { label: `En ${days} días`, tone: 'amber' };
+  if (days < 14) return { label: 'En 1 semana', tone: 'blue' };
+  if (days < 31) return { label: `En ${Math.round(days / 7)} semanas`, tone: 'blue' };
+  return { label: `En ${Math.round(days / 30)} meses`, tone: 'blue' };
 }
 
 function AppointmentCard({ a, onCancel, onDelete, t }) {
-  const [expanded, setExpanded] = useState(false);
-  const dateStr = new Date(a.appointmentDate).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' });
+  const date = new Date(a.appointmentDate);
+  const month = date.toLocaleDateString('es-AR', { month: 'short' }).replace('.', '');
+  const day = date.getDate();
+  const time = date.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
+  const cd = a.isCancelled ? null : countdown(a.appointmentDate);
+  const tone = a.isCancelled ? 'gray' : (cd?.tone || 'blue');
 
   return (
-    <li className={`record-item ${a.isCancelled ? 'opacity-50' : ''}`}>
-      <div className="record-info">
-        <h3>
-          {a.title}
-          {a.isWsavaRecommended && !a.urgency && (
-            <span className="badge-wsava-inline" style={{ marginLeft: '8px' }}>✓ WSAVA</span>
-          )}
-          {a.urgency && (
-            <span className="badge-urgency-inline" style={{ marginLeft: '8px' }}>🚨 Urgencia</span>
-          )}
-          {a.isCancelled && (
-            <span className="badge badge-cancelled" style={{ marginLeft: '8px' }}>{t('appointments.cancelled')}</span>
-          )}
-        </h3>
-        <p>{dateStr}</p>
-        {a.vetName && <p>{t('appointments.vet')}: {a.vetName}</p>}
-        {a.clinicName && <p>Clínica: {a.clinicName}</p>}
-        {a.location && <p>{t('appointments.location')}: {a.location}</p>}
-        {a.notes && <p style={{ fontSize: '0.85rem', color: 'var(--color-muted)' }}>{a.notes}</p>}
+    <article className={`appt-card ${a.isCancelled ? 'cancelled' : ''}`}>
+      <div className={`appt-tile ${tone}`}>
+        <div className="appt-tile-month">{month}</div>
+        <div className="appt-tile-day">{day}</div>
+        <div className="appt-tile-time">{time}</div>
+      </div>
+
+      <div className="appt-body">
+        <div className="appt-title-row">
+          <span className="appt-title">{a.title}</span>
+          {a.isWsavaRecommended && !a.urgency && <span className="appt-badge wsava">✓ WSAVA</span>}
+          {a.urgency && <span className="appt-badge urgency">🚨 Urgencia</span>}
+          {a.isCancelled && <span className="appt-badge cancelled">{t('appointments.cancelled')}</span>}
+        </div>
+
+        {cd && <span className={`appt-countdown ${cd.tone}`}>⏱ {cd.label}</span>}
+
+        <div className="appt-details">
+          {a.vetName && <span className="appt-detail">👨‍⚕️ {a.vetName}</span>}
+          {a.clinicName && <span className="appt-detail">🏥 {a.clinicName}</span>}
+          {a.location && <span className="appt-detail">📍 {a.location}</span>}
+        </div>
+
+        {a.notes && <p className="appt-notes">{a.notes}</p>}
 
         {a.checklist?.length > 0 && (
-          <details open={expanded} onToggle={(e) => setExpanded(e.target.open)} style={{ marginTop: '6px' }}>
-            <summary style={{ cursor: 'pointer', fontSize: '0.82rem', color: 'var(--color-primary)', fontWeight: 500 }}>
-              Checklist ({a.checklist.length} ítems)
-            </summary>
-            <ul style={{ marginTop: '4px', paddingLeft: '16px', fontSize: '0.82rem', display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              {a.checklist.map((item, i) => <li key={i}>{item}</li>)}
-            </ul>
+          <details className="appt-checklist">
+            <summary>📋 Checklist ({a.checklist.length})</summary>
+            <ul>{a.checklist.map((item, i) => <li key={i}>{item}</li>)}</ul>
           </details>
         )}
       </div>
 
-      {!a.isCancelled && (
-        <div className="record-actions">
-          <button onClick={() => onCancel(a._id)} className="btn-secondary-sm">{t('appointments.cancelAppointment')}</button>
-          <button onClick={() => onDelete(a._id)} className="btn-danger-sm">{t('common.delete')}</button>
-        </div>
-      )}
-      {a.isCancelled && (
-        <div className="record-actions">
-          <button onClick={() => onDelete(a._id)} className="btn-danger-sm">{t('common.delete')}</button>
-        </div>
-      )}
-    </li>
-  );
-}
-
-function AppointmentSection({ title, items, onCancel, onDelete, t, emptyText }) {
-  return (
-    <section className="card">
-      <h2>{title} ({items.length})</h2>
-      {items.length === 0 ? (
-        <p className="list-empty">{emptyText}</p>
-      ) : (
-        <ul className="record-list">
-          {items.map((a) => (
-            <AppointmentCard key={a._id} a={a} onCancel={onCancel} onDelete={onDelete} t={t} />
-          ))}
-        </ul>
-      )}
-    </section>
+      <div className="appt-actions">
+        {!a.isCancelled && <button className="appt-act" onClick={() => onCancel(a._id)}>{t('appointments.cancelAppointment')}</button>}
+        <button className="appt-act del" onClick={() => onDelete(a._id)}>{t('common.delete')}</button>
+      </div>
+    </article>
   );
 }
 
@@ -84,13 +76,14 @@ export default function AppointmentListPage() {
   const { t } = useI18n();
   const { dogId } = useParams();
   const [appointments, setAppointments] = useState([]);
+  const [dog, setDog] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
-    getAppointments(dogId)
-      .then(({ data }) => setAppointments(data.appointments))
+    Promise.all([getAppointments(dogId), getDog(dogId)])
+      .then(([apptData, dogData]) => { setAppointments(apptData.data.appointments); setDog(dogData.data); })
       .catch(() => setError(t('appointments.errors.load')))
       .finally(() => setLoading(false));
   }, [dogId, t]);
@@ -98,9 +91,7 @@ export default function AppointmentListPage() {
   async function handleAdd(formData) {
     try {
       const { data } = await createAppointment(dogId, formData);
-      setAppointments((prev) =>
-        [...prev, data].sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate))
-      );
+      setAppointments((prev) => [...prev, data].sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate)));
       setShowForm(false);
     } catch (err) {
       return err.response?.data?.message || t('appointments.errors.add');
@@ -112,9 +103,7 @@ export default function AppointmentListPage() {
     try {
       const { data } = await updateAppointment(dogId, apptId, { isCancelled: true });
       setAppointments((prev) => prev.map((a) => (a._id === apptId ? data : a)));
-    } catch {
-      setError(t('appointments.errors.cancel'));
-    }
+    } catch { setError(t('appointments.errors.cancel')); }
   }
 
   async function handleDelete(apptId) {
@@ -122,60 +111,63 @@ export default function AppointmentListPage() {
     try {
       await deleteAppointment(dogId, apptId);
       setAppointments((prev) => prev.filter((a) => a._id !== apptId));
-    } catch {
-      setError(t('appointments.errors.delete'));
-    }
+    } catch { setError(t('appointments.errors.delete')); }
   }
 
   if (loading) return <div className="page"><p>{t('common.loading')}</p></div>;
 
-  const upcoming = appointments.filter(isUpcoming);
-  const past = appointments.filter((a) => !isUpcoming(a));
+  const upcoming = appointments.filter(isUpcoming).sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
+  const past = appointments.filter((a) => !isUpcoming(a)).sort((a, b) => new Date(b.appointmentDate) - new Date(a.appointmentDate));
+  const name = dog?.name || '';
 
   return (
-    <div className="page">
+    <div className="appt-page">
       <BackLink />
-      <header className="page-header">
-        <h1>{t('appointments.title')}</h1>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
-          {showForm ? t('common.cancel') : t('appointments.add')}
+
+      <div className="appt-hero">
+        {dog?.photoUrl
+          ? <img className="appt-hero-avatar" src={dog.photoUrl} alt={name} />
+          : <span className="appt-hero-ph">🏥</span>}
+        <div>
+          <h1>{t('appointments.title')}{name ? ` · ${name}` : ''}</h1>
+          <p>No te pierdas ningún control de {name || 'tu perro'} 🐾</p>
+        </div>
+        <div className="appt-hero-spacer" />
+        <button onClick={() => setShowForm(!showForm)} className={`appt-add ${showForm ? 'cancel' : ''}`}>
+          {showForm ? t('common.cancel') : `＋ ${t('appointments.add')}`}
         </button>
-      </header>
+      </div>
 
       {showForm && <AddAppointmentForm onAdd={handleAdd} onCancel={() => setShowForm(false)} t={t} />}
       {error && <p className="server-error">{error}</p>}
 
-      <AppointmentSection
-        title="Próximas"
-        items={upcoming}
-        onCancel={handleCancel}
-        onDelete={handleDelete}
-        t={t}
-        emptyText="Sin citas próximas programadas."
-      />
+      {appointments.length === 0 && (
+        <div className="appt-empty">
+          <div className="appt-empty-emoji">📅</div>
+          <p>Todavía no agendaste citas para {name || 'tu perro'}.</p>
+        </div>
+      )}
 
-      <AppointmentSection
-        title="Pasadas / canceladas"
-        items={past}
-        onCancel={handleCancel}
-        onDelete={handleDelete}
-        t={t}
-        emptyText="Sin historial de citas."
-      />
+      {upcoming.length > 0 && (
+        <section className="appt-section">
+          <h2 className="appt-section-title">Próximas <span className="appt-count">{upcoming.length}</span></h2>
+          {upcoming.map((a) => <AppointmentCard key={a._id} a={a} onCancel={handleCancel} onDelete={handleDelete} t={t} />)}
+        </section>
+      )}
 
+      {past.length > 0 && (
+        <section className="appt-section">
+          <h2 className="appt-section-title">Pasadas y canceladas <span className="appt-count">{past.length}</span></h2>
+          {past.map((a) => <AppointmentCard key={a._id} a={a} onCancel={handleCancel} onDelete={handleDelete} t={t} />)}
+        </section>
+      )}
     </div>
   );
 }
 
 function AddAppointmentForm({ onAdd, onCancel, t }) {
   const [catalogMeta, setCatalogMeta] = useState(null);
-  const [form, setForm] = useState({
-    appointmentDate: '',
-    vetName: '',
-    clinicName: '',
-    location: '',
-    notes: '',
-  });
+  const [form, setForm] = useState({ appointmentDate: '', vetName: '', clinicName: '', location: '', notes: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -188,15 +180,10 @@ function AddAppointmentForm({ onAdd, onCancel, t }) {
     setError('');
     setLoading(true);
     const payload = {
-      title: catalogMeta.title,
-      catalogId: catalogMeta.catalogId,
-      isWsavaRecommended: catalogMeta.isWsavaRecommended,
-      appointmentType: catalogMeta.appointmentType,
-      checklist: catalogMeta.checklist || [],
-      appointmentDate: form.appointmentDate,
-      vetName: form.vetName,
-      clinicName: form.clinicName,
-      location: form.location,
+      title: catalogMeta.title, catalogId: catalogMeta.catalogId,
+      isWsavaRecommended: catalogMeta.isWsavaRecommended, appointmentType: catalogMeta.appointmentType,
+      checklist: catalogMeta.checklist || [], appointmentDate: form.appointmentDate,
+      vetName: form.vetName, clinicName: form.clinicName, location: form.location,
       notes: form.notes || catalogMeta.notes || '',
     };
     const err = await onAdd(payload);
@@ -204,7 +191,8 @@ function AddAppointmentForm({ onAdd, onCancel, t }) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="inline-form">
+    <form onSubmit={handleSubmit} className="appt-form">
+      <h2>📅 Agendar una cita</h2>
       <AppointmentCatalogSelect value={catalogMeta?.title || ''} onChange={setCatalogMeta} disabled={loading} />
 
       <div className="field">
@@ -230,8 +218,8 @@ function AddAppointmentForm({ onAdd, onCancel, t }) {
 
       {error && <p className="field-error">{error}</p>}
       <div className="form-actions">
-        <button type="submit" disabled={loading}>{loading ? t('vaccinations.saving') : t('common.save')}</button>
-        <button type="button" onClick={onCancel}>{t('common.cancel')}</button>
+        <button type="submit" className="appt-form-save" disabled={loading}>{loading ? t('vaccinations.saving') : t('common.save')}</button>
+        <button type="button" className="appt-form-cancel" onClick={onCancel}>{t('common.cancel')}</button>
       </div>
     </form>
   );

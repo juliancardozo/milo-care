@@ -191,7 +191,14 @@ const translations = {
       later: 'Más tarde',
       cardsLink: 'Tarjetas 🎨',
       cardsTitle: 'Mensajes de amor',
-      cardsSubtitle: 'Creá una tarjeta para presumir a tu perro y compartila.',
+      cardsSubtitle: 'Hay amores que no entran en palabras. Poné el tuyo en una tarjeta 💛',
+      cardsPhrases: [
+        'Hay amores que no entran en palabras. Poné el tuyo en una tarjeta 💛',
+        'Tu perro te eligió a vos. Mostrale al mundo por qué lo elegís cada día 🐾',
+        'El tiempo con ellos es corto; los recuerdos, para siempre. Guardá este momento ✨',
+        'Nadie te quiere como tu perro. Devolvele un poquito de todo ese amor 💛',
+        'Presumir a tu perro no es vanidad, es gratitud. Creá su tarjeta 🐾',
+      ],
     },
     explore: {
       trigger: 'Explorar',
@@ -619,7 +626,14 @@ const translations = {
       later: 'Later',
       cardsLink: 'Cards 🎨',
       cardsTitle: 'Love messages',
-      cardsSubtitle: 'Create a card to show off your dog and share it.',
+      cardsSubtitle: "Some kinds of love don't fit into words. Put yours on a card 💛",
+      cardsPhrases: [
+        "Some kinds of love don't fit into words. Put yours on a card 💛",
+        'Your dog chose you. Show the world why you choose them every day 🐾',
+        'Our time with them is short; the memories, forever. Keep this one ✨',
+        'No one loves you like your dog does. Give a little of it back 💛',
+        "Showing off your dog isn't vanity, it's gratitude. Make their card 🐾",
+      ],
     },
     explore: {
       trigger: 'Explore',
