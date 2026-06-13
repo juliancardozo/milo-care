@@ -6,7 +6,11 @@ const authenticate = require('../middleware/auth');
 const User = require('../models/User');
 
 function appUrl() {
-  return (process.env.APP_URL || 'https://milocare.online').replace(/\/+$/, '');
+  return (
+    process.env.VET_SHARE_PUBLIC_BASE_URL
+    || process.env.APP_URL
+    || 'https://milocare.online'
+  ).replace(/\/+$/, '');
 }
 
 function newToken() {

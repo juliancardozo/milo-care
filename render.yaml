@@ -23,6 +23,8 @@ services:
         sync: false
       - key: APP_URL
         sync: false          # URL del frontend en Amplify, ej: https://main.XXXX.amplifyapp.com
+      - key: VET_SHARE_PUBLIC_BASE_URL
+        value: https://develop.d2d3bj1p216a32.amplifyapp.com
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com   # recibe los avisos de interés en Premium
       - key: API_URL
