@@ -4,6 +4,25 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Added — Health Score del perro (0–100)
+
+- Nuevo servicio `healthScore` que calcula un puntaje **explicable** (0–100) con datos ya
+  existentes: vacunas al día (30), desparasitación (15), ritual de check-in/racha (20),
+  bienestar reciente/síntomas (15), perfil completo (10) y seguimiento veterinario (10).
+  Cada factor devuelve puntos + un **hint accionable** ("cargá las vacunas para +30").
+- Endpoint `GET /api/dogs/:dogId/health-score` (calcula la racha desde `DailyCheckin`).
+- **Dashboard**: `HealthScoreCard` con **anillo de progreso** animado, grado de color
+  (Excelente/Muy bien/A mejorar/Necesita atención), la **mejor próxima acción** y un
+  desglose expandible por factor. Es el "por qué volver" de la app. Mobile-safe.
+- Tests: `healthScore` (6 casos). Suite backend **155/155** verde.
+
+### Fixed — PDF de salud responsive en móvil
+
+- La vista `/dogs/:id/pdf-export` desbordaba en móvil porque el template era fluido.
+  Ahora el template se renderiza a **ancho A4 fijo (794px)** —el PDF sale consistente desde
+  cualquier dispositivo— y el **preview se escala** para entrar en cualquier viewport sin
+  scroll horizontal (escala calculada en runtime + recálculo en resize).
+
 ### Changed — Topbar más profesional (idioma + menú de usuario)
 
 - **Idioma de una sola acción**: el `LanguageSwitcher` pasa de dos burbujas (🇪🇸/🇺🇸 +

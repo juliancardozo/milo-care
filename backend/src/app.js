@@ -30,6 +30,7 @@ const referralsRoutes = require('./routes/referrals');
 const surprisesRoutes = require('./routes/surprises');
 const milestonesRoutes = require('./routes/milestones');
 const pushRoutes = require('./routes/push');
+const healthScoreRoutes = require('./routes/healthScore');
 
 const app = express();
 
@@ -50,6 +51,7 @@ app.use('/api/dogs/:dogId/surprise', surprisesRoutes);
 app.use('/api/dogs/:dogId/milestones', milestonesRoutes);
 app.use('/api/dogs/:dogId/consultations', consultationsRoutes);
 app.use('/api/dogs/:dogId/wallet-pass', walletPassesRoutes);
+app.use('/api/dogs/:dogId/health-score', healthScoreRoutes);
 app.use('/api/dashboard/reminders', remindersRoutes);
 app.use('/api/user', usersRoutes);
 app.use('/api/onboarding', onboardingRoutes);

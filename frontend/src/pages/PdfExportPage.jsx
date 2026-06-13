@@ -31,6 +31,10 @@ export default function PdfExportPage() {
   const dispatch = useDispatch();
   const templateRef = useRef(null);
 
+  const previewWrapRef = useRef(null);
+  const [scale, setScale] = useState(1);
+  const [scaledHeight, setScaledHeight] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dog, setDog] = useState(null);
@@ -76,6 +80,24 @@ export default function PdfExportPage() {
 
     loadPdfData();
   }, [dogId]);
+
+  // El template se renderiza a ancho A4 fijo (794px) para que el PDF salga
+  // siempre consistente; el preview se escala para entrar en cualquier viewport.
+  useEffect(() => {
+    const TEMPLATE_W = 794;
+    function recompute() {
+      const wrap = previewWrapRef.current;
+      const el = templateRef.current;
+      if (!wrap || !el) return;
+      const s = Math.min(1, wrap.clientWidth / TEMPLATE_W);
+      setScale(s);
+      setScaledHeight(el.offsetHeight * s);
+    }
+    recompute();
+    const tid = setTimeout(recompute, 300);
+    window.addEventListener('resize', recompute);
+    return () => { clearTimeout(tid); window.removeEventListener('resize', recompute); };
+  }, [loading, dog, symptoms, consultations, vaccinations, medications, appointments, checkins]);
 
   async function handleGeneratePdf() {
     if (!templateRef.current) return;
@@ -147,16 +169,22 @@ export default function PdfExportPage() {
 
       {!loading ? (
         <div className="pdf-preview">
-          <PdfTemplate
-            ref={templateRef}
-            dog={dog}
-            symptoms={symptoms}
-            consultations={consultations}
-            vaccinations={vaccinations}
-            medications={medications}
-            appointments={appointments}
-            checkins={checkins}
-          />
+          <div className="pdf-measure" ref={previewWrapRef}>
+            <div className="pdf-scaler" style={{ height: scaledHeight ?? undefined }}>
+              <div className="pdf-scaler-inner" style={{ transform: `scale(${scale})` }}>
+                <PdfTemplate
+                  ref={templateRef}
+                  dog={dog}
+                  symptoms={symptoms}
+                  consultations={consultations}
+                  vaccinations={vaccinations}
+                  medications={medications}
+                  appointments={appointments}
+                  checkins={checkins}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       ) : null}
     </div>

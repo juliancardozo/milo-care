@@ -1,0 +1,74 @@
+/* Health Score — tarjeta con anillo de progreso y desglose explicable */
+.hs-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+}
+
+.hs-top { display: flex; align-items: center; gap: 18px; }
+
+/* Anillo */
+.hs-ring { flex-shrink: 0; transform: rotate(-90deg); }
+.hs-ring-bg { fill: none; stroke: #eef1f6; stroke-width: 11; }
+.hs-ring-fg {
+  fill: none; stroke-width: 11; stroke-linecap: round;
+  transition: stroke-dashoffset .9s cubic-bezier(0.16, 1, 0.3, 1), stroke .3s;
+}
+.hs-ring-num {
+  transform: rotate(90deg); transform-origin: 64px 64px;
+  text-anchor: middle; font-size: 34px; font-weight: 800; fill: var(--color-text);
+}
+.hs-ring-max {
+  transform: rotate(90deg); transform-origin: 64px 64px;
+  text-anchor: middle; font-size: 13px; font-weight: 600; fill: var(--color-muted);
+}
+
+/* Resumen */
+.hs-summary { flex: 1; min-width: 0; }
+.hs-eyebrow {
+  font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--color-muted);
+}
+.hs-grade { display: block; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin: 2px 0 6px; }
+.hs-next { font-size: .85rem; color: var(--color-text); line-height: 1.45; margin: 0 0 10px; }
+.hs-next-label { font-weight: 700; }
+.hs-next-perfect { color: #16a34a; font-weight: 600; }
+
+button.hs-toggle {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: transparent; border: none; padding: 0;
+  color: var(--color-primary); font-size: .85rem; font-weight: 700; cursor: pointer;
+}
+button.hs-toggle:hover:not(:disabled) { background: transparent; text-decoration: underline; }
+.hs-caret { font-size: .7rem; }
+
+/* Desglose */
+.hs-factors { list-style: none; margin: 16px 0 0; padding: 16px 0 0; border-top: 1px solid var(--color-border); display: flex; flex-direction: column; gap: 14px; }
+.hs-factor { display: flex; gap: 10px; }
+.hs-factor-dot { width: 9px; height: 9px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+.hs-factor-body { flex: 1; min-width: 0; }
+.hs-factor-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.hs-factor-label { font-size: .9rem; font-weight: 600; color: var(--color-text); }
+.hs-factor-pts { font-size: .8rem; font-weight: 700; color: var(--color-muted); flex-shrink: 0; }
+.hs-factor-bar { display: block; height: 6px; border-radius: 999px; background: #eef1f6; margin: 5px 0; overflow: hidden; }
+.hs-factor-fill { display: block; height: 100%; border-radius: 999px; transition: width .8s cubic-bezier(0.16, 1, 0.3, 1); }
+.hs-factor-hint { font-size: .8rem; color: var(--color-muted); }
+
+/* Skeleton de carga */
+.hs-card-loading { display: flex; align-items: center; gap: 18px; }
+.hs-ring-skeleton { width: 92px; height: 92px; border-radius: 50%; background: #eef1f6; flex-shrink: 0; animation: hs-pulse 1.3s ease-in-out infinite; }
+.hs-skeleton-lines { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.hs-skeleton-lines span { height: 12px; border-radius: 6px; background: #eef1f6; animation: hs-pulse 1.3s ease-in-out infinite; }
+.hs-skeleton-lines span:first-child { width: 50%; }
+.hs-skeleton-lines span:last-child { width: 75%; }
+@keyframes hs-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+
+@media (max-width: 480px) {
+  .hs-card { padding: 16px; }
+  .hs-top { gap: 14px; }
+  .hs-ring { width: 104px; height: 104px; }
+  .hs-grade { font-size: 1.25rem; }
+}

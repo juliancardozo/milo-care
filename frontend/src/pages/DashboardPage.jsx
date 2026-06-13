@@ -9,6 +9,7 @@ import UserMenu from '../components/UserMenu';
 import UpgradeBanner from '../components/UpgradeBanner';
 import AddToWalletButton from '../components/AddToWalletButton';
 import CheckinCard from '../components/checkin/CheckinCard';
+import HealthScoreCard from '../components/HealthScoreCard';
 import QuickActionsFab from '../components/QuickActionsFab';
 import BottomNav from '../components/BottomNav';
 import ExploreMenu from '../components/ExploreMenu';
@@ -138,6 +139,9 @@ export default function DashboardPage() {
           <>
             {/* Check-in diario: ritual de 10 segundos, arriba de todo */}
             {activeDog && <CheckinCard key={activeDog.id} dog={activeDog} />}
+
+            {/* Health Score: el "por qué volver" — estado de salud + próxima acción */}
+            {activeDog && <HealthScoreCard dogId={activeDog.id} dogName={activeDog.name} />}
 
             {!isPremium && dogs.length >= 1 && <UpgradeBanner />}
 

@@ -297,6 +297,13 @@ const translations = {
       moreTitle: 'Más opciones',
       account: 'Mi cuenta',
     },
+    healthScore: {
+      title: 'Estado de salud',
+      breakdown: 'Ver desglose',
+      hideBreakdown: 'Ocultar desglose',
+      boost: 'Para subir',
+      perfect: '¡{dog} está en su mejor forma! 🏆',
+    },
     secondDog: {
       eyebrow: 'Tu familia está creciendo',
       title: 'Sumá a tu nuevo compañero junto a {dog}',
@@ -876,6 +883,13 @@ const translations = {
       more: 'More',
       moreTitle: 'More options',
       account: 'My account',
+    },
+    healthScore: {
+      title: 'Health status',
+      breakdown: 'View breakdown',
+      hideBreakdown: 'Hide breakdown',
+      boost: 'To level up',
+      perfect: '{dog} is in top shape! 🏆',
     },
     secondDog: {
       eyebrow: 'Your family is growing',
