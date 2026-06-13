@@ -16,7 +16,7 @@ const translations = {
       delete: 'Eliminar',
       notesOptional: 'Notas (opcional)',
       backToDashboard: '← Volver al panel',
-      backToDog: '← Volver al perro',
+      backToDog: 'Volver al perro',
       logout: 'Cerrar sesion',
       viewAll: 'Ver todo',
       settings: 'Configuracion',

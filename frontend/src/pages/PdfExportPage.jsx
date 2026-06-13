@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
 import { useI18n } from '../i18n/I18nProvider';
 import html2canvas from 'html2canvas';
@@ -148,17 +148,14 @@ export default function PdfExportPage() {
     <div className="pdf-export-page">
       <BackLink to={`/dogs/${dogId}`} label={t('common.backToDog') || 'Back to Dog'} />
 
-      <header className="page-header">
-        <h1>{t('pdf.title') || 'Health Summary PDF'}</h1>
-        <div className="header-actions">
-          <button
-            className="btn btn-primary"
-            onClick={handleGeneratePdf}
-            disabled={loading}
-          >
-            {loading
-              ? t('pdf.generating') || 'Generating...'
-              : `📥 ${t('pdf.download') || 'Download PDF'}`}
+      <header className="pdfx-header">
+        <h1>{t('pdf.title') || 'Resumen de salud'}</h1>
+        <div className="pdfx-actions">
+          <Link to={`/dogs/${dogId}/share`} className="pdfx-btn-ghost">
+            🏥 {t('explore.vetShare.title')}
+          </Link>
+          <button className="pdfx-btn" onClick={handleGeneratePdf} disabled={loading}>
+            {loading ? (t('pdf.generating') || 'Generando…') : `📥 ${t('pdf.download') || 'Descargar PDF'}`}
           </button>
         </div>
       </header>
