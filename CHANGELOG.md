@@ -4,6 +4,18 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Added — Onboarding hiper-realista (Fase D)
+
+- **Ficha en vivo** (`LivePetCard`): mientras el tutor completa el onboarding, se arma una
+  tarjeta del perro que se actualiza en tiempo real (avatar, nombre, raza, edad calculada,
+  sexo, tamaño, peso) con un **tip contextual** por etapa de vida (cachorro/adulto/senior) y
+  raza braquicéfala. Aparece en cuanto el perro tiene nombre.
+- **Foto desde el primer paso**: `PhotoInput` en el alta del perro; la foto se persiste en
+  la sesión de onboarding y queda en la ficha del perro al confirmar (backend: `photoUrl` en
+  `OnboardingSession.dog` + `saveStep`).
+- **Encabezados personalizados** con el nombre: "La salud de {perro}", "¿Cómo vive {perro}?",
+  "¡{perro} ya está listo!" — en vez de copys genéricos.
+
 ### Added — Health Score del perro (0–100)
 
 - Nuevo servicio `healthScore` que calcula un puntaje **explicable** (0–100) con datos ya

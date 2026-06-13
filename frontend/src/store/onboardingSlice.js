@@ -51,6 +51,7 @@ const initialState = (() => {
       },
       dog: {
         name: '',
+        photoUrl: '',
         breed: '',
         size: 'medium',
         sex: 'unknown',
