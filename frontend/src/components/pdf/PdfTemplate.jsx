@@ -2,8 +2,28 @@ import React from 'react';
 import { formatDate } from '../../utils/dateUtils';
 import '../../styles/pdf-template.css';
 
+// Agrupa los check-ins diarios por semana (lunes) para el resumen del PDF.
+// El prompt pide resumen por semana, no día por día.
+function weeklyCheckinSummary(checkins) {
+  const weeks = new Map();
+  for (const c of checkins || []) {
+    if (!c.localDate) continue;
+    const [y, m, d] = c.localDate.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    const dow = (date.getUTCDay() + 6) % 7; // 0 = lunes
+    const monday = new Date(date.getTime() - dow * 86400000);
+    const key = monday.toISOString().slice(0, 10);
+    if (!weeks.has(key)) weeks.set(key, { weekStart: key, bien: 0, regular: 0, mal: 0, total: 0 });
+    const w = weeks.get(key);
+    if (w[c.answer] != null) w[c.answer] += 1;
+    w.total += 1;
+  }
+  return [...weeks.values()].sort((a, b) => (a.weekStart < b.weekStart ? 1 : -1));
+}
+
 const PdfTemplate = React.forwardRef(
-  ({ dog, symptoms, consultations, vaccinations, medications, appointments }, ref) => {
+  ({ dog, symptoms, consultations, vaccinations, medications, appointments, checkins }, ref) => {
+    const checkinWeeks = weeklyCheckinSummary(checkins);
     const calculateAge = () => {
       if (!dog?.dateOfBirth) return 'Unknown';
       const birth = new Date(dog.dateOfBirth);
@@ -172,6 +192,38 @@ const PdfTemplate = React.forwardRef(
                     <td>{formatDate(appointment.appointmentDate)}</td>
                     <td>{appointment.clinicName || '—'}</td>
                     <td>{appointment.vetName || '—'}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        )}
+
+        {/* Seguimiento diario (check-ins) — resumen por semana */}
+        {checkinWeeks && checkinWeeks.length > 0 && (
+          <section className="pdf-section">
+            <h2>🐾 Seguimiento Diario</h2>
+            <p className="checklist-intro">
+              Resumen semanal de los check-ins de bienestar (😊 bien · 😐 más o menos · 😟 no tan bien):
+            </p>
+            <table className="pdf-table">
+              <thead>
+                <tr>
+                  <th>Semana del</th>
+                  <th>😊 Bien</th>
+                  <th>😐 Más o menos</th>
+                  <th>😟 No tan bien</th>
+                  <th>Total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {checkinWeeks.map((w) => (
+                  <tr key={w.weekStart}>
+                    <td>{formatDate(w.weekStart)}</td>
+                    <td>{w.bien}</td>
+                    <td>{w.regular}</td>
+                    <td>{w.mal}</td>
+                    <td>{w.total}</td>
                   </tr>
                 ))}
               </tbody>

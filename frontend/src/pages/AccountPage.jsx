@@ -4,6 +4,7 @@ import BackLink from '../components/BackLink';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectCurrentUser, updateUser } from '../store/authSlice';
 import { updateProfile } from '../services/api';
+import ReferralCard from '../components/ReferralCard';
 
 export default function AccountPage() {
   const dispatch = useDispatch();
@@ -79,6 +80,10 @@ export default function AccountPage() {
           <button type="submit" disabled={saving}>{saving ? 'Guardando…' : 'Guardar cambios'}</button>
         </div>
       </form>
+
+      <div style={{ marginTop: '12px' }}>
+        <ReferralCard />
+      </div>
 
       <div className="card" style={{ marginTop: '12px' }}>
         <h2>Otras configuraciones</h2>

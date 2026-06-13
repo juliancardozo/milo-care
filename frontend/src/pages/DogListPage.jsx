@@ -5,6 +5,12 @@ import { useSelector } from 'react-redux';
 import { getDogs, deleteDog } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
 import { selectCurrentUser } from '../store/authSlice';
+import '../styles/dog-list.css';
+
+function DogAvatar({ dog }) {
+  if (dog.photoUrl) return <img src={dog.photoUrl} alt={dog.name} className="doglist-avatar" />;
+  return <div className="doglist-avatar-ph">{(dog.name || '?').charAt(0).toUpperCase()}</div>;
+}
 
 export default function DogListPage() {
   const { t } = useI18n();
@@ -14,7 +20,8 @@ export default function DogListPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  const canAddDog = user?.tier === 'premium' || dogs.length === 0;
+  const isPremium = (user?.effectiveTier ?? user?.tier) === 'premium';
+  const canAddDog = isPremium || dogs.length === 0;
 
   useEffect(() => {
     getDogs()
@@ -36,39 +43,57 @@ export default function DogListPage() {
   if (loading) return <div className="page"><p>{t('common.loading')}</p></div>;
 
   return (
-    <div className="page">
+    <div className="doglist-page">
       <BackLink to="/dashboard" />
-      <header className="page-header">
+      <div className="doglist-head">
         <h1>{t('dogs.yourDogs')}</h1>
         {canAddDog ? (
-          <Link to="/dogs/new" className="btn-primary">{t('dogs.addDog')}</Link>
+          <Link to={isPremium ? '/dogs/new' : (dogs.length === 0 ? '/dogs/new' : '/upgrade')} className="doglist-add">＋ {t('dogs.addDog')}</Link>
         ) : (
-          <button disabled className="btn-primary" title={t('dogs.errors.tierLimitReached') || 'Free accounts limited to 1 dog'}>
-            {t('dogs.addDog')}
-          </button>
+          <Link to="/upgrade" className="doglist-add" title={t('dogs.errors.tierLimitReached') || ''}>＋ {t('dogs.addDog')}</Link>
         )}
-      </header>
+      </div>
+
       {error && <p className="server-error">{error}</p>}
+
       {dogs.length === 0 ? (
-        <p>{t('dogs.noDogs')} <Link to="/dogs/new">{t('dogs.addFirstDogLink')}</Link></p>
+        <div className="doglist-empty">
+          <div className="doglist-empty-emoji">🐶</div>
+          <p>{t('dogs.noDogs')}</p>
+          <Link to="/dogs/new" className="doglist-add">{t('dogs.addFirstDogLink')}</Link>
+        </div>
       ) : (
-        <ul className="dog-list">
+        <div className="doglist-grid">
           {dogs.map((dog) => (
-            <li key={dog.id} className="dog-list-item">
-              {dog.photoUrl && <img src={dog.photoUrl} alt={dog.name} className="dog-photo" />}
-              <div className="dog-info">
-                <strong>{dog.name}</strong>
-                <span>{dog.breed}</span>
-                <span>{dog.ageYears} {t('dogs.years')}</span>
+            <article key={dog.id} className="doglist-card">
+              <div className="doglist-top">
+                <DogAvatar dog={dog} />
+                <div className="doglist-info">
+                  <h2 className="doglist-name">{dog.name}</h2>
+                  <div className="doglist-meta">
+                    {dog.breed && <span className="doglist-chip">🐾 {dog.breed}</span>}
+                    <span className="doglist-chip">🎂 {dog.ageDisplay ?? `${dog.ageYears} ${t('dogs.years')}`}</span>
+                    {dog.sex && dog.sex !== 'unknown' && (
+                      <span className="doglist-chip">{dog.sex === 'male' ? '♂' : '♀'}</span>
+                    )}
+                  </div>
+                </div>
               </div>
-              <div className="dog-actions">
-                <button onClick={() => navigate(`/dogs/${dog.id}/vaccinations`)}>{t('dogs.viewRecords')}</button>
-                <button onClick={() => navigate(`/dogs/${dog.id}/edit`)} className="btn-secondary">Editar ficha</button>
-                <button onClick={() => handleDelete(dog.id, dog.name)} className="btn-danger">{t('common.delete')}</button>
+
+              <div className="doglist-actions">
+                <button className="doglist-btn-primary" onClick={() => navigate(`/dogs/${dog.id}/vaccinations`)}>
+                  {t('dogs.viewRecords')}
+                </button>
+                <button className="doglist-btn-ghost" onClick={() => navigate(`/dogs/${dog.id}/edit`)}>
+                  ✏️ {t('dashboard.editProfile')}
+                </button>
+                <button className="doglist-btn-del" onClick={() => handleDelete(dog.id, dog.name)} aria-label={t('common.delete')}>
+                  🗑
+                </button>
               </div>
-            </li>
+            </article>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

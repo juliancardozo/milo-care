@@ -1,0 +1,80 @@
+/* Vacunas — cards claras, badges de estado, urgencia. */
+
+.vac-page { max-width: 620px; margin: 0 auto; padding: 8px 16px 48px; }
+
+.vac-hero {
+  display: flex; align-items: center; gap: 14px;
+  background:
+    radial-gradient(120% 120% at 0% 0%, #eef5ff 0%, rgba(238,245,255,0) 60%), #fff;
+  border: 1px solid #e7eef9; border-radius: 18px; padding: 16px 18px; margin-bottom: 16px;
+  box-shadow: 0 8px 26px -16px rgba(15,23,42,0.16);
+}
+.vac-hero-avatar { width: 54px; height: 54px; border-radius: 50%; object-fit: cover; flex: none; border: 3px solid #fff; box-shadow: 0 4px 12px -6px rgba(15,23,42,0.3); }
+.vac-hero-ph { width: 54px; height: 54px; border-radius: 50%; flex: none; display: grid; place-items: center; font-size: 24px; }
+.vac-hero h1 { font-size: 19px; margin: 0; color: #0f172a; letter-spacing: -0.01em; }
+.vac-hero p { font-size: 13px; color: #64748b; margin: 2px 0 0; }
+.vac-hero-spacer { flex: 1; }
+
+button.vac-add {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  border: none; border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 14px; cursor: pointer; flex: none;
+}
+button.vac-add:hover:not(:disabled) { background: linear-gradient(135deg, #3f7ee7, #2a5fc0); }
+button.vac-add.cancel { background: #fff; color: #475569; border: 1px solid #e5e7eb; }
+button.vac-add.cancel:hover:not(:disabled) { background: #f8fafc; }
+
+.vac-section { margin-bottom: 18px; }
+.vac-section-title { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 800; color: #334155; text-transform: uppercase; letter-spacing: 0.05em; margin: 0 0 10px; padding-left: 2px; }
+.vac-count { font-size: 12px; font-weight: 700; color: #64748b; background: #eef2f7; border-radius: 999px; padding: 1px 9px; }
+
+.vac-card {
+  display: flex; gap: 13px; align-items: flex-start;
+  background: #fff; border: 1px solid #e7eef9; border-radius: 16px; padding: 15px 16px; margin-bottom: 11px;
+  box-shadow: 0 6px 20px -16px rgba(15,23,42,0.18);
+}
+.vac-icon {
+  flex: none; width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; font-size: 21px;
+  background: linear-gradient(135deg, #dbeafe, #e0e7ff);
+}
+.vac-icon.applied { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.vac-icon.overdue { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+
+.vac-body { flex: 1; min-width: 0; }
+.vac-name-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.vac-name { font-size: 15.5px; font-weight: 700; color: #0f172a; }
+.vac-senasa { font-size: 10.5px; font-weight: 800; color: #b45309; background: #fef3c7; border: 1px solid #fde68a; padding: 1px 7px; border-radius: 6px; letter-spacing: 0.02em; }
+.vac-antigen { font-size: 12px; color: #94a3b8; margin: 2px 0 0; }
+
+.vac-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 9px; }
+.vac-badge { font-size: 11.5px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+.vac-badge.green { background: #dcfce7; color: #166534; }
+.vac-badge.blue { background: #dbeafe; color: #1e40af; }
+.vac-badge.amber { background: #fef3c7; color: #92400e; }
+.vac-badge.red { background: #fee2e2; color: #991b1b; }
+.vac-badge.gray { background: #f1f5f9; color: #475569; }
+.vac-date { font-size: 12px; color: #64748b; display: inline-flex; align-items: center; gap: 4px; }
+
+.vac-notes { font-size: 12.5px; color: #64748b; margin: 8px 0 0; line-height: 1.4; }
+
+button.vac-del { flex: none; background: none; border: none; color: #cbd5e1; font-size: 16px; cursor: pointer; padding: 2px 4px; border-radius: 8px; }
+button.vac-del:hover:not(:disabled) { color: #ef4444; background: #fef2f2; }
+
+.vac-empty { text-align: center; padding: 44px 20px; color: #64748b; background: #fff; border: 1px dashed #cdd9ef; border-radius: 18px; }
+.vac-empty-emoji { font-size: 44px; }
+.vac-empty p { margin: 10px 0 0; }
+
+/* Formulario */
+.vac-form { background: #fff; border: 1px solid #e7eef9; border-radius: 18px; padding: 18px; margin-bottom: 16px; box-shadow: 0 8px 26px -16px rgba(15,23,42,0.16); }
+.vac-form h2 { margin: 0 0 14px; font-size: 16px; color: #0f172a; }
+.vac-form .field label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px; }
+.vac-form .field { margin-bottom: 12px; }
+.vac-form input, .vac-form textarea, .vac-form select {
+  width: 100%; box-sizing: border-box; border: 1px solid #e5e7eb; border-radius: 10px;
+  padding: 10px 12px; font-size: 14px; font-family: inherit; color: #1e293b; background: #fff;
+}
+.vac-form input:focus, .vac-form textarea:focus, .vac-form select:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(79,142,247,0.15); }
+.vac-form .form-actions { display: flex; gap: 10px; margin-top: 4px; }
+button.vac-form-save { background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff; border: none; border-radius: 11px; padding: 11px 22px; font-weight: 700; cursor: pointer; }
+button.vac-form-save:disabled { opacity: 0.6; }
+button.vac-form-cancel { background: #fff; color: #475569; border: 1px solid #e5e7eb; border-radius: 11px; padding: 11px 18px; font-weight: 600; cursor: pointer; }

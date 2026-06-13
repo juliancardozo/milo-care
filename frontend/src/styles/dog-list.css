@@ -1,0 +1,67 @@
+/* Mis perros — cards cálidas con avatar. */
+
+.doglist-page { max-width: 600px; margin: 0 auto; padding: 8px 16px 48px; }
+
+.doglist-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0 18px; }
+.doglist-head h1 { font-size: 24px; letter-spacing: -0.02em; color: #0f172a; margin: 0; }
+
+button.doglist-add, .doglist-add {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  border: none; border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 14px;
+  text-decoration: none; cursor: pointer;
+}
+button.doglist-add:hover:not(:disabled), .doglist-add:hover { background: linear-gradient(135deg, #3f7ee7, #2a5fc0); text-decoration: none; }
+button.doglist-add:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.doglist-grid { display: flex; flex-direction: column; gap: 14px; }
+
+.doglist-card {
+  background: #fff; border: 1px solid #e7eef9; border-radius: 18px;
+  padding: 18px; box-shadow: 0 8px 26px -16px rgba(15,23,42,0.16);
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+.doglist-card:hover { transform: translateY(-2px); box-shadow: 0 16px 34px -18px rgba(15,23,42,0.24); }
+
+.doglist-top { display: flex; align-items: center; gap: 14px; }
+.doglist-avatar {
+  width: 64px; height: 64px; border-radius: 50%; object-fit: cover; flex: none;
+  border: 3px solid #fff; box-shadow: 0 6px 16px -8px rgba(15,23,42,0.35);
+}
+.doglist-avatar-ph {
+  width: 64px; height: 64px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-size: 26px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #4f8ef7, #22c55e);
+  border: 3px solid #fff; box-shadow: 0 6px 16px -8px rgba(15,23,42,0.35);
+}
+.doglist-info { min-width: 0; flex: 1; }
+.doglist-name { font-size: 19px; font-weight: 800; color: #0f172a; margin: 0 0 4px; letter-spacing: -0.01em; }
+.doglist-meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.doglist-chip {
+  font-size: 12px; font-weight: 600; color: #475569;
+  background: #f1f5f9; border-radius: 999px; padding: 3px 10px;
+}
+
+.doglist-actions { display: flex; gap: 8px; margin-top: 16px; }
+button.doglist-btn-primary {
+  flex: 1; background: linear-gradient(135deg, #eef5ff, #ecfdf3); color: #1d4ed8;
+  border: 1px solid #dbe7fb; border-radius: 11px; padding: 11px; font-weight: 700; font-size: 14px; cursor: pointer;
+}
+button.doglist-btn-primary:hover:not(:disabled) { background: #e3edff; }
+button.doglist-btn-ghost {
+  background: #fff; color: #475569; border: 1px solid #e5e7eb; border-radius: 11px;
+  padding: 11px 14px; font-weight: 600; font-size: 14px; cursor: pointer;
+}
+button.doglist-btn-ghost:hover:not(:disabled) { background: #f8fafc; }
+button.doglist-btn-del {
+  background: #fff; color: #ef4444; border: 1px solid #fecaca; border-radius: 11px;
+  padding: 11px 13px; font-weight: 600; font-size: 14px; cursor: pointer;
+}
+button.doglist-btn-del:hover:not(:disabled) { background: #fef2f2; }
+
+.doglist-empty {
+  text-align: center; padding: 48px 20px; color: #64748b;
+  background: #fff; border: 1px dashed #cdd9ef; border-radius: 18px;
+}
+.doglist-empty-emoji { font-size: 46px; }
+.doglist-empty p { margin: 12px 0 16px; }

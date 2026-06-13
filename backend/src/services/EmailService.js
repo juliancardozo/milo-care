@@ -205,6 +205,142 @@ function tplPremiumInterest({ userName, userEmail, userId, dogsCount, requestedA
   });
 }
 
+// ── Referidos ────────────────────────────────────────────────────────────────
+
+function tplReferralActivated({ userName, referredName, rewardDays }) {
+  return layout({
+    title: '¡Tu invitado se sumó a Milo Care!',
+    preheader: `${referredName} y su perro ya están en Milo Care. Ganaste ${rewardDays} días premium 🎁`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">¡Gracias por invitar! 🎁</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        <strong>${referredName}</strong> y su perro se sumaron a Milo Care gracias a vos
+        y ya hicieron su primer check-in.
+      </p>
+      <div style="background:#f0fdf4;border-left:4px solid #22c55e;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🎉 Ambos ganaron ${rewardDays} días de Premium</strong><br/>
+        Ya están activos en tu cuenta. ¡A disfrutar perfiles ilimitados!
+      </div>
+      <p>Cuantos más tutores se sumen, mejor cuidamos a los perros de tu zona. 🐾</p>
+    `,
+    ctaUrl: process.env.APP_URL || 'http://localhost:5173',
+    ctaLabel: 'Ir a Milo Care',
+  });
+}
+
+// ── Alerta acumulativa de síntomas ───────────────────────────────────────────
+
+function tplSymptomAlert({ userName, dogName, count, windowHours, isPuppy }) {
+  const detail = isPuppy
+    ? `Registraste un vómito en <strong>${dogName}</strong>, que todavía es cachorro.`
+    : `Registraste <strong>${count} vómitos</strong> de <strong>${dogName}</strong> en menos de ${windowHours} horas.`;
+  return layout({
+    title: `Esto amerita una consulta — ${dogName}`,
+    preheader: `Lo que registraste de ${dogName} conviene chequearlo con el veterinario.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Esto amerita una consulta 🩺</h2>
+      <p>Hola ${userName},</p>
+      <p>${detail}</p>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🐕 ${dogName}</strong><br/>
+        ${isPuppy ? 'En cachorros, un solo vómito conviene evaluarlo sin demora.' : `Vómitos en las últimas ${windowHours} h: ${count}`}
+      </div>
+      <p>Te sugerimos coordinar una consulta con tu veterinario para descartar cualquier cosa.</p>
+      <p style="color:#6b7280;font-size:13px;">
+        Esta es una señal informativa basada en lo que registraste, no un diagnóstico. Ante la duda, consultá a un veterinario.
+      </p>
+    `,
+    ctaUrl: process.env.APP_URL || 'http://localhost:5173',
+    ctaLabel: 'Agendar una cita',
+  });
+}
+
+// ── Check-in diario ──────────────────────────────────────────────────────────
+
+// Copy de las preguntas del check-in (voseo, cálido). Cada slug tiene su texto
+// base; `focus` lo especializa según la regla de riesgo de raza detectada.
+const CHECKIN_COPY = {
+  questions: {
+    comida: '¿Cómo viene comiendo {dog} estos días?',
+    energia: '¿Cómo está la energía de {dog} hoy?',
+    agua: '¿{dog} está tomando bien agua?',
+    animo: '¿Cómo anda el ánimo de {dog} hoy?',
+    digestion: '¿Cómo viene la digestión de {dog} (panza, caca)?',
+  },
+  // Especializaciones por alertType de symptomRiskRules.
+  focus: {
+    respiratory: '¿Notás a {dog} agitado, con jadeo o ronquidos al moverse?',
+    cardiac: '¿{dog} se cansa rápido, tose o se agita más de lo normal?',
+    orthopedic: '¿{dog} se mueve con normalidad o lo notás dolorido o rengo?',
+    neurological: '¿Notás a {dog} desorientado, tambaleante o raro al caminar?',
+    gastrointestinal: '¿Cómo viene la panza de {dog} (vómitos, caca, apetito)?',
+    parasitological: '¿Notás algo raro en la caca de {dog} o que esté bajando de peso?',
+  },
+  answers: {
+    bien: { label: 'Bien 😊', color: '#22c55e' },
+    regular: { label: 'Más o menos 😐', color: '#f59e0b' },
+    mal: { label: 'No tan bien 😟', color: '#ef4444' },
+  },
+};
+
+function checkinQuestionText({ dogName, question, focus = null }) {
+  const tpl = (focus && CHECKIN_COPY.focus[focus]) || CHECKIN_COPY.questions[question] || '¿Cómo está {dog} hoy?';
+  return tpl.replace('{dog}', dogName);
+}
+
+function checkinButtons(urls) {
+  return ['bien', 'regular', 'mal'].map((answer) => {
+    const meta = CHECKIN_COPY.answers[answer];
+    return `<a href="${urls[answer]}"
+      style="display:inline-block;margin:4px 6px;padding:12px 22px;border-radius:9px;
+             background:${meta.color};color:#fff;text-decoration:none;font-weight:600;font-size:15px;">
+      ${meta.label}</a>`;
+  }).join('');
+}
+
+function checkinLocalAlerts(localAlerts = []) {
+  if (!localAlerts.length) return '';
+  const items = localAlerts.map((a) => `
+      <div style="background:#fff7ed;border-left:4px solid #f97316;border-radius:6px;padding:14px 16px;margin:10px 0;">
+        <strong>${a.emoji || '📍'} ${a.title}</strong><br/>
+        <span style="color:#4b5563;font-size:14px;">${a.message}</span>
+      </div>`).join('');
+  return `
+      <div style="margin:22px 0 4px;">
+        <p style="margin:0 0 6px;font-size:13px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;">Alerta de tu zona</p>
+        ${items}
+      </div>`;
+}
+
+function tplDailyCheckin({ userName, dogs, localAlerts = [] }) {
+  const sections = dogs.map(({ dogName, question, focus, urls }) => `
+      <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:18px 20px;margin:16px 0;text-align:center;">
+        <p style="margin:0 0 14px;font-size:17px;color:#1a1a2e;font-weight:600;">
+          ${checkinQuestionText({ dogName, question, focus })}
+        </p>
+        <div>${checkinButtons(urls)}</div>
+      </div>`).join('');
+
+  const single = dogs.length === 1;
+  return layout({
+    title: single ? `¿Cómo está ${dogs[0].dogName} hoy?` : 'Tu check-in diario en Milo Care',
+    preheader: single
+      ? `Contanos cómo está ${dogs[0].dogName} con un toque.`
+      : 'Contanos cómo están tus perros con un toque.',
+    body: `
+      <h2 style="margin:0 0 12px;font-size:22px;">¡Hola ${userName}! 🐾</h2>
+      <p>Tu check-in diario de 10 segundos. Respondé directo desde acá:</p>
+      ${sections}
+      ${checkinLocalAlerts(localAlerts)}
+      <p style="color:#6b7280;font-size:13px;margin-top:18px;">
+        Cada respuesta queda registrada en el seguimiento de tu perro y le puede
+        servir a tu veterinario. Si preferís, también podés responder desde la app.
+      </p>
+    `,
+  });
+}
+
 function tplPremiumInterestConfirmation({ userName }) {
   return layout({
     title: 'Recibimos tu interés en Premium',
@@ -300,6 +436,37 @@ const EmailService = {
     });
   },
 
+  /** Aviso al referente: su invitado se activó y ambos ganaron premium */
+  async sendReferralActivated({ to, userName, referredName, rewardDays }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `¡${referredName} se sumó gracias a vos! 🎁`,
+      html: tplReferralActivated({ userName, referredName, rewardDays }),
+    });
+  },
+
+  /** Alerta acumulativa de síntomas (ej. ≥2 vómitos/24h) con CTA a agendar cita */
+  async sendSymptomAlert({ to, userName, dogName, count, windowHours, isPuppy }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `${dogName}: esto amerita una consulta 🩺`,
+      html: tplSymptomAlert({ userName, dogName, count, windowHours, isPuppy }),
+    });
+  },
+
+  /** Check-in diario "¿Cómo está [perro] hoy?" — uno por usuario por día.
+   *  Las alertas locales (Fase 5) se fusionan acá para respetar 1 email/día. */
+  async sendDailyCheckin({ to, userName, dogs, localAlerts = [] }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: dogs.length === 1 ? `¿Cómo está ${dogs[0].dogName} hoy? 🐾` : 'Tu check-in diario de Milo Care 🐾',
+      html: tplDailyCheckin({ userName, dogs, localAlerts }),
+    });
+  },
+
   /** Confirmación al usuario de que recibimos su interés en Premium */
   async sendPremiumInterestConfirmation({ to, userName }) {
     await sendWithRetry({
@@ -320,7 +487,15 @@ const EmailService = {
     passwordReset: tplPasswordReset,
     premiumInterest: tplPremiumInterest,
     premiumInterestConfirmation: tplPremiumInterestConfirmation,
+    dailyCheckin: tplDailyCheckin,
+    symptomAlert: tplSymptomAlert,
+    referralActivated: tplReferralActivated,
   },
+
+  // Expose check-in copy so the question text stays consistent across email,
+  // the one-click confirmation page, and tests.
+  _checkinCopy: CHECKIN_COPY,
+  checkinQuestionText,
 };
 
 module.exports = EmailService;

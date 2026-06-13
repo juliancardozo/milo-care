@@ -21,6 +21,7 @@ import {
   setVaccinations,
 } from '../store/clinicalHistorySlice';
 import { selectSymptoms, selectConsultations, selectVaccinations, selectMedications, selectAppointments } from '../store/clinicalHistorySlice';
+import { getCheckinHistory } from '../services/checkinApi';
 import PdfTemplate from '../components/pdf/PdfTemplate';
 import '../styles/pdf-export.css';
 
@@ -33,6 +34,7 @@ export default function PdfExportPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dog, setDog] = useState(null);
+  const [checkins, setCheckins] = useState([]);
 
   const symptoms = useSelector(selectSymptoms);
   const consultations = useSelector(selectConsultations);
@@ -48,16 +50,18 @@ export default function PdfExportPage() {
       setError(null);
 
       try {
-        const [dogRes, symptomsRes, consultationsRes, vaccinationsRes, medicationsRes, appointmentsRes] = await Promise.all([
+        const [dogRes, symptomsRes, consultationsRes, vaccinationsRes, medicationsRes, appointmentsRes, checkinsRes] = await Promise.all([
           getDog(dogId),
           getSymptoms(dogId),
           getConsultations(dogId),
           getVaccinations(dogId),
           getMedications(dogId),
           getAppointments(dogId),
+          getCheckinHistory(dogId).catch(() => ({ data: { checkins: [] } })),
         ]);
 
         setDog(dogRes.data || null);
+        setCheckins(checkinsRes.data?.checkins || []);
         dispatch(setSymptoms(symptomsRes.data || []));
         dispatch(setConsultations(consultationsRes.data || []));
         dispatch(setVaccinations(vaccinationsRes.data || []));
@@ -151,6 +155,7 @@ export default function PdfExportPage() {
             vaccinations={vaccinations}
             medications={medications}
             appointments={appointments}
+            checkins={checkins}
           />
         </div>
       ) : null}

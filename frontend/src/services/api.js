@@ -23,6 +23,8 @@ export const deleteAccount = () => api.delete('/auth/me');
 export const updateProfile = (data) => api.patch('/auth/me/profile', data);
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);
 export const updateReminderWindowPreference = (data) => api.patch('/user/preferences/reminderWindow', data);
+export const updateLocation = (data) => api.patch('/user/location', data);
+export const deleteLocation = () => api.delete('/user/location');
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 
@@ -73,6 +75,7 @@ export const deleteAppointment = (dogId, apptId) => api.delete(`/dogs/${dogId}/a
 
 export const getSymptoms = (dogId) => api.get(`/dogs/${dogId}/symptoms`);
 export const createSymptom = (dogId, data) => api.post(`/dogs/${dogId}/symptoms`, data);
+export const createQuickSymptom = (dogId, data) => api.post(`/dogs/${dogId}/symptoms/quick`, data);
 export const updateSymptom = (dogId, symId, data) => api.patch(`/dogs/${dogId}/symptoms/${symId}`, data);
 export const deleteSymptom = (dogId, symId) => api.delete(`/dogs/${dogId}/symptoms/${symId}`);
 

@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { captureRefFromUrl } from './services/referralApi';
 import { selectIsAuthenticated } from './store/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
@@ -35,11 +37,16 @@ import PdfExportPage from './pages/PdfExportPage';
 import UpgradePage from './pages/UpgradePage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import PublicPetPage from './pages/PublicPetPage';
+import AlbumPage from './pages/AlbumPage';
+import CardsPage from './pages/CardsPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
   const location = useLocation();
   const { t } = useI18n();
+
+  // Persiste el código de referido entrante (?ref=CODE) hasta el registro.
+  useEffect(() => { captureRefFromUrl(); }, []);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isLanding = location.pathname === '/';
   const isPublicPet = location.pathname.startsWith('/p/');
@@ -82,6 +89,8 @@ export default function App() {
           <Route path="/dogs/:dogId/medications" element={<MedicationListPage />} />
           <Route path="/dogs/:dogId/appointments" element={<AppointmentListPage />} />
           <Route path="/dogs/:dogId/symptoms" element={<SymptomLogPage />} />
+          <Route path="/dogs/:dogId/album" element={<AlbumPage />} />
+          <Route path="/dogs/:dogId/cards" element={<CardsPage />} />
           <Route path="/dogs/:dogId/history" element={<HealthHistoryPage />} />
           <Route path="/dogs/:dogId/clinical-history" element={<ClinicalHistoryPage />} />
           <Route path="/dogs/:dogId/pdf-export" element={<PdfExportPage />} />

@@ -1,0 +1,123 @@
+/* Preferencias de notificaciones — cálida y cercana, parte del engagement. */
+
+.notif-page { max-width: 620px; margin: 0 auto; padding: 8px 16px 48px; }
+
+.notif-hero {
+  text-align: center;
+  padding: 8px 8px 22px;
+}
+.notif-hero-emoji { font-size: 44px; line-height: 1; }
+.notif-hero h1 { font-size: 26px; margin: 10px 0 8px; letter-spacing: -0.02em; color: #0f172a; }
+.notif-hero p { color: #475569; font-size: 15px; line-height: 1.55; margin: 0 auto; max-width: 460px; }
+.notif-onceaday {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-top: 14px;
+  background: linear-gradient(135deg, #ecfdf3, #eff6ff);
+  border: 1px solid #d1fae5;
+  color: #047857;
+  font-size: 12.5px; font-weight: 700;
+  padding: 7px 14px; border-radius: 999px;
+}
+
+.notif-card {
+  background: #fff;
+  border: 1px solid #e7eef9;
+  border-radius: 18px;
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 26px -16px rgba(15, 23, 42, 0.16);
+}
+.notif-card-head { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.notif-card-icon {
+  flex: none; width: 46px; height: 46px; border-radius: 13px;
+  display: grid; place-items: center; font-size: 23px;
+}
+.notif-icon-checkin { background: linear-gradient(135deg, #dbeafe, #d1fae5); }
+.notif-icon-health { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.notif-icon-zone { background: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+.notif-card-head h2 { margin: 0 0 2px; font-size: 17px; color: #0f172a; }
+.notif-card-head p { margin: 0; font-size: 13.5px; color: #64748b; line-height: 1.45; }
+
+/* Fila control */
+.notif-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 14px;
+  padding: 12px 0;
+}
+.notif-row + .notif-row { border-top: 1px solid #f1f5f9; }
+.notif-row-label { font-size: 14.5px; font-weight: 600; color: #1e293b; }
+.notif-row-hint { font-size: 12.5px; color: #94a3b8; margin-top: 2px; }
+
+/* Switch */
+.notif-switch { position: relative; display: inline-block; width: 48px; height: 28px; flex: none; }
+.notif-switch input { opacity: 0; width: 0; height: 0; }
+.notif-slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background: #cbd5e1; border-radius: 999px; transition: background 0.2s;
+}
+.notif-slider::before {
+  content: ''; position: absolute; height: 22px; width: 22px; left: 3px; top: 3px;
+  background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.25);
+}
+.notif-switch input:checked + .notif-slider { background: linear-gradient(135deg, #4f8ef7, #22c55e); }
+.notif-switch input:checked + .notif-slider::before { transform: translateX(20px); }
+
+/* Selects / steppers */
+.notif-select, .notif-number {
+  border: 1px solid #e5e7eb; border-radius: 10px; padding: 9px 12px;
+  font-size: 14px; font-family: inherit; color: #1e293b; background: #fff;
+  min-width: 130px;
+}
+.notif-number { width: 72px; min-width: 0; text-align: center; }
+.notif-select:focus, .notif-number:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(79,142,247,0.15); }
+.notif-unit { font-size: 13px; color: #64748b; margin-left: 8px; }
+.notif-disabled { opacity: 0.5; pointer-events: none; }
+
+/* Vista previa del mensaje de Milo */
+.notif-preview {
+  margin-top: 16px;
+  border: 1px dashed #cdd9ef;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f7fbff, #f4fdf7);
+  padding: 14px;
+}
+.notif-preview-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+  color: #94a3b8; margin: 0 0 10px;
+}
+.notif-preview-card {
+  background: #fff; border: 1px solid #e7eef9; border-radius: 12px; padding: 14px;
+  box-shadow: 0 6px 16px -12px rgba(15,23,42,0.2);
+}
+.notif-preview-brand { display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #4f8ef7; margin-bottom: 8px; }
+.notif-preview-q { font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 12px; }
+.notif-preview-answers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.notif-preview-answers span {
+  text-align: center; font-size: 12.5px; font-weight: 700; color: #fff;
+  padding: 9px 4px; border-radius: 10px;
+}
+.notif-pa-bien { background: linear-gradient(135deg, #34d399, #16a34a); }
+.notif-pa-reg { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.notif-pa-mal { background: linear-gradient(135deg, #fb7185, #ef4444); }
+
+/* Guardar */
+.notif-savebar { display: flex; align-items: center; gap: 14px; margin-top: 8px; }
+button.notif-save {
+  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  border: none; border-radius: 12px; padding: 13px 26px; font-weight: 700; font-size: 15px; cursor: pointer;
+}
+button.notif-save:hover:not(:disabled) { background: linear-gradient(135deg, #3f7ee7, #2a5fc0); }
+button.notif-save:disabled { opacity: 0.6; cursor: default; }
+.notif-saved { color: #16a34a; font-weight: 700; font-size: 14px; animation: notif-fade 0.3s ease; }
+.notif-error { color: #b91c1c; font-weight: 600; font-size: 14px; }
+@keyframes notif-fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Zona */
+.notif-zone-current {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  background: #f8fafc; border: 1px solid #e5e7eb; border-radius: 12px; padding: 12px 14px;
+}
+.notif-zone-current strong { color: #1a1a2e; font-size: 14.5px; }
+button.notif-zone-link { background: none; color: #4f8ef7; font-weight: 600; font-size: 13px; padding: 4px 6px; }
+button.notif-zone-link:hover:not(:disabled) { background: #eff6ff; }
+button.notif-zone-del { background: none; color: #ef4444; font-weight: 600; font-size: 13px; padding: 4px 6px; }
+button.notif-zone-del:hover:not(:disabled) { background: #fef2f2; }

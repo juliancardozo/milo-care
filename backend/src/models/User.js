@@ -106,6 +106,15 @@ const symptomSchema = new Schema(
     dateObserved: { type: Date, required: true },
     notes: { type: String, trim: true, default: '' },
     resolved: { type: Boolean, default: false },
+    // Registro rápido (Fase 2): tipo acotado para captura en ≤2 taps. Los campos
+    // detallados se completan después editando el síntoma (isQuickLog → false).
+    quickType: {
+      type: String,
+      enum: ['vomito', 'diarrea', 'tos', 'cojera', 'decaimiento', 'inapetencia', 'otro', null],
+      default: null,
+    },
+    photoUrl: { type: String, trim: true, default: null },
+    isQuickLog: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
@@ -162,6 +171,17 @@ const dogSchema = new Schema(
   { timestamps: true }
 );
 
+// Zona del tutor (Fase 5 — opt-in). Granularidad país/región/ciudad: JAMÁS se
+// persisten coordenadas (lat/lng). El schema directamente no las contempla.
+const locationSchema = new Schema(
+  {
+    country: { type: String, enum: ['AR', 'UY'], required: true },
+    region: { type: String, trim: true, default: '', maxlength: 100 },
+    city: { type: String, trim: true, default: '', maxlength: 100 },
+  },
+  { _id: false }
+);
+
 const notificationPreferencesSchema = new Schema(
   {
     enabled: { type: Boolean, default: true },
@@ -179,6 +199,24 @@ const notificationPreferencesSchema = new Schema(
       max: 168,
       validate: { validator: Number.isInteger, message: 'Must be an integer' },
     },
+    // Toggle por usuario del check-in diario. Independiente del flag de despliegue
+    // featureFlags.checkinEnabled (que habilita la feature a nivel servidor): este
+    // permite que el usuario active/desactive el check-in desde su perfil.
+    checkinEnabled: { type: Boolean, default: true },
+    // Hora local (0–23) en la que el usuario quiere recibir el check-in diario.
+    checkinHour: {
+      type: Number,
+      default: 19,
+      min: 0,
+      max: 23,
+      validate: { validator: Number.isInteger, message: 'checkinHour must be an integer 0–23' },
+    },
+    // Zona horaria IANA usada para calcular la hora local del check-in y la fecha
+    // diaria. Default rioplatense.
+    timezone: { type: String, trim: true, default: 'America/Argentina/Buenos_Aires' },
+    // Fecha local (YYYY-MM-DD) del último check-in despachado por email. Sirve de
+    // idempotencia para no enviar más de un check-in por día (principio: 1 email/día).
+    checkinLastSentOn: { type: String, default: null },
   },
   { _id: false }
 );
@@ -202,6 +240,16 @@ const userSchema = new Schema(
     // Último pedido de interés en Premium (se notifica al admin por email).
     // Agnóstico al proveedor de pago: usado para deduplicar pedidos dentro de 24h.
     premiumInterestAt: { type: Date, default: null },
+    // Premium con vencimiento (Fase 4 — recompensa de referidos). Premium efectivo =
+    // tier === 'premium' (manual/permanente) O premiumUntil en el futuro.
+    premiumUntil: { type: Date, default: null },
+    // Código de referido permanente y único del usuario (ej. MILO-AB12).
+    referralCode: { type: String, default: null, unique: true, sparse: true, uppercase: true, trim: true },
+    // Fecha local (YYYY-MM-DD) de la última sorpresa mostrada (≤1/día).
+    lastSurpriseOn: { type: String, default: null },
+    // Ventana de "código de referido potenciado" (sorpresa): mientras esté vigente,
+    // las activaciones de referidos otorgan 45 días en vez de 30.
+    referralBoostUntil: { type: Date, default: null },
     reminderWindowPreference: {
       type: Number,
       default: null,
@@ -213,6 +261,9 @@ const userSchema = new Schema(
       },
     },
     notificationPreferences: { type: notificationPreferencesSchema, default: () => ({}) },
+    // Zona opt-in del tutor (sin coordenadas) + momento del consentimiento.
+    location: { type: locationSchema, default: null },
+    locationConsentAt: { type: Date, default: null },
     dogs: [dogSchema],
   },
   { timestamps: true }
@@ -223,6 +274,25 @@ userSchema.methods.toJSON = function () {
   const obj = this.toObject();
   delete obj.passwordHash;
   return obj;
+};
+
+// Premium efectivo: tier permanente o ventana premiumUntil vigente.
+userSchema.methods.isPremiumActive = function (now = new Date()) {
+  if (this.tier === 'premium') return true;
+  return Boolean(this.premiumUntil && this.premiumUntil > now);
+};
+
+// Tier "efectivo" para UI/respuestas (no cambia el tier base 'free').
+userSchema.methods.effectiveTier = function (now = new Date()) {
+  return this.isPremiumActive(now) ? 'premium' : 'free';
+};
+
+// Extiende premiumUntil en `days` días desde el máximo entre ahora y el vencimiento
+// actual (no se pierde tiempo ya acumulado). Usuarios premium permanentes no cambian.
+userSchema.methods.grantPremiumDays = function (days, now = new Date()) {
+  if (this.tier === 'premium') return;
+  const base = this.premiumUntil && this.premiumUntil > now ? this.premiumUntil : now;
+  this.premiumUntil = new Date(base.getTime() + days * 86400000);
 };
 
 // Migrate legacy appointments that have clinicName but no title (created before

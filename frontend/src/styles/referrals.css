@@ -1,0 +1,101 @@
+/* Referidos + recompensa sorpresa (Fase 4) */
+
+.referral-card { background: linear-gradient(135deg, #f0fdf4 0%, #eff6ff 100%); }
+.referral-sub { color: #6b7280; margin: 0 0 14px; font-size: 14px; }
+
+.referral-code-box {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+  border: 1px dashed #93c5fd;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.referral-code {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #1d4ed8;
+  flex: 1;
+}
+.referral-copy {
+  border: none;
+  background: #eff6ff;
+  color: #1d4ed8;
+  font-weight: 600;
+  padding: 8px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.referral-wa {
+  width: 100%;
+  background: #22c55e;
+  margin-bottom: 14px;
+}
+
+.referral-stats {
+  display: flex;
+  gap: 18px;
+  font-size: 13px;
+  color: #374151;
+  margin-bottom: 10px;
+}
+
+.referral-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+.referral-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.referral-item-email { color: #4b5563; overflow: hidden; text-overflow: ellipsis; }
+.referral-badge { font-size: 11px; font-weight: 700; padding: 2px 9px; border-radius: 999px; white-space: nowrap; }
+.referral-badge-pending { background: #fef3c7; color: #92400e; }
+.referral-badge-activated { background: #dcfce7; color: #166534; }
+
+.referral-invite-note {
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: #065f46;
+  font-size: 14px;
+  margin-bottom: 14px;
+}
+
+/* Modal de sorpresa "Milo encontró algo enterrado 🦴" */
+.surprise-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.surprise-modal {
+  background: #fff;
+  border-radius: 20px;
+  max-width: 380px;
+  width: 100%;
+  padding: 30px 26px;
+  text-align: center;
+  animation: surprise-pop 0.35s ease;
+}
+@keyframes surprise-pop {
+  0% { transform: scale(0.7) rotate(-4deg); opacity: 0; }
+  60% { transform: scale(1.05); }
+  100% { transform: scale(1) rotate(0); opacity: 1; }
+}
+.surprise-emoji { font-size: 56px; }
+.surprise-title { font-size: 20px; font-weight: 800; margin: 10px 0 6px; }
+.surprise-body { color: #4b5563; font-size: 15px; line-height: 1.5; margin: 0 0 20px; }
+.surprise-sticker { font-size: 70px; margin: 6px 0 12px; }
+.surprise-close {
+  background: #4f8ef7; color: #fff; border: none; border-radius: 10px;
+  padding: 12px 26px; font-weight: 600; font-size: 15px; cursor: pointer;
+}

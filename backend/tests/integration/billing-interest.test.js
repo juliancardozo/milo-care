@@ -30,13 +30,18 @@ function authToken(tier = 'free') {
 }
 
 function mockUser(overrides = {}) {
+  const tier = overrides.tier || 'free';
   return {
     _id: USER_ID,
     name: 'Juan',
     email: 'user@test.com',
-    tier: 'free',
+    tier,
     dogs: [{}, {}],
     premiumInterestAt: null,
+    premiumUntil: null,
+    // Métodos del doc real usados por la ruta de billing.
+    isPremiumActive() { return this.tier === 'premium' || (this.premiumUntil && this.premiumUntil > new Date()); },
+    effectiveTier() { return this.isPremiumActive() ? 'premium' : 'free'; },
     ...overrides,
   };
 }

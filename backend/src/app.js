@@ -24,6 +24,11 @@ const vaccinesRoutes = require('./routes/vaccines');
 const adminRoutes = require('./routes/admin');
 const landingRoutes = require('./routes/landing');
 const billingRoutes = require('./routes/billing');
+const { dogCheckinsRouter, publicCheckinsRouter } = require('./routes/checkins');
+const behaviorsRoutes = require('./routes/behaviors');
+const referralsRoutes = require('./routes/referrals');
+const surprisesRoutes = require('./routes/surprises');
+const milestonesRoutes = require('./routes/milestones');
 
 const app = express();
 
@@ -38,6 +43,10 @@ app.use('/api/dogs/:dogId/vaccinations', vaccinationsRoutes);
 app.use('/api/dogs/:dogId/medications', medicationsRoutes);
 app.use('/api/dogs/:dogId/appointments', appointmentsRoutes);
 app.use('/api/dogs/:dogId/symptoms', symptomsRoutes);
+app.use('/api/dogs/:dogId/checkins', dogCheckinsRouter);
+app.use('/api/dogs/:dogId/behaviors', behaviorsRoutes);
+app.use('/api/dogs/:dogId/surprise', surprisesRoutes);
+app.use('/api/dogs/:dogId/milestones', milestonesRoutes);
 app.use('/api/dogs/:dogId/consultations', consultationsRoutes);
 app.use('/api/dogs/:dogId/wallet-pass', walletPassesRoutes);
 app.use('/api/dashboard/reminders', remindersRoutes);
@@ -48,6 +57,8 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/referrals', referralsRoutes);
+app.use('/api/checkins', publicCheckinsRouter);
 app.use('/api/public', publicDogsRoutes);
 app.use('/api', landingRoutes);
 

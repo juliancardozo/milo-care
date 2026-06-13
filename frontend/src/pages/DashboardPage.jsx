@@ -8,7 +8,21 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserMenu from '../components/UserMenu';
 import UpgradeBanner from '../components/UpgradeBanner';
 import AddToWalletButton from '../components/AddToWalletButton';
+import CheckinCard from '../components/checkin/CheckinCard';
+import QuickActionsFab from '../components/QuickActionsFab';
+import ExploreMenu from '../components/ExploreMenu';
+import LocationConsentModal, { wasLocationPromptDismissed } from '../components/LocationConsentModal';
+import MilestoneCelebration from '../components/MilestoneCelebration';
+import { getMilestones } from '../services/milestoneApi';
 import { useI18n } from '../i18n/I18nProvider';
+
+const BRACHY_HINT = ['bulldog', 'pug', 'boston', 'shih tzu', 'lhasa', 'boxer', 'pekin', 'frances', 'french'];
+
+// Hemisferio sur: temporada de garrapatas/calor cae en primavera-verano.
+function springSummerMonth() {
+  const m = new Date().getMonth() + 1;
+  return [9, 10, 11, 12, 1, 2, 3].includes(m);
+}
 
 const HEALTH_SECTION_KEYS = ['vaccinations', 'medications', 'appointments', 'symptoms', 'history'];
 
@@ -51,6 +65,35 @@ export default function DashboardPage() {
       });
   }, []);
   const activeDog = dogs.find((d) => d.id === activeDogId);
+  const isPremium = (user?.effectiveTier ?? user?.tier) === 'premium';
+
+  // Modal de opt-in de zona: solo si no dio consentimiento, es temporada relevante
+  // y todavía hay perros. Aparece en momento de valor, sin insistir si lo descarta.
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  useEffect(() => {
+    if (loading) return;
+    const hasConsent = Boolean(user?.locationConsentAt);
+    if (!hasConsent && dogs.length > 0 && springSummerMonth() && !wasLocationPromptDismissed()) {
+      setShowLocationModal(true);
+    }
+  }, [loading, dogs.length, user?.locationConsentAt]);
+
+  const month = new Date().getMonth() + 1;
+  const brachyActive = activeDog && BRACHY_HINT.some((b) => (activeDog.breed || '').toLowerCase().includes(b));
+  const locationExampleKey = brachyActive && [12, 1, 2].includes(month) ? 'heat' : 'tick';
+
+  // Hitos: celebra el primer pendiente del perro activo (una sola vez).
+  const [milestone, setMilestone] = useState(null);
+  const [referralCode, setReferralCode] = useState(null);
+  useEffect(() => {
+    if (!activeDogId) { setMilestone(null); return; }
+    getMilestones(activeDogId)
+      .then(({ data }) => {
+        setReferralCode(data.referralCode || null);
+        setMilestone((data.pending && data.pending[0]) || null);
+      })
+      .catch(() => setMilestone(null));
+  }, [activeDogId]);
 
   if (loading) {
     return (
@@ -74,6 +117,7 @@ export default function DashboardPage() {
           <span className="dashboard-brand-name">{t('appName')}</span>
         </div>
         <div className="dashboard-topbar-right">
+          <ExploreMenu dogId={activeDogId} isPremium={isPremium} />
           <LanguageSwitcher />
           <UserMenu dogs={dogs} />
         </div>
@@ -90,7 +134,10 @@ export default function DashboardPage() {
           </div>
         ) : (
           <>
-            {user?.tier === 'free' && dogs.length >= 1 && <UpgradeBanner />}
+            {/* Check-in diario: ritual de 10 segundos, arriba de todo */}
+            {activeDog && <CheckinCard key={activeDog.id} dog={activeDog} />}
+
+            {!isPremium && dogs.length >= 1 && <UpgradeBanner />}
 
             {/* Dog switcher tabs */}
             {dogs.length > 1 && (
@@ -183,17 +230,25 @@ export default function DashboardPage() {
               )}
             </section>
 
-            <section className="dashboard-footer-links">
-              {user?.tier === 'premium' ? (
-                <Link to="/dogs/new" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
-              ) : (
-                <Link to="/upgrade" className="footer-link">{t('dashboard.addAnotherDog')}</Link>
-              )}
-              <Link to="/settings/notifications" className="footer-link">{t('dashboard.notificationSettings')}</Link>
-            </section>
           </>
         )}
       </main>
+
+      {/* Botón flotante de registro rápido (síntoma / logro / travesura) */}
+      {activeDog && <QuickActionsFab dog={activeDog} />}
+
+      {showLocationModal && (
+        <LocationConsentModal exampleKey={locationExampleKey} onClose={() => setShowLocationModal(false)} />
+      )}
+
+      {milestone && activeDog && (
+        <MilestoneCelebration
+          dog={activeDog}
+          milestone={milestone}
+          referralCode={referralCode}
+          onClose={() => setMilestone(null)}
+        />
+      )}
     </div>
   );
 }

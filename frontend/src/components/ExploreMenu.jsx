@@ -1,0 +1,96 @@
+import { useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { useI18n } from '../i18n/I18nProvider';
+import '../styles/explore-menu.css';
+
+/**
+ * Menú "Explorar" del top bar. Diseñado para incitar la navegación:
+ * - trigger destacado con punto pulsante (sesgo de novedad),
+ * - filas con tile de color + microcopy de beneficio (brecha de curiosidad),
+ * - flecha que se desplaza en hover (señal de affordance),
+ * - badge "Nuevo" en una opción para disparar la curiosidad.
+ */
+export default function ExploreMenu({ dogId, isPremium }) {
+  const { t } = useI18n();
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open]);
+
+  const items = [
+    dogId && {
+      to: `/dogs/${dogId}/album`,
+      emoji: '📸',
+      tone: 'amber',
+      title: t('explore.album.title'),
+      sub: t('explore.album.sub'),
+    },
+    dogId && {
+      to: `/dogs/${dogId}/cards`,
+      emoji: '🎨',
+      tone: 'violet',
+      title: t('explore.cards.title'),
+      sub: t('explore.cards.sub'),
+      badge: t('explore.new'),
+    },
+    {
+      to: isPremium ? '/dogs/new' : '/upgrade',
+      emoji: '🐶',
+      tone: 'blue',
+      title: t('explore.addDog.title'),
+      sub: t('explore.addDog.sub'),
+    },
+    {
+      to: '/settings/notifications',
+      emoji: '🔔',
+      tone: 'green',
+      title: t('explore.notifications.title'),
+      sub: t('explore.notifications.sub'),
+    },
+  ].filter(Boolean);
+
+  return (
+    <div className="explore-menu" ref={ref}>
+      <button
+        className={`explore-trigger ${open ? 'open' : ''}`}
+        onClick={() => setOpen((v) => !v)}
+        aria-haspopup="true"
+        aria-expanded={open}
+      >
+        <span className="explore-trigger-icon" aria-hidden="true">✨</span>
+        <span className="explore-trigger-label">{t('explore.trigger')}</span>
+        <span className="explore-trigger-dot" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <nav className="explore-dropdown" role="menu">
+          <div className="explore-head">
+            <strong>{t('explore.headTitle')}</strong>
+            <span>{t('explore.headSub')}</span>
+          </div>
+
+          {items.map((it) => (
+            <Link key={it.to} to={it.to} className="explore-item" role="menuitem" onClick={() => setOpen(false)}>
+              <span className={`explore-tile explore-tile-${it.tone}`} aria-hidden="true">{it.emoji}</span>
+              <span className="explore-item-text">
+                <span className="explore-item-title">
+                  {it.title}
+                  {it.badge && <span className="explore-badge">{it.badge}</span>}
+                </span>
+                <span className="explore-item-sub">{it.sub}</span>
+              </span>
+              <span className="explore-arrow" aria-hidden="true">›</span>
+            </Link>
+          ))}
+        </nav>
+      )}
+    </div>
+  );
+}

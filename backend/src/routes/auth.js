@@ -10,6 +10,8 @@ const validator = require('validator');
 const User = require('../models/User');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const EmailService = require('../services/EmailService');
+const referralService = require('../services/referralService');
+const { deleteUserEvents } = require('../core/events/eventBus');
 const authenticate = require('../middleware/auth');
 
 const router = express.Router();
@@ -28,7 +30,17 @@ function signToken(user) {
 }
 
 function userResponse(user) {
-  return { id: user._id, name: user.name, email: user.email, tier: user.tier, role: user.role || 'user' };
+  return {
+    id: user._id,
+    name: user.name,
+    email: user.email,
+    tier: user.tier,
+    effectiveTier: typeof user.effectiveTier === 'function' ? user.effectiveTier() : user.tier,
+    premiumUntil: user.premiumUntil || null,
+    role: user.role || 'user',
+    location: user.location || null,
+    locationConsentAt: user.locationConsentAt || null,
+  };
 }
 
 // ── Rate limiter for password reset ──────────────────────────────────────────
@@ -48,7 +60,7 @@ const resetLimiter = rateLimit({
 
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, referralCode } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'name, email, and password are required.' });
@@ -69,7 +81,20 @@ router.post('/register', async (req, res, next) => {
     }
 
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
-    const user = await User.create({ name: name.trim(), email: email.toLowerCase(), passwordHash });
+    const referralCodeForUser = await referralService.generateUniqueCode();
+    const user = await User.create({
+      name: name.trim(),
+      email: email.toLowerCase(),
+      passwordHash,
+      referralCode: referralCodeForUser,
+    });
+
+    // Registrar la relación de referido si vino un código (no bloquea el registro).
+    if (referralCode) {
+      referralService.registerReferral({ code: referralCode, newUser: user }).catch((err) => {
+        console.error('[Auth] registerReferral failed:', err.message);
+      });
+    }
 
     // Fire-and-forget — welcome email must not block or fail the registration response
     EmailService.sendWelcome({ to: user.email, userName: user.name }).catch((err) => {
@@ -211,10 +236,11 @@ router.patch('/me/profile', authenticate, async (req, res, next) => {
 
 router.patch('/me/notifications', authenticate, async (req, res, next) => {
   try {
-    const { enabled, vaccinationWindowDays, appointmentWindowHours } = req.body;
+    const { enabled, vaccinationWindowDays, appointmentWindowHours, checkinEnabled, checkinHour, timezone } = req.body;
 
     const update = {};
     if (typeof enabled === 'boolean') update['notificationPreferences.enabled'] = enabled;
+    if (typeof checkinEnabled === 'boolean') update['notificationPreferences.checkinEnabled'] = checkinEnabled;
     if (vaccinationWindowDays !== undefined) {
       if (!Number.isInteger(vaccinationWindowDays) || vaccinationWindowDays < 1 || vaccinationWindowDays > 30) {
         return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'vaccinationWindowDays must be an integer 1–30.' });
@@ -226,6 +252,22 @@ router.patch('/me/notifications', authenticate, async (req, res, next) => {
         return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'appointmentWindowHours must be an integer 1–168.' });
       }
       update['notificationPreferences.appointmentWindowHours'] = appointmentWindowHours;
+    }
+    if (checkinHour !== undefined) {
+      if (!Number.isInteger(checkinHour) || checkinHour < 0 || checkinHour > 23) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'checkinHour must be an integer 0–23.' });
+      }
+      update['notificationPreferences.checkinHour'] = checkinHour;
+    }
+    if (timezone !== undefined) {
+      const tz = String(timezone).trim();
+      try {
+        // Valida la zona horaria IANA.
+        Intl.DateTimeFormat('en-CA', { timeZone: tz });
+      } catch {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'timezone must be a valid IANA timezone.' });
+      }
+      update['notificationPreferences.timezone'] = tz;
     }
 
     const user = await User.findByIdAndUpdate(req.user.id, { $set: update }, { new: true });
@@ -242,6 +284,7 @@ router.patch('/me/notifications', authenticate, async (req, res, next) => {
 router.delete('/me', authenticate, async (req, res, next) => {
   try {
     await PasswordResetToken.deleteMany({ userId: req.user.id });
+    await deleteUserEvents(req.user.id); // GDPR: borra el event log del usuario
     await User.findByIdAndDelete(req.user.id);
     return res.json({ message: 'Account deleted. All data has been permanently removed.' });
   } catch (err) {

@@ -1,0 +1,128 @@
+/* Editar perfil del perro — experiencia de dopamina, no un formulario. */
+
+.dogedit-page { max-width: 640px; margin: 0 auto; padding: 8px 16px 48px; }
+
+/* Hero */
+.dogedit-hero {
+  position: relative;
+  background:
+    radial-gradient(120% 120% at 0% 0%, #eef5ff 0%, rgba(238,245,255,0) 55%),
+    radial-gradient(120% 120% at 100% 100%, #ecfdf3 0%, rgba(236,253,243,0) 55%),
+    #fff;
+  border: 1px solid #e7eef9;
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 16px;
+  box-shadow: 0 12px 32px -16px rgba(15,23,42,0.18);
+  text-align: center;
+}
+.dogedit-avatar-wrap { display: inline-block; position: relative; }
+.dogedit-avatar {
+  width: 96px; height: 96px; border-radius: 50%;
+  object-fit: cover; display: block; margin: 0 auto;
+  border: 4px solid #fff; box-shadow: 0 8px 22px -8px rgba(15,23,42,0.3);
+}
+.dogedit-avatar-ph {
+  width: 96px; height: 96px; border-radius: 50%;
+  display: grid; place-items: center; margin: 0 auto;
+  font-size: 40px; font-weight: 800; color: #fff;
+  background: linear-gradient(135deg, #4f8ef7, #22c55e);
+  border: 4px solid #fff; box-shadow: 0 8px 22px -8px rgba(15,23,42,0.3);
+}
+.dogedit-photo-btn {
+  background: none; border: none; color: #4f8ef7; font-weight: 600; font-size: 13px;
+  cursor: pointer; margin-top: 8px; padding: 4px 8px; border-radius: 8px;
+}
+.dogedit-photo-btn:hover:not(:disabled) { background: #eff6ff; }
+.dogedit-photo-input {
+  width: 100%; box-sizing: border-box; margin-top: 8px;
+  border: 1px solid #e5e7eb; border-radius: 10px; padding: 9px 12px; font-size: 13px;
+}
+
+.dogedit-name { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: #0f172a; margin: 12px 0 2px; }
+.dogedit-sub { color: #64748b; font-size: 14px; margin: 0 0 18px; }
+
+/* Medidor de completitud */
+.dogedit-meter-top { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 7px; }
+.dogedit-meter-label { font-size: 13px; font-weight: 600; color: #334155; }
+.dogedit-meter-pct {
+  font-size: 18px; font-weight: 800;
+  background: linear-gradient(135deg, #4f8ef7, #16a34a);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.dogedit-track { height: 12px; border-radius: 999px; background: #e8eefc; overflow: hidden; }
+.dogedit-fill {
+  height: 100%; border-radius: 999px;
+  background: linear-gradient(90deg, #4f8ef7, #22c55e);
+  transition: width 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 0 12px rgba(34,197,94,0.4);
+}
+.dogedit-meter-msg { font-size: 13.5px; color: #475569; margin: 10px 0 0; font-weight: 600; }
+
+/* Tarjetas de sección (reusa el lenguaje de notif-card) */
+.dogedit-card {
+  background: #fff; border: 1px solid #e7eef9; border-radius: 18px;
+  padding: 20px; margin-bottom: 16px;
+  box-shadow: 0 8px 26px -16px rgba(15,23,42,0.16);
+}
+.dogedit-card-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.dogedit-card-icon {
+  flex: none; width: 44px; height: 44px; border-radius: 13px;
+  display: grid; place-items: center; font-size: 22px;
+}
+.dogedit-icon-dog { background: linear-gradient(135deg, #dbeafe, #d1fae5); }
+.dogedit-icon-owner { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.dogedit-icon-vet { background: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+.dogedit-card-head h2 { margin: 0; font-size: 17px; color: #0f172a; }
+.dogedit-card-head p { margin: 1px 0 0; font-size: 12.5px; color: #64748b; }
+
+.dogedit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.dogedit-grid .dogedit-full { grid-column: 1 / -1; }
+@media (max-width: 520px) { .dogedit-grid { grid-template-columns: 1fr; } }
+
+.dogedit-field label { display: block; font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 5px; }
+.dogedit-field input, .dogedit-field select {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #e5e7eb; border-radius: 10px; padding: 10px 12px;
+  font-size: 14px; font-family: inherit; color: #1e293b; background: #fff;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.dogedit-field input:focus, .dogedit-field select:focus {
+  outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(79,142,247,0.15);
+}
+.dogedit-hint { font-size: 12px; color: #94a3b8; margin: 5px 0 0; }
+
+.dogedit-switchrow {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 6px 0;
+}
+.dogedit-switchrow span { font-size: 14px; font-weight: 600; color: #1e293b; }
+
+/* Switch (igual al de notificaciones) */
+.dogedit-switch { position: relative; display: inline-block; width: 48px; height: 28px; flex: none; }
+.dogedit-switch input { opacity: 0; width: 0; height: 0; }
+.dogedit-sl { position: absolute; inset: 0; cursor: pointer; background: #cbd5e1; border-radius: 999px; transition: background 0.2s; }
+.dogedit-sl::before { content: ''; position: absolute; height: 22px; width: 22px; left: 3px; top: 3px; background: #fff; border-radius: 50%; transition: transform 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.25); }
+.dogedit-switch input:checked + .dogedit-sl { background: linear-gradient(135deg, #4f8ef7, #22c55e); }
+.dogedit-switch input:checked + .dogedit-sl::before { transform: translateX(20px); }
+
+.dogedit-foot { display: flex; align-items: center; gap: 14px; margin-top: 16px; }
+button.dogedit-save {
+  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  border: none; border-radius: 12px; padding: 12px 24px; font-weight: 700; font-size: 14.5px; cursor: pointer;
+}
+button.dogedit-save:hover:not(:disabled) { background: linear-gradient(135deg, #3f7ee7, #2a5fc0); }
+button.dogedit-save:disabled { opacity: 0.6; cursor: default; }
+.dogedit-saved { color: #16a34a; font-weight: 700; font-size: 14px; animation: dogedit-pop 0.4s cubic-bezier(0.34,1.56,0.64,1); }
+.dogedit-err { color: #b91c1c; font-weight: 600; font-size: 14px; }
+@keyframes dogedit-pop { 0% { opacity: 0; transform: scale(0.8); } 60% { transform: scale(1.08); } 100% { opacity: 1; transform: scale(1); } }
+
+/* Celebración 100% */
+.dogedit-celebrate {
+  position: fixed; left: 50%; top: 22%; transform: translateX(-50%);
+  background: #fff; border: 1px solid #d1fae5; border-radius: 16px;
+  padding: 16px 22px; box-shadow: 0 18px 40px -12px rgba(15,23,42,0.3); z-index: 80;
+  text-align: center; animation: dogedit-pop 0.45s cubic-bezier(0.34,1.56,0.64,1);
+}
+.dogedit-celebrate .big { font-size: 40px; }
+.dogedit-celebrate p { margin: 6px 0 0; font-weight: 700; color: #0f172a; }

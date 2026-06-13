@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { register } from '../services/api';
+import { getStoredRef, clearStoredRef } from '../services/referralApi';
 import { useI18n } from '../i18n/I18nProvider';
 
 export default function RegisterPage() {
@@ -32,7 +33,9 @@ export default function RegisterPage() {
     setServerError('');
     setLoading(true);
     try {
-      const { data } = await register(form);
+      const referralCode = getStoredRef();
+      const { data } = await register(referralCode ? { ...form, referralCode } : form);
+      clearStoredRef();
       dispatch(setCredentials({ user: data.user, token: data.token }));
       navigate('/dogs/new');
     } catch (err) {
@@ -43,9 +46,14 @@ export default function RegisterPage() {
     }
   }
 
+  const invitedBy = getStoredRef();
+
   return (
     <div className="auth-page">
       <h1>{t('auth.createAccountTitle')}</h1>
+      {invitedBy && (
+        <p className="referral-invite-note">{t('referrals.invitedBanner', { code: invitedBy })}</p>
+      )}
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">
           <label htmlFor="name">{t('common.name')}</label>

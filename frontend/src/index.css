@@ -2746,3 +2746,15 @@ button.btn-secondary:hover { background: var(--color-bg); }
   font-weight: 600;
   text-align: right;
 }
+
+/* Badge "registro rápido" en el módulo de síntomas (Fase 2) */
+.badge-quicklog {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: #fef3c7;
+  color: #92400e;
+  margin-left: 6px;
+}

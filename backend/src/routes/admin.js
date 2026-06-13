@@ -5,6 +5,8 @@ const authenticate = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 const User = require('../models/User');
 const Lead = require('../models/Lead');
+const Event = require('../models/Event');
+const { deleteUserEvents } = require('../core/events/eventBus');
 const EmailService = require('../services/EmailService');
 
 const router = express.Router();
@@ -19,6 +21,9 @@ const PREVIEW_DATA = {
   medication:  () => EmailService._templates.medication({ userName: 'Julián', dogName: 'Milo', medicationName: 'Carprofen', dosage: '25 mg' }),
   appointment: () => EmailService._templates.appointment({ userName: 'Julián', dogName: 'Milo', appointmentTitle: 'Control sano adulto', clinicName: 'Clínica Veterinaria Central', appointmentDate: new Date(Date.now() + 864e5) }),
   passwordReset: () => EmailService._templates.passwordReset({ resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=PREVIEW_TOKEN` }),
+  dailyCheckin: () => EmailService._templates.dailyCheckin({ userName: 'Julián', dogs: [{ dogName: 'Milo', question: 'energia', focus: null, urls: { bien: '#', regular: '#', mal: '#' } }] }),
+  symptomAlert: () => EmailService._templates.symptomAlert({ userName: 'Julián', dogName: 'Milo', count: 2, windowHours: 24, isPuppy: false }),
+  referralActivated: () => EmailService._templates.referralActivated({ userName: 'Julián', referredName: 'Sofía', rewardDays: 30 }),
 };
 
 router.get('/email/preview/:type', (req, res) => {
@@ -184,6 +189,8 @@ router.delete('/users/:id', async (req, res, next) => {
     const user = await User.findByIdAndDelete(req.params.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
+    await deleteUserEvents(req.params.id); // GDPR: borra el event log del usuario
+
     return res.json({ message: 'User deleted.' });
   } catch (err) {
     next(err);
@@ -208,6 +215,9 @@ router.post('/email/test', async (req, res, next) => {
       passwordReset: () => EmailService.sendPasswordReset({ to: admin.email, resetUrl: `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=test` }),
       premiumInterest: () => EmailService.sendPremiumInterestNotification({ to: admin.email, userName: admin.name, userEmail: admin.email, userId: String(admin._id), dogsCount: 2, requestedAt: new Date() }),
       premiumInterestConfirmation: () => EmailService.sendPremiumInterestConfirmation({ to: admin.email, userName: admin.name }),
+      dailyCheckin: () => EmailService.sendDailyCheckin({ to: admin.email, userName: admin.name, dogs: [{ dogName: 'Milo (test)', question: 'energia', focus: null, urls: { bien: '#', regular: '#', mal: '#' } }] }),
+      symptomAlert: () => EmailService.sendSymptomAlert({ to: admin.email, userName: admin.name, dogName: 'Milo (test)', count: 2, windowHours: 24, isPuppy: false }),
+      referralActivated: () => EmailService.sendReferralActivated({ to: admin.email, userName: admin.name, referredName: 'Sofía (test)', rewardDays: 30 }),
     };
 
     const send = map[type];
@@ -225,6 +235,64 @@ router.post('/email/test', async (req, res, next) => {
         detail: msg,
       });
     }
+    next(err);
+  }
+});
+
+// ── GET /api/admin/metrics/summary ───────────────────────────────────────────
+// Agregados de engagement/crecimiento. KPI norte: % de usuarios activos que
+// responden el check-in ≥5 días en los últimos 7 días.
+
+router.get('/metrics/summary', async (_req, res, next) => {
+  try {
+    const now = new Date();
+    const since7 = new Date(now.getTime() - 7 * 864e5);
+    const since28 = new Date(now.getTime() - 28 * 864e5);
+
+    // Conteo de eventos por tipo (últimos 7 y 28 días) sobre el event log.
+    const [counts7, counts28] = await Promise.all([
+      Event.aggregate([
+        { $match: { ts: { $gte: since7 } } },
+        { $group: { _id: '$type', count: { $sum: 1 } } },
+      ]),
+      Event.aggregate([
+        { $match: { ts: { $gte: since28 } } },
+        { $group: { _id: '$type', count: { $sum: 1 } } },
+      ]),
+    ]);
+
+    const toMap = (rows) => rows.reduce((acc, r) => { acc[r._id] = r.count; return acc; }, {});
+
+    // KPI: días distintos con check-in respondido por usuario en los últimos 7 días.
+    const perUserDays = await Event.aggregate([
+      { $match: { type: 'checkin.answered', ts: { $gte: since7 }, userId: { $ne: null } } },
+      { $group: { _id: { userId: '$userId', day: { $dateToString: { format: '%Y-%m-%d', date: '$ts' } } } } },
+      { $group: { _id: '$_id.userId', days: { $sum: 1 } } },
+    ]);
+
+    const activeUsers = perUserDays.length;
+    const usersWith5Plus = perUserDays.filter((u) => u.days >= 5).length;
+    const kpiPct = activeUsers > 0 ? Math.round((usersWith5Plus / activeUsers) * 100) : 0;
+
+    // Serie semanal (últimas 4 semanas) de check-ins respondidos.
+    const weekly = await Event.aggregate([
+      { $match: { type: 'checkin.answered', ts: { $gte: since28 } } },
+      { $group: { _id: { $dateToString: { format: '%Y-%U', date: '$ts' } }, count: { $sum: 1 } } },
+      { $sort: { _id: 1 } },
+    ]);
+
+    return res.json({
+      generatedAt: now,
+      eventsLast7Days: toMap(counts7),
+      eventsLast28Days: toMap(counts28),
+      checkinKpi: {
+        activeUsers,
+        usersAnswering5PlusDays: usersWith5Plus,
+        pctAnswering5PlusDays: kpiPct,
+      },
+      checkinsAnsweredWeekly: weekly.map((w) => ({ week: w._id, count: w.count })),
+    });
+  } catch (err) {
     next(err);
   }
 });

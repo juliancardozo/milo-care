@@ -68,6 +68,7 @@ export default function SymptomLogPage() {
             <li key={s._id} className={`record-item severity-${s.severity}`}>
               <strong>{s.description}</strong>
               <span className={`badge-severity badge-${s.severity}`}>{severityLabels[s.severity]}</span>
+              {s.isQuickLog && <span className="badge-quicklog">{t('symptoms.quickLog')}</span>}
               <span>{new Date(s.dateObserved).toLocaleDateString()}</span>
               {s.notes && <p className="notes">{s.notes}</p>}
               <button onClick={() => handleDelete(s._id)} className="btn-danger-sm">{t('common.delete')}</button>

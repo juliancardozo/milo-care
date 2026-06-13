@@ -15,7 +15,7 @@ router.post('/interest', authenticate, async (req, res, next) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
-    if (user.tier === 'premium') {
+    if (user.isPremiumActive()) {
       return res.status(409).json({ code: 'ALREADY_PREMIUM', message: 'User already has Premium.' });
     }
 
@@ -30,11 +30,13 @@ router.post('/interest', authenticate, async (req, res, next) => {
 // Estado del plan del usuario autenticado.
 router.get('/subscription', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id).select('tier premiumInterestAt');
+    const user = await User.findById(req.user.id).select('tier premiumInterestAt premiumUntil');
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
     return res.json({
       tier: user.tier,
+      effectiveTier: user.effectiveTier(),
+      premiumUntil: user.premiumUntil,
       premiumInterestAt: user.premiumInterestAt,
     });
   } catch (err) {
