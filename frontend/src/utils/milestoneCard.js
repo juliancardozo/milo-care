@@ -8,9 +8,6 @@ export const FORMATS = {
   story: { w: 1080, h: 1920, label: 'Stories (9:16)' },
 };
 
-const PRIMARY = '#4f8ef7';
-const GREEN = '#22c55e';
-
 function loadImage(url) {
   return new Promise((resolve, reject) => {
     if (!url) return reject(new Error('no url'));
@@ -49,21 +46,29 @@ function wrapLines(ctx, text, maxWidth) {
   return lines;
 }
 
-function pawPattern(ctx, w, h) {
+const FONT = '-apple-system, "SF Pro Display", "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
+
+// Fondo elegante de marca cuando no hay foto (o falla CORS).
+function brandBackground(ctx, w, h, emoji) {
+  const g = ctx.createLinearGradient(0, 0, w, h);
+  g.addColorStop(0, '#5b9bff');
+  g.addColorStop(1, '#1f9d6b');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, w, h);
+  // Emoji marca de agua, grande y muy sutil, descentrado (editorial).
   ctx.save();
-  ctx.globalAlpha = 0.08;
-  ctx.font = '90px serif';
+  ctx.globalAlpha = 0.12;
+  ctx.font = `${Math.round(w * 0.66)}px serif`;
   ctx.textAlign = 'center';
-  for (let yy = 120; yy < h; yy += 180) {
-    for (let xx = 90; xx < w; xx += 180) {
-      ctx.fillText('🐾', xx + (yy % 360 ? 0 : 90), yy);
-    }
-  }
+  ctx.textBaseline = 'middle';
+  ctx.fillText(emoji || '🐾', w * 0.72, h * 0.34);
   ctx.restore();
 }
 
 /**
  * Renderiza la tarjeta y devuelve el canvas.
+ * Diseño minimalista editorial: foto a sangre completa + scrim inferior +
+ * tipografía sobria alineada abajo a la izquierda. Calidad para compartir.
  * @param {object} opts - { photoUrl, emoji, title, subtitle, referralCode, format }
  */
 export async function renderCard({ photoUrl, emoji = '🐾', title = '', subtitle = '', referralCode = null, format = 'square' }) {
@@ -73,73 +78,115 @@ export async function renderCard({ photoUrl, emoji = '🐾', title = '', subtitl
   canvas.height = h;
   const ctx = canvas.getContext('2d');
 
-  // Fondo degradado de marca.
-  const grad = ctx.createLinearGradient(0, 0, w, h);
-  grad.addColorStop(0, PRIMARY);
-  grad.addColorStop(1, GREEN);
-  ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, w, h);
-
-  const photoH = Math.round(h * (format === 'story' ? 0.6 : 0.58));
-  let hasPhoto = false;
+  // 1) Imagen a sangre completa (cover, recorte centrado) o fondo de marca.
   try {
     const img = await loadImage(photoUrl);
-    drawCover(ctx, img, 0, 0, w, photoH);
-    hasPhoto = true;
+    drawCover(ctx, img, 0, 0, w, h);
   } catch {
-    pawPattern(ctx, w, h);
+    brandBackground(ctx, w, h, emoji);
   }
 
-  // Panel inferior para el texto (semitransparente sobre el degradado).
-  const panelY = hasPhoto ? photoH - 40 : Math.round(h * 0.34);
-  const fade = ctx.createLinearGradient(0, panelY - 80, 0, panelY + 120);
-  fade.addColorStop(0, 'rgba(255,255,255,0)');
-  fade.addColorStop(1, '#ffffff');
-  ctx.fillStyle = fade;
-  ctx.fillRect(0, panelY - 80, w, 200);
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, panelY + 100, w, h - (panelY + 100));
+  // 2) Scrims para legibilidad: leve arriba (marca) y fuerte abajo (texto).
+  const topScrim = ctx.createLinearGradient(0, 0, 0, h * 0.28);
+  topScrim.addColorStop(0, 'rgba(0,0,0,0.38)');
+  topScrim.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.fillStyle = topScrim;
+  ctx.fillRect(0, 0, w, h * 0.28);
 
-  ctx.textAlign = 'center';
+  const botScrim = ctx.createLinearGradient(0, h * 0.42, 0, h);
+  botScrim.addColorStop(0, 'rgba(15,23,42,0)');
+  botScrim.addColorStop(0.55, 'rgba(15,23,42,0.55)');
+  botScrim.addColorStop(1, 'rgba(15,23,42,0.92)');
+  ctx.fillStyle = botScrim;
+  ctx.fillRect(0, h * 0.42, w, h * 0.58);
 
-  // Emoji grande.
-  ctx.font = '120px serif';
-  ctx.fillText(emoji, w / 2, panelY + 150);
+  const pad = Math.round(w * 0.085);
+  const maxText = w - pad * 2;
+
+  // 3) Marca arriba a la izquierda.
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(255,255,255,0.95)';
+  ctx.font = `700 ${Math.round(w * 0.032)}px ${FONT}`;
+  ctx.fillText('🐾  Milo Care', pad, Math.round(h * 0.072));
+
+  // 4) Medir el bloque de texto inferior para anclarlo abajo.
+  const emojiSize = Math.round(w * 0.085);
+  const titleSize = Math.round(w * 0.072);
+  const titleLH = Math.round(titleSize * 1.12);
+  const subSize = Math.round(w * 0.038);
+  const subLH = Math.round(subSize * 1.34);
+  const pillH = Math.round(w * 0.066);
+
+  ctx.font = `800 ${titleSize}px ${FONT}`;
+  const titleLines = wrapLines(ctx, title, maxText);
+  ctx.font = `400 ${subSize}px ${FONT}`;
+  const subLines = subtitle ? wrapLines(ctx, subtitle, maxText) : [];
+
+  const gapEmoji = Math.round(w * 0.022);
+  const gapTitleSub = Math.round(w * 0.018);
+  const gapPill = Math.round(w * 0.03);
+  const blockH = emojiSize + gapEmoji
+    + titleLines.length * titleLH
+    + (subLines.length ? gapTitleSub + subLines.length * subLH : 0)
+    + (referralCode ? gapPill + pillH : 0);
+
+  const bottomPad = Math.round(h * 0.085);
+  let y = h - bottomPad - blockH;
+
+  ctx.textBaseline = 'top';
+  ctx.shadowColor = 'rgba(0,0,0,0.45)';
+  ctx.shadowBlur = Math.round(w * 0.02);
+  ctx.shadowOffsetY = 2;
+
+  // Emoji accent (chico, sobrio).
+  ctx.font = `${emojiSize}px serif`;
+  ctx.fillStyle = '#fff';
+  ctx.fillText(emoji, pad, y);
+  y += emojiSize + gapEmoji;
 
   // Título.
-  ctx.fillStyle = '#1a1a2e';
-  ctx.font = 'bold 68px -apple-system, Segoe UI, Roboto, sans-serif';
-  let ty = panelY + 250;
-  for (const line of wrapLines(ctx, title, w - 140)) {
-    ctx.fillText(line, w / 2, ty);
-    ty += 80;
-  }
+  ctx.font = `800 ${titleSize}px ${FONT}`;
+  ctx.fillStyle = '#ffffff';
+  for (const line of titleLines) { ctx.fillText(line, pad, y); y += titleLH; }
 
   // Subtítulo.
-  ctx.fillStyle = '#475569';
-  ctx.font = '42px -apple-system, Segoe UI, Roboto, sans-serif';
-  ty += 12;
-  for (const line of wrapLines(ctx, subtitle, w - 180)) {
-    ctx.fillText(line, w / 2, ty);
-    ty += 56;
+  if (subLines.length) {
+    y += gapTitleSub;
+    ctx.font = `400 ${subSize}px ${FONT}`;
+    ctx.fillStyle = 'rgba(255,255,255,0.88)';
+    for (const line of subLines) { ctx.fillText(line, pad, y); y += subLH; }
   }
 
-  // Código de referido (si la Fase 4 está activa).
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.shadowOffsetY = 0;
+
+  // 5) Código de referido como pill sobria translúcida.
   if (referralCode) {
-    ctx.fillStyle = '#eff6ff';
-    const pillW = 560; const pillX = (w - pillW) / 2; const pillY = h - 190;
+    y += gapPill;
+    ctx.font = `700 ${Math.round(w * 0.034)}px ${FONT}`;
+    const label = `Sumate con ${referralCode}`;
+    const tw = ctx.measureText(label).width;
+    const pillW = tw + Math.round(w * 0.075);
+    ctx.fillStyle = 'rgba(255,255,255,0.18)';
     ctx.beginPath();
-    ctx.roundRect(pillX, pillY, pillW, 70, 35);
+    ctx.roundRect(pad, y, pillW, pillH, pillH / 2);
     ctx.fill();
-    ctx.fillStyle = PRIMARY;
-    ctx.font = 'bold 34px -apple-system, Segoe UI, Roboto, sans-serif';
-    ctx.fillText(`Sumate con ${referralCode}`, w / 2, pillY + 47);
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+    ctx.fillStyle = '#ffffff';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(label, pad + Math.round(w * 0.0375), y + pillH / 2 + 1);
   }
 
-  // Branding.
-  ctx.fillStyle = '#94a3b8';
-  ctx.font = '34px -apple-system, Segoe UI, Roboto, sans-serif';
-  ctx.fillText('🐾 milocare.app', w / 2, h - 70);
+  // 6) milocare.online abajo a la derecha, discreto.
+  ctx.textAlign = 'right';
+  ctx.textBaseline = 'alphabetic';
+  ctx.fillStyle = 'rgba(255,255,255,0.7)';
+  ctx.font = `600 ${Math.round(w * 0.028)}px ${FONT}`;
+  ctx.fillText('milocare.online', w - pad, h - Math.round(h * 0.038));
 
   return canvas;
 }

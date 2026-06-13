@@ -1,59 +1,47 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
+import { generateWalletPass } from '../services/walletApi';
 import '../styles/explore-menu.css';
 
 /**
  * Menú "Explorar" del top bar. Diseñado para incitar la navegación:
- * - trigger destacado con punto pulsante (sesgo de novedad),
+ * - CTA masivo arriba de todo (Wallet) con punto pulsante y flecha,
  * - filas con tile de color + microcopy de beneficio (brecha de curiosidad),
- * - flecha que se desplaza en hover (señal de affordance),
- * - badge "Nuevo" en una opción para disparar la curiosidad.
+ * - badge "Nuevo" para disparar curiosidad.
  */
-export default function ExploreMenu({ dogId, isPremium }) {
+export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
+  const [walletLoading, setWalletLoading] = useState(false);
   const ref = useRef(null);
 
   useEffect(() => {
     if (!open) return;
-    function handler(e) {
-      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
-    }
+    function handler(e) { if (ref.current && !ref.current.contains(e.target)) setOpen(false); }
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, [open]);
 
+  async function handleWallet() {
+    if (!dogId || walletLoading) return;
+    setWalletLoading(true);
+    try {
+      const { data } = await generateWalletPass(dogId);
+      window.open(data.saveUrl, '_blank', 'noopener');
+      setOpen(false);
+    } catch {
+      // silencioso: el flujo de Wallet puede estar deshabilitado
+    } finally {
+      setWalletLoading(false);
+    }
+  }
+
   const items = [
-    dogId && {
-      to: `/dogs/${dogId}/album`,
-      emoji: '📸',
-      tone: 'amber',
-      title: t('explore.album.title'),
-      sub: t('explore.album.sub'),
-    },
-    dogId && {
-      to: `/dogs/${dogId}/cards`,
-      emoji: '🎨',
-      tone: 'violet',
-      title: t('explore.cards.title'),
-      sub: t('explore.cards.sub'),
-      badge: t('explore.new'),
-    },
-    {
-      to: isPremium ? '/dogs/new' : '/upgrade',
-      emoji: '🐶',
-      tone: 'blue',
-      title: t('explore.addDog.title'),
-      sub: t('explore.addDog.sub'),
-    },
-    {
-      to: '/settings/notifications',
-      emoji: '🔔',
-      tone: 'green',
-      title: t('explore.notifications.title'),
-      sub: t('explore.notifications.sub'),
-    },
+    dogId && { to: `/dogs/${dogId}/cards`, emoji: '🎨', tone: 'violet', title: t('explore.cards.title'), sub: t('explore.cards.sub'), badge: t('explore.new') },
+    dogId && { to: `/dogs/${dogId}/album`, emoji: '📸', tone: 'amber', title: t('explore.album.title'), sub: t('explore.album.sub') },
+    { to: isPremium ? '/dogs/new' : '/upgrade', emoji: '🐶', tone: 'blue', title: t('explore.addDog.title'), sub: t('explore.addDog.sub') },
+    { to: '/settings/notifications', emoji: '🔔', tone: 'green', title: t('explore.notifications.title'), sub: t('explore.notifications.sub') },
   ].filter(Boolean);
 
   return (
@@ -75,6 +63,18 @@ export default function ExploreMenu({ dogId, isPremium }) {
             <strong>{t('explore.headTitle')}</strong>
             <span>{t('explore.headSub')}</span>
           </div>
+
+          {/* CTA masivo: agregar a Wallet */}
+          {dogId && (
+            <button className="explore-cta" onClick={handleWallet} disabled={walletLoading}>
+              <span className="explore-cta-tile" aria-hidden="true">🪪</span>
+              <span className="explore-cta-text">
+                <strong>{walletLoading ? t('explore.wallet.loading') : t('explore.wallet.title')}</strong>
+                <span>{t('explore.wallet.sub', { dog: dogName || t('explore.yourDog') })}</span>
+              </span>
+              <span className="explore-cta-arrow" aria-hidden="true">→</span>
+            </button>
+          )}
 
           {items.map((it) => (
             <Link key={it.to} to={it.to} className="explore-item" role="menuitem" onClick={() => setOpen(false)}>

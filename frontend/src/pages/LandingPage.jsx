@@ -723,7 +723,7 @@ function FinalCTA({ onCtaClick }) {
           Crear el perfil de mi perro →
         </Link>
         <p style={{ marginTop: '14px', fontSize: '0.875rem', color: '#bfdbfe' }}>
-          <a href="mailto:hola@milocare.app" style={{ color: '#fff', fontWeight: 600 }}>
+          <a href="mailto:hola@milocare.online" style={{ color: '#fff', fontWeight: 600 }}>
             ¿Sos veterinario? Tenemos un programa para clínicas.
           </a>
         </p>
@@ -752,7 +752,7 @@ function LandingFooter() {
         <div className="landing-footer-links">
           <a href="/terminos.pdf">Términos</a>
           <a href="/privacidad.pdf">Privacidad</a>
-          <a href="mailto:hola@milocare.app">Contacto</a>
+          <a href="mailto:hola@milocare.online">Contacto</a>
         </div>
       </div>
     </footer>

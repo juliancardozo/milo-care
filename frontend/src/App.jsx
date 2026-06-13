@@ -14,7 +14,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage';
 import DashboardPage from './pages/DashboardPage';
 import DogListPage from './pages/DogListPage';
 import DogProfileSetupPage from './pages/DogProfileSetupPage';
-import DogOnboardingPage from './pages/DogOnboardingPage';
+import AddDogGate from './pages/AddDogGate';
 import OnboardingSummaryPage from './pages/OnboardingSummaryPage';
 import VaccinationListPage from './pages/VaccinationListPage';
 import MedicationListPage from './pages/MedicationListPage';
@@ -81,7 +81,7 @@ export default function App() {
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/dogs" element={<DogListPage />} />
-          <Route path="/dogs/new" element={<DogOnboardingPage />} />
+          <Route path="/dogs/new" element={<AddDogGate />} />
           <Route path="/dogs/onboarding/legacy" element={<DogProfileSetupPage />} />
           <Route path="/dogs/onboarding/summary" element={<OnboardingSummaryPage />} />
           <Route path="/dogs/:dogId/edit" element={<DogEditPage />} />

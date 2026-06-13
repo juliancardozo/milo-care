@@ -24,7 +24,6 @@ import {
 } from '../services/onboardingApi';
 import { validateStep } from '../services/validationRules';
 import StepIndicator from '../components/onboarding/StepIndicator';
-import DisclosureWarning from '../components/onboarding/DisclosureWarning';
 import OwnerProfileForm from '../components/onboarding/OwnerProfileForm';
 import DogBasicInfoForm from '../components/onboarding/DogBasicInfoForm';
 import ClinicalHistoryForm from '../components/onboarding/ClinicalHistoryForm';
@@ -33,16 +32,30 @@ import VaccinationRecordForm from '../components/onboarding/VaccinationRecordFor
 import DewormingHistoryForm from '../components/onboarding/DewormingHistoryForm';
 import RedFlagAlert from '../components/onboarding/RedFlagAlert';
 import SummaryStep from '../components/onboarding/SummaryStep';
+import '../styles/onboarding.css';
 
-const STEP_LABELS = [
-  'Tutor',
-  'Perro',
-  'Clínico',
-  'Estilo de vida',
-  'Vacunas',
-  'Desparasitación',
-  'Resumen',
-];
+// Etiqueta por clave de paso. Las etiquetas mostradas se derivan de los pasos
+// activos (que pueden excluir "Tutor" al sumar un segundo perro).
+const STEP_LABEL_MAP = {
+  owner: 'Tutor',
+  'dog-basic': 'Perro',
+  'clinical-history': 'Clínico',
+  lifestyle: 'Estilo de vida',
+  vaccines: 'Vacunas',
+  deworming: 'Desparasitación',
+  summary: 'Resumen',
+};
+
+// Encabezado cálido por paso (emoji + título + bajada).
+const STEP_META = {
+  owner: { emoji: '👋', title: 'Tus datos', sub: 'Quién cuida a este compañero.' },
+  'dog-basic': { emoji: '🐶', title: 'Contanos de tu perro', sub: 'Lo básico para armar su ficha y su calendario.' },
+  'clinical-history': { emoji: '🩺', title: 'Su salud', sub: 'Antecedentes que nos ayudan a cuidarlo mejor.' },
+  lifestyle: { emoji: '🌳', title: 'Su estilo de vida', sub: 'Cómo vive nos deja anticipar riesgos.' },
+  vaccines: { emoji: '💉', title: 'Sus vacunas', sub: 'Cargá lo que ya tiene aplicado. Podés saltearlo.' },
+  deworming: { emoji: '🪱', title: 'Desparasitación', sub: 'Los antiparasitarios que ya recibió.' },
+  summary: { emoji: '✅', title: '¡Todo listo!', sub: 'Revisá y confirmá para crear su calendario.' },
+};
 
 export default function DogOnboardingPage() {
   const dispatch = useDispatch();
@@ -243,24 +256,31 @@ export default function DogOnboardingPage() {
   }
 
   const findings = onboarding.summary?.redFlags || [];
+  const meta = STEP_META[currentStepKey] || { emoji: '🐾', title: 'Onboarding', sub: '' };
+  const isLast = currentStepKey === 'summary';
 
   return (
-    <div className="page">
-      <h1>Onboarding de perros</h1>
+    <div className="onb-page">
+      <div className="onb-hero">
+        <span className="onb-hero-icon" aria-hidden="true">{meta.emoji}</span>
+        <div>
+          <h1>{meta.title}</h1>
+          {meta.sub && <p>{meta.sub}</p>}
+        </div>
+      </div>
 
       <StepIndicator
         currentStepIndex={onboarding.currentStepIndex}
         totalSteps={onboarding.steps.length}
-        labels={STEP_LABELS}
+        labels={onboarding.steps.map((k) => STEP_LABEL_MAP[k] || k)}
       />
 
-      <DisclosureWarning />
       <RedFlagAlert findings={findings} />
 
       {serverError ? <p className="server-error">{serverError}</p> : null}
       {onboarding.warnings?.length ? (
-        <section className="card">
-          <h2>Advertencias</h2>
+        <section className="onb-warnings">
+          <h2>⚠ Tené en cuenta</h2>
           <ul>
             {onboarding.warnings.map((item) => (
               <li key={item}>{item}</li>
@@ -271,18 +291,25 @@ export default function DogOnboardingPage() {
 
       {renderStep()}
 
-      <div className="form-actions">
-        <button type="button" onClick={handleBack} disabled={onboarding.currentStepIndex === 0 || onboarding.loading}>
-          Atrás
-        </button>
-        <button type="button" onClick={handleNext} disabled={onboarding.loading}>
+      <div className="onb-nav">
+        {onboarding.currentStepIndex > 0 && (
+          <button type="button" className="onb-back" onClick={handleBack} disabled={onboarding.loading}>
+            ← Atrás
+          </button>
+        )}
+        <button type="button" className="onb-next" onClick={handleNext} disabled={onboarding.loading}>
           {onboarding.loading
-            ? 'Guardando...'
-            : currentStepKey === 'summary'
-              ? 'Confirmar y crear calendario'
-              : 'Guardar y continuar'}
+            ? 'Guardando…'
+            : isLast
+              ? '✨ Confirmar y crear el calendario'
+              : 'Continuar →'}
         </button>
       </div>
+
+      <p className="onb-disclaimer">
+        Esta información es educativa y no reemplaza la consulta con un veterinario licenciado.
+        Las recomendaciones pueden variar según el país, estado de salud y criterios profesionales.
+      </p>
     </div>
   );
 }

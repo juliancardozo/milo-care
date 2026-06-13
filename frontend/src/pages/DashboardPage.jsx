@@ -117,7 +117,7 @@ export default function DashboardPage() {
           <span className="dashboard-brand-name">{t('appName')}</span>
         </div>
         <div className="dashboard-topbar-right">
-          <ExploreMenu dogId={activeDogId} isPremium={isPremium} />
+          <ExploreMenu dogId={activeDogId} dogName={activeDog?.name} isPremium={isPremium} />
           <LanguageSwitcher />
           <UserMenu dogs={dogs} />
         </div>

@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/I18nProvider';
 import BackLink from '../components/BackLink';
 import { getDog } from '../services/api';
 import { getBehaviors, createBehavior, deleteBehavior } from '../services/behaviorApi';
+import PhotoInput from '../components/PhotoInput';
 import '../styles/album.css';
 
 const KINDS = ['logro', 'travesura', 'momento'];
@@ -73,7 +74,7 @@ export default function AlbumPage() {
           </div>
           <input className="album-input" placeholder={t('quickActions.titlePlaceholder')} value={title} onChange={(e) => setTitle(e.target.value)} />
           <textarea className="album-textarea" rows={2} placeholder={t('quickActions.notePlaceholder')} value={note} onChange={(e) => setNote(e.target.value)} />
-          <input className="album-input" placeholder={t('quickActions.photoPlaceholder')} value={photoUrl} onChange={(e) => setPhotoUrl(e.target.value)} />
+          <PhotoInput value={photoUrl} onChange={setPhotoUrl} />
           <button className="btn" disabled={!title.trim() || saving} onClick={submit}>
             {saving ? t('quickActions.saving') : t('quickActions.save')}
           </button>

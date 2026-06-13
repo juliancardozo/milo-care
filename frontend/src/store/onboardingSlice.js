@@ -205,6 +205,25 @@ const onboardingSlice = createSlice({
       });
       persistState(state);
     },
+    // Configura el flujo para un perro nuevo. `additional` (segundo+ perro) omite el
+    // paso "Tutor": el tutor ya está cargado del primer perro. Sólo debe llamarse en
+    // un inicio fresco (sin sesión activa) para no pisar un onboarding en progreso.
+    configureOnboarding(state, action) {
+      const { additional, owner } = action.payload || {};
+      state.steps = additional
+        ? ['dog-basic', 'clinical-history', 'lifestyle', 'vaccines', 'deworming', 'summary']
+        : ['owner', 'dog-basic', 'clinical-history', 'lifestyle', 'vaccines', 'deworming', 'summary'];
+      state.currentStepIndex = 0;
+      state.errors = {};
+      if (additional) {
+        state.values.owner = {
+          ...state.values.owner,
+          ...(owner || {}),
+          disclaimerAccepted: true,
+        };
+      }
+      persistState(state);
+    },
   },
 });
 
@@ -221,6 +240,7 @@ export const {
   setConfirmedDogId,
   hydrateFromDraft,
   resetOnboarding,
+  configureOnboarding,
 } = onboardingSlice.actions;
 
 export const selectOnboarding = (state) => state.onboarding;

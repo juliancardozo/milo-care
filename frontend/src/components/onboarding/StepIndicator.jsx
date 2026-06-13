@@ -2,15 +2,17 @@ export default function StepIndicator({ currentStepIndex, totalSteps, labels = [
   const current = currentStepIndex + 1;
 
   return (
-    <div className="step-indicator" aria-label="Onboarding progress">
-      <div className="step-indicator-bar" aria-hidden="true">
-        <div
-          className="step-indicator-fill"
-          style={{ width: `${Math.round((current / totalSteps) * 100)}%` }}
-        />
+    <div className="onb-stepper" aria-label="Progreso del onboarding">
+      <div className="onb-stepper-track" aria-hidden="true">
+        {Array.from({ length: totalSteps }).map((_, i) => (
+          <span
+            key={i}
+            className={`onb-seg ${i < currentStepIndex ? 'done' : i === currentStepIndex ? 'current' : ''}`}
+          />
+        ))}
       </div>
-      <p className="step-indicator-text">
-        Paso {current} de {totalSteps}
+      <p className="onb-stepper-text">
+        Paso <b>{current}</b> de {totalSteps}
         {labels[currentStepIndex] ? ` · ${labels[currentStepIndex]}` : ''}
       </p>
     </div>
