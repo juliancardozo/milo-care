@@ -32,6 +32,7 @@ const milestonesRoutes = require('./routes/milestones');
 const pushRoutes = require('./routes/push');
 const healthScoreRoutes = require('./routes/healthScore');
 const { shareRouter: vetShareRouter, publicVetRouter } = require('./routes/vetShare');
+const dogMembersRoutes = require('./routes/dogMembers');
 
 const app = express();
 
@@ -54,6 +55,7 @@ app.use('/api/dogs/:dogId/consultations', consultationsRoutes);
 app.use('/api/dogs/:dogId/wallet-pass', walletPassesRoutes);
 app.use('/api/dogs/:dogId/health-score', healthScoreRoutes);
 app.use('/api/dogs/:dogId/vet-share', vetShareRouter);
+app.use('/api/dogs/:dogId/members', dogMembersRoutes);
 app.use('/api/vet', publicVetRouter);
 app.use('/api/dashboard/reminders', remindersRoutes);
 app.use('/api/user', usersRoutes);

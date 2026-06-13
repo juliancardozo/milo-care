@@ -11,4 +11,7 @@ module.exports = {
   // Notificaciones push (Web Push / VAPID). Requiere VAPID_PUBLIC_KEY y
   // VAPID_PRIVATE_KEY; si faltan, el servicio queda inactivo aunque el flag esté on.
   pushEnabled: process.env.PUSH_ENABLED === 'true',
+  // Multi-tutor: acceso compartido y con roles a un perfil de perro.
+  // Apagado por defecto; activar cuando DogAccess backfill esté completo.
+  multiTutorEnabled: process.env.MULTI_TUTOR_ENABLED === 'true',
 };

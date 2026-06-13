@@ -45,6 +45,9 @@ services:
       - key: SURPRISE_PROBABILITY
         value: '0.15'
       # ── Notificaciones push (Web Push / VAPID) ──
+      # ── Multi-tutor (acceso compartido al perfil del perro) ──
+      - key: MULTI_TUTOR_ENABLED
+        value: 'false'       # 'true' para activar multi-tutor
       - key: PUSH_ENABLED
         value: 'false'       # 'true' para habilitar push
       - key: VAPID_PUBLIC_KEY
