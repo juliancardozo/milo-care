@@ -4,8 +4,9 @@ import BackLink from '../components/BackLink';
 import { selectCurrentUser, updateUser } from '../store/authSlice';
 import { updateNotificationPreferences, updateLocation, deleteLocation } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
-import { isPushSupported, isIosNotInstalled, getPushSubscribed, enablePush, disablePush } from '../utils/push';
+import { isPushSupported, isIosNotInstalled, getPushSubscribed, disablePush } from '../utils/push';
 import { sendTestPush } from '../services/pushApi';
+import PushOnboarding from '../components/PushOnboarding';
 import { useI18n } from '../i18n/I18nProvider';
 import '../styles/location.css';
 import '../styles/notifications.css';
@@ -64,6 +65,8 @@ export default function NotificationPreferencesPage() {
   const [pushSubscribed, setPushSubscribed] = useState(false);
   const [pushBusy, setPushBusy] = useState(false);
   const [pushError, setPushError] = useState('');
+  const [pushInfo, setPushInfo] = useState('');
+  const [showGuide, setShowGuide] = useState(false);
   const supported = isPushSupported();
 
   useEffect(() => {
@@ -72,22 +75,26 @@ export default function NotificationPreferencesPage() {
 
   async function togglePush(on) {
     setPushError('');
+    setPushInfo('');
+    if (on) {
+      // Abrimos el onboarding guiado (permiso + sistema + prueba), sin fricción.
+      setShowGuide(true);
+      return;
+    }
     setPushBusy(true);
     try {
-      if (on) {
-        await enablePush();
-        setPushSubscribed(true);
-        // Si estaba sólo por email, sumamos push como canal del check-in.
-        if (form.channel === 'email') set({ channel: 'both' });
-      } else {
-        await disablePush();
-        setPushSubscribed(false);
-      }
-    } catch (err) {
-      setPushError(err.message === 'denied' ? t('notifications.pushDenied') : t('notifications.pushError'));
+      await disablePush();
+      setPushSubscribed(false);
+    } catch {
+      setPushError(t('notifications.pushError'));
     } finally {
       setPushBusy(false);
     }
+  }
+
+  function onGuideDone() {
+    setPushSubscribed(true);
+    if (form.channel === 'email') set({ channel: 'both' });
   }
 
   const set = (patch) => { setForm({ ...form, ...patch }); setSuccess(false); };
@@ -198,13 +205,20 @@ export default function NotificationPreferencesPage() {
                 <div className="notif-row">
                   <span className="notif-row-hint">{t('notifications.pushTestHint')}</span>
                   <button type="button" className="notif-channel-btn" onClick={async () => {
-                    setPushError('');
-                    try { await sendTestPush(); } catch { setPushError(t('notifications.pushError')); }
+                    setPushError(''); setPushInfo('');
+                    try {
+                      const { data } = await sendTestPush();
+                      setPushInfo(data?.delivered > 0 ? t('notifications.pushTestSent') : t('notifications.pushTestNone'));
+                    } catch { setPushError(t('notifications.pushError')); }
                   }}>{t('notifications.pushTest')}</button>
                 </div>
               )}
+              {pushInfo && <p className="notif-row-hint" style={{ color: '#16a34a' }}>{pushInfo}</p>}
               {isIosNotInstalled() && <p className="notif-row-hint">{t('notifications.pushIosHint')}</p>}
               {pushError && <p className="notif-error">{pushError}</p>}
+              <button type="button" className="notif-guide-link" onClick={() => setShowGuide(true)}>
+                {t('notifications.pushGuideLink')}
+              </button>
             </>
           )}
         </section>
@@ -260,6 +274,10 @@ export default function NotificationPreferencesPage() {
 
       {/* ── Tu zona ─────────────────────────────────────────────────────── */}
       <ZoneCard />
+
+      {showGuide && (
+        <PushOnboarding onClose={() => setShowGuide(false)} onDone={onGuideDone} />
+      )}
     </div>
   );
 }

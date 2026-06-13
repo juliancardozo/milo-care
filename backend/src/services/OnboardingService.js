@@ -79,6 +79,9 @@ async function saveStep(sessionId, userId, stepKey, payload) {
       ...session.dog.toObject?.() || session.dog,
       ...dogResult.dog,
       birthDate: dogResult.dog.birthDate || safeDate(payload.birthDate),
+      // La foto no pasa por el validador clínico; la persistimos directo en la sesión
+      // para que el confirm la guarde en la ficha del perro.
+      photoUrl: payload.photoUrl ?? (session.dog?.photoUrl || null),
     };
   }
 

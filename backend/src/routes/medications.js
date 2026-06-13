@@ -32,13 +32,16 @@ router.get('/', authenticate, async (req, res, next) => {
 // POST /api/dogs/:dogId/medications
 router.post('/', authenticate, async (req, res, next) => {
   try {
-    const { medicationName, dosage, frequencyHours, startDate, endDate, notes } = req.body;
+    const { medicationName, dosage, frequencyHours, startDate, endDate, notes, oneTime } = req.body;
 
-    if (!medicationName || !dosage || !frequencyHours || !startDate) {
-      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'medicationName, dosage, frequencyHours, and startDate are required.' });
+    if (!medicationName || !dosage || !startDate) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'medicationName, dosage, and startDate are required.' });
     }
-    if (!Number.isFinite(Number(frequencyHours)) || Number(frequencyHours) <= 0) {
-      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'frequencyHours must be a positive number.' });
+    // La frecuencia solo es obligatoria para tratamientos recurrentes (no dosis única).
+    if (!oneTime) {
+      if (!Number.isFinite(Number(frequencyHours)) || Number(frequencyHours) <= 0) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'frequencyHours must be a positive number for recurring medications.' });
+      }
     }
 
     const start = new Date(startDate);
@@ -50,14 +53,16 @@ router.post('/', authenticate, async (req, res, next) => {
     const dog = user?.dogs.id(req.params.dogId);
     if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
 
-    const nextReminderAt = computeMedicationReminder(start, Number(frequencyHours));
+    const freq = oneTime ? null : Number(frequencyHours);
+    const nextReminderAt = computeMedicationReminder(start, freq);
 
     dog.medications.push({
       medicationName,
       dosage,
-      frequencyHours: Number(frequencyHours),
+      oneTime: Boolean(oneTime),
+      frequencyHours: freq,
       startDate: start,
-      endDate: endDate ? new Date(endDate) : null,
+      endDate: oneTime ? null : (endDate ? new Date(endDate) : null),
       notes: notes || '',
       isActive: true,
       nextReminderAt,

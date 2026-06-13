@@ -5,25 +5,30 @@
   margin: 0 auto;
 }
 
-.pdf-export-page .page-header {
+/* Header minimalista */
+.pdfx-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
-  border-bottom: 2px solid #e0e0e0;
-  padding-bottom: 1rem;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
 }
+.pdfx-header h1 { margin: 0; font-size: 1.35rem; font-weight: 700; color: var(--color-text); }
 
-.pdf-export-page h1 {
-  margin: 0;
-  font-size: 2rem;
-  color: #333;
+.pdfx-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+button.pdfx-btn {
+  background: var(--color-text); color: #fff; border: none;
+  border-radius: 11px; padding: 10px 18px; font-weight: 700; font-size: .9rem; cursor: pointer;
 }
-
-.header-actions {
-  display: flex;
-  gap: 1rem;
+button.pdfx-btn:hover:not(:disabled) { background: #000; }
+button.pdfx-btn:disabled { opacity: .55; cursor: default; }
+.pdfx-btn-ghost {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1.5px solid var(--color-border); color: var(--color-text);
+  border-radius: 11px; padding: 9px 16px; font-weight: 600; font-size: .9rem; text-decoration: none;
 }
+.pdfx-btn-ghost:hover { border-color: var(--color-primary); text-decoration: none; }
 
 .btn {
   padding: 0.75rem 1.5rem;
@@ -75,6 +80,16 @@
   border-radius: 8px;
   padding: 2rem;
   margin: 1rem 0;
+  overflow: hidden;
+}
+
+/* Escalado del preview: el template mantiene su ancho A4 fijo (794px) y se
+   reduce visualmente para entrar en cualquier pantalla, sin desbordar. */
+.pdf-measure { width: 100%; }
+.pdf-scaler { position: relative; overflow: hidden; }
+.pdf-scaler-inner {
+  width: 794px;
+  transform-origin: top left;
 }
 
 .pdf-template {
@@ -129,6 +144,8 @@
     padding: 1rem;
   }
 
+  .pdf-export-page h1 { font-size: 1.5rem; }
+
   .pdf-export-page .page-header {
     flex-direction: column;
     align-items: flex-start;
@@ -143,4 +160,6 @@
   .header-actions button {
     width: 100%;
   }
+
+  .pdf-preview { padding: 0.75rem; }
 }

@@ -24,6 +24,7 @@ import {
 } from '../services/onboardingApi';
 import { validateStep } from '../services/validationRules';
 import StepIndicator from '../components/onboarding/StepIndicator';
+import LivePetCard from '../components/onboarding/LivePetCard';
 import OwnerProfileForm from '../components/onboarding/OwnerProfileForm';
 import DogBasicInfoForm from '../components/onboarding/DogBasicInfoForm';
 import ClinicalHistoryForm from '../components/onboarding/ClinicalHistoryForm';
@@ -56,6 +57,23 @@ const STEP_META = {
   deworming: { emoji: '🪱', title: 'Desparasitación', sub: 'Los antiparasitarios que ya recibió.' },
   summary: { emoji: '✅', title: '¡Todo listo!', sub: 'Revisá y confirmá para crear su calendario.' },
 };
+
+// Títulos que usan el nombre del perro una vez que lo conocemos (hiperpersonalización).
+const NAMED_TITLE = {
+  'clinical-history': (n) => `La salud de ${n}`,
+  lifestyle: (n) => `¿Cómo vive ${n}?`,
+  vaccines: (n) => `Las vacunas de ${n}`,
+  deworming: (n) => `La desparasitación de ${n}`,
+  summary: (n) => `¡${n} ya está listo!`,
+};
+
+function metaFor(stepKey, dogName) {
+  const base = STEP_META[stepKey] || { emoji: '🐾', title: 'Onboarding', sub: '' };
+  if (dogName && NAMED_TITLE[stepKey]) {
+    return { ...base, title: NAMED_TITLE[stepKey](dogName) };
+  }
+  return base;
+}
 
 export default function DogOnboardingPage() {
   const dispatch = useDispatch();
@@ -256,8 +274,11 @@ export default function DogOnboardingPage() {
   }
 
   const findings = onboarding.summary?.redFlags || [];
-  const meta = STEP_META[currentStepKey] || { emoji: '🐾', title: 'Onboarding', sub: '' };
+  const dogName = (onboarding.values.dog?.name || '').trim();
+  const meta = metaFor(currentStepKey, dogName);
   const isLast = currentStepKey === 'summary';
+  // La ficha en vivo aparece una vez que el perro tiene nombre, y acompaña el resto del flujo.
+  const showLiveCard = Boolean(dogName) && currentStepKey !== 'owner';
 
   return (
     <div className="onb-page">
@@ -274,6 +295,8 @@ export default function DogOnboardingPage() {
         totalSteps={onboarding.steps.length}
         labels={onboarding.steps.map((k) => STEP_LABEL_MAP[k] || k)}
       />
+
+      {showLiveCard && <LivePetCard dog={onboarding.values.dog} />}
 
       <RedFlagAlert findings={findings} />
 

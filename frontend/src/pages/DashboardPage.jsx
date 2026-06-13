@@ -9,7 +9,9 @@ import UserMenu from '../components/UserMenu';
 import UpgradeBanner from '../components/UpgradeBanner';
 import AddToWalletButton from '../components/AddToWalletButton';
 import CheckinCard from '../components/checkin/CheckinCard';
+import HealthScoreCard from '../components/HealthScoreCard';
 import QuickActionsFab from '../components/QuickActionsFab';
+import BottomNav from '../components/BottomNav';
 import ExploreMenu from '../components/ExploreMenu';
 import LocationConsentModal, { wasLocationPromptDismissed } from '../components/LocationConsentModal';
 import MilestoneCelebration from '../components/MilestoneCelebration';
@@ -44,6 +46,7 @@ export default function DashboardPage() {
   const [activeDogId, setActiveDogId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [remindersPreview, setRemindersPreview] = useState([]);
+  const [quickOpen, setQuickOpen] = useState(false);
 
   useEffect(() => {
     getDogs()
@@ -137,6 +140,9 @@ export default function DashboardPage() {
             {/* Check-in diario: ritual de 10 segundos, arriba de todo */}
             {activeDog && <CheckinCard key={activeDog.id} dog={activeDog} />}
 
+            {/* Health Score: el "por qué volver" — estado de salud + próxima acción */}
+            {activeDog && <HealthScoreCard dogId={activeDog.id} dogName={activeDog.name} />}
+
             {!isPremium && dogs.length >= 1 && <UpgradeBanner />}
 
             {/* Dog switcher tabs */}
@@ -154,7 +160,7 @@ export default function DashboardPage() {
               </nav>
             )}
 
-            {/* Dog profile card */}
+            {/* Dog profile card (slim) */}
             {activeDog && (
               <div className="dog-profile-card">
                 <DogAvatar dog={activeDog} />
@@ -170,52 +176,14 @@ export default function DashboardPage() {
               </div>
             )}
 
-            {/* Health sections grid */}
-            <section className="health-sections">
-              <h2 className="health-sections-title">{t('dashboard.healthRecords')}</h2>
-              <div className="health-grid">
-                {HEALTH_SECTION_KEYS.map((key) => (
-                  <Link
-                    key={key}
-                    to={`/dogs/${activeDogId}/${key}`}
-                    className="health-card"
-                  >
-                    <span className="health-card-emoji">
-                      {key === 'vaccinations' && '💉'}
-                      {key === 'medications' && '💊'}
-                      {key === 'appointments' && '🏥'}
-                      {key === 'symptoms' && '🩺'}
-                      {key === 'history' && '📋'}
-                    </span>
-                    <span className="health-card-label">{t(`dashboard.sections.${key}.label`)}</span>
-                    <span className="health-card-desc">{t(`dashboard.sections.${key}.desc`)}</span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            {activeDog && (
-              <section className="card" style={{ marginTop: 16 }}>
-                <div className="page-header" style={{ marginBottom: 8 }}>
-                  <h2>📄 {t('pdf.title') || 'Health Summary PDF'}</h2>
-                  <Link to={`/dogs/${activeDog.id}/pdf-export`} className="btn">
-                    {t('pdf.download') || 'Download PDF'}
-                  </Link>
-                </div>
-                <p className="list-empty" style={{ marginBottom: 0 }}>
-                  {t('pdf.settingsDesc') || 'Generate a printable summary of the dog health history.'}
-                </p>
-              </section>
-            )}
-
-            {/* Quick links */}
-            <section className="card" style={{ marginTop: 16 }}>
+            {/* Zona 2 — "Lo de hoy": el único foco accionable de la pantalla */}
+            <section className="card today-card" id="today">
               <div className="page-header" style={{ marginBottom: 8 }}>
                 <h2>{t('remindersFullList.previewTitle')}</h2>
                 <Link to="/dashboard/reminders/full">{t('common.viewAll')}</Link>
               </div>
               {remindersPreview.length === 0 ? (
-                <p className="list-empty">{t('remindersFullList.empty')}</p>
+                <p className="today-clear">{t('dashboard.todayClear')}</p>
               ) : (
                 <ul className="record-list">
                   {remindersPreview.map((r) => (
@@ -230,12 +198,37 @@ export default function DashboardPage() {
               )}
             </section>
 
+            {/* Zona 3 — Salud: navegación compacta (no compite por atención) */}
+            <section className="health-sections" id="salud">
+              <h2 className="health-sections-title">{t('dashboard.healthRecords')}</h2>
+              <div className="health-pills">
+                {HEALTH_SECTION_KEYS.map((key) => (
+                  <Link key={key} to={`/dogs/${activeDogId}/${key}`} className="health-pill">
+                    <span className="health-pill-emoji" aria-hidden="true">
+                      {key === 'vaccinations' && '💉'}
+                      {key === 'medications' && '💊'}
+                      {key === 'appointments' && '🏥'}
+                      {key === 'symptoms' && '🩺'}
+                      {key === 'history' && '📋'}
+                    </span>
+                    <span className="health-pill-label">{t(`dashboard.sections.${key}.label`)}</span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+
           </>
         )}
       </main>
 
-      {/* Botón flotante de registro rápido (síntoma / logro / travesura) */}
-      {activeDog && <QuickActionsFab dog={activeDog} />}
+      {/* Registro rápido: FAB en desktop, "+" central de la barra inferior en móvil.
+          Ambos abren la misma hoja vía estado controlado. */}
+      {activeDog && (
+        <>
+          <QuickActionsFab dog={activeDog} open={quickOpen} onOpenChange={setQuickOpen} />
+          <BottomNav dogId={activeDogId} onQuickAdd={() => setQuickOpen(true)} />
+        </>
+      )}
 
       {showLocationModal && (
         <LocationConsentModal exampleKey={locationExampleKey} onClose={() => setShowLocationModal(false)} />

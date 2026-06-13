@@ -124,6 +124,7 @@ button.explore-install:hover { border-color: #cbd5e1; background: #fafbfc; }
 .explore-tile-violet { background: #f4f1fb; }
 .explore-tile-blue { background: #eef3fb; }
 .explore-tile-green { background: #eef7f1; }
+.explore-tile-teal { background: #eaf6f5; }
 
 .explore-item-text { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
 .explore-item-title {

@@ -1,0 +1,146 @@
+/* Vistas de registros de salud (síntomas, medicamentos) — diseño premium,
+   hiperpersonalizado y 100% seguro en móvil (nada se desborda). */
+
+.hr-page { max-width: 760px; margin: 0 auto; padding: 18px 16px 48px; }
+
+/* Hero personalizado con el nombre del perro */
+.hr-hero {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  padding: 22px 22px 20px;
+  margin-bottom: 18px;
+  color: #fff;
+}
+.hr-hero.sym { background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); }
+.hr-hero.med { background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%); }
+.hr-hero::after {
+  content: '';
+  position: absolute; right: -30px; top: -30px;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+}
+.hr-hero-emoji { font-size: 26px; line-height: 1; }
+.hr-hero h1 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 6px; color: #fff; }
+.hr-hero p { font-size: .92rem; line-height: 1.5; opacity: 0.92; margin: 0; max-width: 46ch; }
+.hr-hero-meta { display: inline-block; margin-top: 12px; font-size: .8rem; font-weight: 700; background: rgba(255,255,255,0.18); padding: 4px 12px; border-radius: 999px; }
+
+/* Barra de acción (agregar / toggle) */
+.hr-toolbar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+}
+button.hr-add {
+  background: var(--color-text); color: #fff;
+  border: none; border-radius: 12px; padding: 11px 18px;
+  font-weight: 700; font-size: .92rem; cursor: pointer;
+}
+button.hr-add:hover:not(:disabled) { background: #000; }
+button.hr-add.is-cancel { background: transparent; color: var(--color-muted); border: 1.5px solid var(--color-border); }
+button.hr-add.is-cancel:hover:not(:disabled) { background: var(--color-bg); color: var(--color-text); }
+
+.hr-toggle { display: inline-flex; align-items: center; gap: 8px; font-size: .85rem; color: var(--color-muted); cursor: pointer; }
+.hr-toggle input { width: auto; }
+
+/* Toggle "Dosis única" dentro del formulario de medicamentos */
+.med-onetime {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 12px 14px; margin-bottom: 4px;
+  background: #f7f8fb; border: 1px solid #eef1f5; border-radius: 12px;
+  cursor: pointer;
+}
+.med-onetime input { width: auto; margin-top: 2px; flex-shrink: 0; }
+.med-onetime span { display: flex; flex-direction: column; gap: 2px; }
+.med-onetime strong { font-size: .9rem; color: var(--color-text); }
+.med-onetime small { font-size: .8rem; color: var(--color-muted); line-height: 1.4; }
+
+/* Etiqueta de sección (En curso / Finalizados) */
+.hr-section-label {
+  font-size: .72rem; font-weight: 800; text-transform: uppercase; letter-spacing: .06em;
+  color: var(--color-muted); margin: 18px 0 10px;
+}
+.hr-section-label:first-of-type { margin-top: 4px; }
+
+/* Lista de tarjetas */
+.hr-list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
+
+.hr-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-border);
+  border-radius: 14px;
+  padding: 16px 16px 14px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+  transition: box-shadow .15s, transform .1s;
+}
+.hr-card.is-inactive { opacity: 0.72; }
+
+/* Acentos por severidad / estado */
+.hr-card.sev-mild { border-left-color: #22c55e; }
+.hr-card.sev-moderate { border-left-color: #f59e0b; }
+.hr-card.sev-severe { border-left-color: #ef4444; }
+.hr-card.med-active { border-left-color: #2563eb; }
+
+.hr-card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.hr-card-title { font-size: 1.05rem; font-weight: 700; color: var(--color-text); line-height: 1.3; word-break: break-word; min-width: 0; }
+
+.hr-badge {
+  flex-shrink: 0;
+  font-size: .72rem; font-weight: 800; letter-spacing: .02em;
+  padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+.hr-badge.sev-mild { background: #dcfce7; color: #166534; }
+.hr-badge.sev-moderate { background: #fef3c7; color: #92400e; }
+.hr-badge.sev-severe { background: #fee2e2; color: #991b1b; }
+.hr-badge.inactive { background: #f1f5f9; color: #475569; }
+
+/* Chips de metadatos: envuelven, nunca desbordan */
+.hr-meta { display: flex; flex-wrap: wrap; gap: 6px 8px; margin-top: 10px; }
+.hr-chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .8rem; color: #475569;
+  background: #f7f8fb; border: 1px solid #eef1f5;
+  padding: 4px 10px; border-radius: 999px; white-space: nowrap;
+}
+.hr-chip.quick { background: #ede9fe; border-color: #ddd6fe; color: #6d28d9; }
+.hr-chip-ico { font-size: .9rem; line-height: 1; }
+
+.hr-notes {
+  margin-top: 10px; font-size: .88rem; color: #475569; line-height: 1.5;
+  background: #fafbfc; border-radius: 10px; padding: 9px 12px;
+  word-break: break-word;
+}
+
+/* Footer de acciones — siempre dentro de pantalla */
+.hr-card-actions {
+  display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px;
+  margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--color-border);
+}
+button.hr-action {
+  background: transparent; border: 1.5px solid var(--color-border);
+  color: var(--color-text); border-radius: 10px;
+  padding: 7px 14px; font-size: .82rem; font-weight: 600; cursor: pointer;
+}
+button.hr-action:hover:not(:disabled) { background: var(--color-bg); border-color: #9aa3af; }
+button.hr-action.danger { color: #b91c1c; border-color: #fecaca; background: transparent; }
+button.hr-action.danger:hover:not(:disabled) { background: #fef2f2; border-color: #ef4444; }
+
+/* Estado vacío cálido y personalizado */
+.hr-empty {
+  text-align: center; padding: 40px 22px;
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border); border-radius: 16px;
+}
+.hr-empty-emoji { font-size: 2.6rem; }
+.hr-empty h2 { font-size: 1.15rem; font-weight: 700; margin: 10px 0 6px; color: var(--color-text); }
+.hr-empty p { font-size: .9rem; color: var(--color-muted); line-height: 1.5; max-width: 40ch; margin: 0 auto; }
+
+/* Móvil: la tarjeta ya es block full-width; ajustes finos */
+@media (max-width: 640px) {
+  .hr-page { padding: 14px 14px 40px; }
+  .hr-hero { padding: 18px 18px 16px; }
+  .hr-hero h1 { font-size: 1.3rem; }
+  .hr-card-title { font-size: 1rem; }
+  button.hr-add { flex: 1; text-align: center; }
+  .hr-card-actions button.hr-action { flex: 1; min-width: 0; }
+}

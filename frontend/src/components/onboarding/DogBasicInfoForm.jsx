@@ -1,3 +1,5 @@
+import PhotoInput from '../PhotoInput';
+
 export default function DogBasicInfoForm({ value, onChange, errors = {} }) {
   function update(field, nextValue) {
     onChange({ ...value, [field]: nextValue });
@@ -6,6 +8,11 @@ export default function DogBasicInfoForm({ value, onChange, errors = {} }) {
   return (
     <section className="card" aria-label="Información básica del perro">
       <h2>Detalles del perro</h2>
+
+      <div className="field onb-photo-field">
+        <label>Foto de tu perro</label>
+        <PhotoInput value={value.photoUrl || ''} onChange={(url) => update('photoUrl', url)} />
+      </div>
 
       <div className="field">
         <label htmlFor="dog-name">Nombre del perro</label>

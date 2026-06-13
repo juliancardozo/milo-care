@@ -1,32 +1,23 @@
-import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
 
+// Toggle de idioma de una sola acción: muestra el idioma actual y al tocarlo
+// cambia al otro (ES ⇄ EN). Sin dos burbujas separadas: una sola decisión.
 export default function LanguageSwitcher() {
   const { language, setLanguage } = useI18n();
+  const isEs = language === 'es';
+  const next = isEs ? 'en' : 'es';
+  const label = isEs ? 'Cambiar a inglés' : 'Switch to Spanish';
 
   return (
-    <div className="language-switcher" aria-label="Language switcher">
-      <Link to="/" className="language-flag language-flag-home" aria-label="Volver al inicio" title="Inicio">
-        ←
-      </Link>
-      <button
-        type="button"
-        className={`language-flag ${language === 'es' ? 'active' : ''}`}
-        onClick={() => setLanguage('es')}
-        aria-label="Cambiar a Espanol"
-        title="Espanol"
-      >
-        🇪🇸
-      </button>
-      <button
-        type="button"
-        className={`language-flag ${language === 'en' ? 'active' : ''}`}
-        onClick={() => setLanguage('en')}
-        aria-label="Switch to English"
-        title="English"
-      >
-        🇺🇸
-      </button>
-    </div>
+    <button
+      type="button"
+      className="lang-toggle"
+      onClick={() => setLanguage(next)}
+      aria-label={label}
+      title={label}
+    >
+      <span className="lang-toggle-flag" aria-hidden="true">{isEs ? '🇪🇸' : '🇺🇸'}</span>
+      <span className="lang-toggle-code">{isEs ? 'ES' : 'EN'}</span>
+    </button>
   );
 }

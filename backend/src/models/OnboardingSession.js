@@ -17,6 +17,7 @@ const onboardingSessionSchema = new Schema(
     },
     dog: {
       name: { type: String, trim: true, default: '' },
+      photoUrl: { type: String, trim: true, default: null },
       birthDate: { type: Date, default: null },
       birthDateConfidence: { type: String, enum: ['exact', 'estimated', 'unknown'], default: 'exact' },
       estimatedAgeMonths: { type: Number, default: null },

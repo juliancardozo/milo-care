@@ -42,10 +42,21 @@ function appUrl() {
   return process.env.APP_URL || 'http://localhost:5173';
 }
 
+// Normaliza una base a https:// (agrega protocolo si falta, sube http→https) y quita
+// la barra final. Garantiza que los links del pase (QR, ficha pública) sean siempre https.
+function ensureHttps(url) {
+  const u = String(url || '').trim().replace(/\/+$/, '');
+  if (!u) return u;
+  if (/^https:\/\//i.test(u)) return u;
+  if (/^http:\/\//i.test(u)) return u.replace(/^http:\/\//i, 'https://');
+  return `https://${u}`;
+}
+
 // Base pública del QR del pase. Debe ser un dominio accesible desde cualquier teléfono
 // (no localhost), porque lo escanea quien encuentra al perro. Cae a APP_URL si no se define.
+// Siempre se sirve por https (ver ensureHttps).
 function publicBaseUrl() {
-  return process.env.WALLET_PUBLIC_BASE_URL || appUrl();
+  return ensureHttps(process.env.WALLET_PUBLIC_BASE_URL || appUrl());
 }
 
 function fmtDate(date) {

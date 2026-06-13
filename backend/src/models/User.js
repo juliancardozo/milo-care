@@ -26,6 +26,7 @@ const vaccinationSchema = new Schema(
     },
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
     requiresVetValidation: { type: Boolean, default: false },
+    vetValidatedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -50,6 +51,7 @@ const dewormingSchema = new Schema(
     },
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
     requiresVetValidation: { type: Boolean, default: false },
+    vetValidatedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -60,14 +62,18 @@ const medicationSchema = new Schema(
     dosage: { type: String, required: true, trim: true },
     startDate: { type: Date, required: true },
     endDate: { type: Date, default: null },
+    // Dosis única (ej. antiparasitario puntual): sin frecuencia ni fecha de fin.
+    oneTime: { type: Boolean, default: false },
     frequencyHours: {
       type: Number,
-      required: true,
+      default: null,
       min: 1,
       max: 168,
-      validate: { validator: Number.isInteger, message: 'frequencyHours must be an integer' },
+      // Solo validamos como entero cuando hay frecuencia (las dosis únicas no la llevan).
+      validate: { validator: (v) => v == null || Number.isInteger(v), message: 'frequencyHours must be an integer' },
     },
-    nextReminderAt: { type: Date, required: true, index: true },
+    nextReminderAt: { type: Date, default: null, index: true },
+    isActive: { type: Boolean, default: true },
     status: { type: String, enum: ['active', 'completed'], default: 'active' },
     notes: { type: String, trim: true },
   },
@@ -161,6 +167,9 @@ const dogSchema = new Schema(
     veterinarianPhone: { type: String, trim: true, default: '' },
     onboardingCompleted: { type: Boolean, default: false },
     onboardingCompletedAt: { type: Date, default: null },
+    // Compartir expediente con el veterinario: link tokenizado de solo lectura.
+    vetShareToken: { type: String, default: null, index: true },
+    vetShareCreatedAt: { type: Date, default: null },
     vaccinations: [vaccinationSchema],
     dewormingHistory: [dewormingSchema],
     medications: [medicationSchema],

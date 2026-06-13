@@ -5,7 +5,8 @@
   font-family: 'Arial', sans-serif;
   line-height: 1.6;
   padding: 40px;
-  max-width: 210mm;
+  /* Ancho A4 fijo (≈210mm @96dpi): el PDF sale igual desde cualquier dispositivo. */
+  width: 794px;
   margin: 0 auto;
 }
 
