@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import BackLink from '../components/BackLink';
 import { selectCurrentUser, updateUser } from '../store/authSlice';
 import { updateNotificationPreferences, updateLocation, deleteLocation } from '../services/api';
 import LocationPicker from '../components/LocationPicker';
+import { isPushSupported, isIosNotInstalled, getPushSubscribed, enablePush, disablePush } from '../utils/push';
+import { sendTestPush } from '../services/pushApi';
 import { useI18n } from '../i18n/I18nProvider';
 import '../styles/location.css';
 import '../styles/notifications.css';
@@ -52,10 +54,41 @@ export default function NotificationPreferencesPage() {
     appointmentWindowHours: prefs.appointmentWindowHours,
     checkinEnabled: prefs.checkinEnabled !== false,
     checkinHour: prefs.checkinHour != null ? prefs.checkinHour : 19,
+    channel: prefs.channel || 'email',
   });
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
+
+  // Estado de la suscripción push de este navegador.
+  const [pushSubscribed, setPushSubscribed] = useState(false);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushError, setPushError] = useState('');
+  const supported = isPushSupported();
+
+  useEffect(() => {
+    if (supported) getPushSubscribed().then(setPushSubscribed);
+  }, [supported]);
+
+  async function togglePush(on) {
+    setPushError('');
+    setPushBusy(true);
+    try {
+      if (on) {
+        await enablePush();
+        setPushSubscribed(true);
+        // Si estaba sólo por email, sumamos push como canal del check-in.
+        if (form.channel === 'email') set({ channel: 'both' });
+      } else {
+        await disablePush();
+        setPushSubscribed(false);
+      }
+    } catch (err) {
+      setPushError(err.message === 'denied' ? t('notifications.pushDenied') : t('notifications.pushError'));
+    } finally {
+      setPushBusy(false);
+    }
+  }
 
   const set = (patch) => { setForm({ ...form, ...patch }); setSuccess(false); };
 
@@ -110,6 +143,23 @@ export default function NotificationPreferencesPage() {
             <HourSelect value={form.checkinHour} disabled={!form.checkinEnabled} onChange={(v) => set({ checkinHour: v })} />
           </div>
 
+          <div className={`notif-row ${form.checkinEnabled ? '' : 'notif-disabled'}`}>
+            <span className="notif-row-label">{t('notifications.channelTitle')}</span>
+            <div className="notif-channel">
+              {['email', 'push', 'both'].map((c) => (
+                <button
+                  key={c}
+                  type="button"
+                  className={`notif-channel-btn ${form.channel === c ? 'active' : ''}`}
+                  disabled={!form.checkinEnabled}
+                  onClick={() => set({ channel: c })}
+                >
+                  {t(`notifications.channel${c === 'email' ? 'Email' : c === 'push' ? 'Push' : 'Both'}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className={`notif-preview ${form.checkinEnabled ? '' : 'notif-disabled'}`}>
             <p className="notif-preview-label">{t('notifications.previewLabel')}</p>
             <div className="notif-preview-card">
@@ -122,6 +172,41 @@ export default function NotificationPreferencesPage() {
               </div>
             </div>
           </div>
+        </section>
+
+        {/* ── Notificaciones push ──────────────────────────────────────── */}
+        <section className="notif-card">
+          <div className="notif-card-head">
+            <span className="notif-card-icon notif-icon-checkin">📲</span>
+            <div>
+              <h2>{t('notifications.pushTitle')}</h2>
+              <p>{t('notifications.pushDesc')}</p>
+            </div>
+          </div>
+
+          {!supported ? (
+            <p className="notif-row-hint">{t('notifications.pushUnsupported')}</p>
+          ) : (
+            <>
+              <div className="notif-row">
+                <span className="notif-row-label">
+                  {pushSubscribed ? t('notifications.pushOn') : t('notifications.pushEnable')}
+                </span>
+                <Switch checked={pushSubscribed} disabled={pushBusy} onChange={togglePush} />
+              </div>
+              {pushSubscribed && (
+                <div className="notif-row">
+                  <span className="notif-row-hint">{t('notifications.pushTestHint')}</span>
+                  <button type="button" className="notif-channel-btn" onClick={async () => {
+                    setPushError('');
+                    try { await sendTestPush(); } catch { setPushError(t('notifications.pushError')); }
+                  }}>{t('notifications.pushTest')}</button>
+                </div>
+              )}
+              {isIosNotInstalled() && <p className="notif-row-hint">{t('notifications.pushIosHint')}</p>}
+              {pushError && <p className="notif-error">{pushError}</p>}
+            </>
+          )}
         </section>
 
         {/* ── Recordatorios de salud ───────────────────────────────────── */}

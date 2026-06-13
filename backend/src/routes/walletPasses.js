@@ -3,8 +3,11 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const User = require('../models/User');
+const DailyCheckin = require('../models/DailyCheckin');
 const featureFlags = require('../config/featureFlags');
 const GoogleWalletService = require('../services/GoogleWalletService');
+const { computeStreak } = require('../services/checkinAnalytics');
+const { localDateString } = require('../utils/localTime');
 
 // mergeParams: para acceder a :dogId desde la ruta padre montada en app.js
 // (igual que vaccinations/medications/appointments).
@@ -28,7 +31,21 @@ router.post('/', authenticate, async (req, res, next) => {
     const dog = user.dogs.id(req.params.dogId);
     if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
 
-    const saveUrl = GoogleWalletService.generateSaveUrl(user, dog);
+    // Datos de reconocimiento social para la tarjeta.
+    const now = new Date();
+    const tz = user.notificationPreferences?.timezone || 'America/Argentina/Buenos_Aires';
+    const [checkinDates, totalCheckins] = await Promise.all([
+      DailyCheckin.find({ dogId: dog._id }).select('localDate').lean(),
+      DailyCheckin.countDocuments({ dogId: dog._id }),
+    ]);
+    const meta = {
+      streak: computeStreak(checkinDates.map((d) => d.localDate), localDateString(tz, now)),
+      totalCheckins,
+      isPremium: typeof user.isPremiumActive === 'function' ? user.isPremiumActive(now) : user.tier === 'premium',
+      memberSince: dog.createdAt || user.createdAt || now,
+    };
+
+    const saveUrl = GoogleWalletService.generateSaveUrl(user, dog, now, meta);
     return res.json({ saveUrl });
   } catch (err) {
     next(err);

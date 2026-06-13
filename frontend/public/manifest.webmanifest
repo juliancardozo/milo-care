@@ -1,0 +1,16 @@
+{
+  "name": "Milo Care",
+  "short_name": "Milo Care",
+  "description": "La agenda de salud de tu perro: vacunas, check-in diario y recordatorios.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#07060d",
+  "theme_color": "#7c3aed",
+  "lang": "es-AR",
+  "icons": [
+    { "src": "/logo-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/logo-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/logo-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

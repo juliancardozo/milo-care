@@ -4,6 +4,21 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Added — Notificaciones push (Web Push / VAPID)
+
+- **Backend**: `web-push` + claves VAPID (env). Modelo `PushSubscription`, `pushService`
+  (suscribir, enviar, **limpieza automática de suscripciones expiradas 404/410**),
+  rutas `GET /api/push/vapid-key`, `POST /api/push/subscribe`, `POST /api/push/unsubscribe`.
+  Flag `PUSH_ENABLED`; si faltan claves, el servicio queda inactivo sin romper nada.
+- **Canal por usuario** `notificationPreferences.channel` (`email` | `push` | `both`).
+  El `CheckinJob` envía el check-in por el canal elegido respetando 1 notificación/día.
+  El push lleva la pregunta del día con **acciones bien/regular/mal** que registran la respuesta.
+- **GDPR**: el borrado de cuenta elimina también las suscripciones push.
+- **Frontend (PWA)**: `manifest.webmanifest` + `sw.js` (Service Worker: `push` y `notificationclick`),
+  registro del SW, `pushApi` + `utils/push` (permiso, suscripción VAPID), opt-in en Preferencias
+  con selector de canal y aviso para iOS (requiere instalar la PWA). Dominio corregido a milocare.online en `index.html`.
+- **Tests**: `pushService` (envío + limpieza de expiradas) y contract de las rutas. Suite: 149/149 verdes.
+
 ### Added — Retrofit 2.0 · Incremento 1: Event bus + colección `events`
 
 Inicio del retrofit del [modelo de datos v1](docs/data-model.md) sobre `milocura` (ver [ADR-001](docs/adr/ADR-001-modelo-de-datos.md)).

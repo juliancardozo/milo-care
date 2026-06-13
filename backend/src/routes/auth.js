@@ -12,6 +12,7 @@ const PasswordResetToken = require('../models/PasswordResetToken');
 const EmailService = require('../services/EmailService');
 const referralService = require('../services/referralService');
 const { deleteUserEvents } = require('../core/events/eventBus');
+const pushService = require('../services/pushService');
 const authenticate = require('../middleware/auth');
 
 const router = express.Router();
@@ -236,11 +237,17 @@ router.patch('/me/profile', authenticate, async (req, res, next) => {
 
 router.patch('/me/notifications', authenticate, async (req, res, next) => {
   try {
-    const { enabled, vaccinationWindowDays, appointmentWindowHours, checkinEnabled, checkinHour, timezone } = req.body;
+    const { enabled, vaccinationWindowDays, appointmentWindowHours, checkinEnabled, checkinHour, timezone, channel } = req.body;
 
     const update = {};
     if (typeof enabled === 'boolean') update['notificationPreferences.enabled'] = enabled;
     if (typeof checkinEnabled === 'boolean') update['notificationPreferences.checkinEnabled'] = checkinEnabled;
+    if (channel !== undefined) {
+      if (!['email', 'push', 'both'].includes(channel)) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'channel must be email, push or both.' });
+      }
+      update['notificationPreferences.channel'] = channel;
+    }
     if (vaccinationWindowDays !== undefined) {
       if (!Number.isInteger(vaccinationWindowDays) || vaccinationWindowDays < 1 || vaccinationWindowDays > 30) {
         return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'vaccinationWindowDays must be an integer 1–30.' });
@@ -285,6 +292,7 @@ router.delete('/me', authenticate, async (req, res, next) => {
   try {
     await PasswordResetToken.deleteMany({ userId: req.user.id });
     await deleteUserEvents(req.user.id); // GDPR: borra el event log del usuario
+    await pushService.removeAllForUser(req.user.id).catch(() => {}); // y sus suscripciones push
     await User.findByIdAndDelete(req.user.id);
     return res.json({ message: 'Account deleted. All data has been permanently removed.' });
   } catch (err) {

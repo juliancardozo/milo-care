@@ -4,6 +4,7 @@ const cron = require('node-cron');
 const User = require('../models/User');
 const DailyCheckin = require('../models/DailyCheckin');
 const EmailService = require('./EmailService');
+const pushService = require('./pushService');
 const analytics = require('./analyticsService');
 const featureFlags = require('../config/featureFlags');
 const { localDateString, localHour, addDaysToLocalDate } = require('../utils/localTime');
@@ -102,23 +103,57 @@ async function runCheckins(now = new Date()) {
       continue;
     }
 
-    // Alertas locales estacionales: se fusionan en este email (1 email/día).
+    // Alertas locales estacionales: se fusionan en este envío (1/día).
     const localAlerts = getActiveLocalAlerts(user, user.dogs, now);
 
-    try {
-      await EmailService.sendDailyCheckin({
-        to: user.email,
-        userName: user.name,
-        dogs: sections.map(({ dogName, question, focus, urls }) => ({ dogName, question, focus, urls })),
-        localAlerts,
-      });
-      for (const s of sections) {
-        analytics.track('checkin_sent', { userId: user._id, dogId: s.dogId, channel: 'email', meta: { question: s.question, focus: s.focus } });
+    // Canal elegido por el usuario (respeta 1 notificación/día por canal).
+    const channel = prefs.channel || 'email';
+    const wantsEmail = channel === 'email' || channel === 'both';
+    const wantsPush = channel === 'push' || channel === 'both';
+
+    if (wantsEmail) {
+      try {
+        await EmailService.sendDailyCheckin({
+          to: user.email,
+          userName: user.name,
+          dogs: sections.map(({ dogName, question, focus, urls }) => ({ dogName, question, focus, urls })),
+          localAlerts,
+        });
+        for (const s of sections) {
+          analytics.track('checkin_sent', { userId: user._id, dogId: s.dogId, channel: 'email', meta: { question: s.question, focus: s.focus } });
+        }
+      } catch (err) {
+        console.error(`[CheckinJob] email failed: user=${user._id} ${err.message}`);
       }
-      console.log(`[CheckinJob] Check-in sent: user=${user._id} dogs=${sections.length}`);
-    } catch (err) {
-      console.error(`[CheckinJob] Check-in failed: user=${user._id} ${err.message}`);
     }
+
+    if (wantsPush) {
+      try {
+        const first = sections[0];
+        const ans = EmailService._checkinCopy.answers;
+        const delivered = await pushService.sendToUser(user._id, {
+          type: 'checkin',
+          title: `🐾 ${EmailService.checkinQuestionText({ dogName: first.dogName, question: first.question, focus: first.focus })}`,
+          body: sections.length > 1 ? 'Tocá para responder el check-in de tus perros' : 'Tocá una respuesta para registrar el check-in de hoy',
+          actions: [
+            { action: 'bien', title: ans.bien.label },
+            { action: 'regular', title: ans.regular.label },
+            { action: 'mal', title: ans.mal.label },
+          ],
+          data: {
+            urls: first.urls,
+            url: `${process.env.APP_URL || 'http://localhost:5173'}/dashboard`,
+          },
+        });
+        if (delivered > 0) {
+          analytics.track('checkin_sent', { userId: user._id, dogId: first.dogId, channel: 'app', meta: { question: first.question, focus: first.focus } });
+        }
+      } catch (err) {
+        console.error(`[CheckinJob] push failed: user=${user._id} ${err.message}`);
+      }
+    }
+
+    console.log(`[CheckinJob] Check-in sent: user=${user._id} dogs=${sections.length} channel=${channel}`);
 
     user.notificationPreferences.checkinLastSentOn = localDate;
     await user.save();

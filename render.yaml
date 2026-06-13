@@ -25,3 +25,18 @@ services:
         sync: false          # URL del frontend en Amplify, ej: https://main.XXXX.amplifyapp.com
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com   # recibe los avisos de interés en Premium
+      - key: API_URL
+        sync: false          # URL pública de ESTE backend (links del email de check-in)
+      - key: CHECKIN_ENABLED
+        value: 'false'       # 'true' para activar el envío diario del check-in
+      - key: SURPRISE_PROBABILITY
+        value: '0.15'
+      # ── Notificaciones push (Web Push / VAPID) ──
+      - key: PUSH_ENABLED
+        value: 'false'       # 'true' para habilitar push
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:hola@milocare.online

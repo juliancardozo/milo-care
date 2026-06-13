@@ -8,4 +8,7 @@ module.exports = {
   // Check-in diario "¿Cómo está [perro] hoy?". Apagado por defecto en producción
   // hasta validar el flujo completo (email + respuesta one-click + tendencias).
   checkinEnabled: process.env.CHECKIN_ENABLED === 'true',
+  // Notificaciones push (Web Push / VAPID). Requiere VAPID_PUBLIC_KEY y
+  // VAPID_PRIVATE_KEY; si faltan, el servicio queda inactivo aunque el flag esté on.
+  pushEnabled: process.env.PUSH_ENABLED === 'true',
 };

@@ -67,8 +67,19 @@ function i18nValue(value) {
   return { defaultValue: { language: LANG, value: String(value) } };
 }
 
-// Arma el Generic Object combinado (identidad + estado de salud) para un perro.
-function buildDogPassObject(user, dog, now = new Date()) {
+// Rango de reconocimiento según la racha de cuidado (gamificación de estatus).
+function rankLabel(streak = 0, isPremium = false) {
+  let base;
+  if (streak >= 100) base = 'Centinela Leyenda';
+  else if (streak >= 30) base = 'Centinela de Oro';
+  else if (streak >= 7) base = 'Centinela';
+  else base = 'Tutor Milo Care';
+  return isPremium ? `${base} · Premium` : base;
+}
+
+// Arma el Generic Object combinado (identidad + salud + reconocimiento) para un perro.
+// `meta` aporta los datos de estatus social: { streak, totalCheckins, isPremium, memberSince }.
+function buildDogPassObject(user, dog, now = new Date(), meta = {}) {
   const dogId = String(dog._id || dog.id);
   // id único por regeneración → cada vez que el usuario regenera, obtiene un snapshot fresco.
   const objectId = `${getIssuerId()}.${dogId}-${now.getTime()}`;
@@ -76,8 +87,22 @@ function buildDogPassObject(user, dog, now = new Date()) {
   const nextVaccine = soonestDueDate(dog.vaccinations, now);
   const nextDeworming = soonestDueDate(dog.dewormingHistory, now);
 
+  const streak = Number(meta.streak) || 0;
+  const isPremium = Boolean(meta.isPremium);
+  const memberYear = meta.memberSince ? new Date(meta.memberSince).getFullYear() : (dog.createdAt ? new Date(dog.createdAt).getFullYear() : now.getFullYear());
+
+  // ── Reconocimiento social (al frente del pase vía la plantilla de clase) ──
+  const textModulesData = [
+    { id: 'days_caring', header: 'Racha de cuidado', body: `${streak} ${streak === 1 ? 'día' : 'días'} 🔥` },
+    { id: 'rank', header: 'Rango', body: rankLabel(streak, isPremium) },
+    { id: 'status', header: 'Estado', body: isPremium ? 'Tutor Premium' : 'Miembro Milo Care' },
+    { id: 'member_since', header: 'Miembro desde', body: String(memberYear) },
+  ];
+  if (Number(meta.totalCheckins) > 0) {
+    textModulesData.push({ id: 'contributions', header: 'Check-ins', body: `${meta.totalCheckins} registros de cuidado` });
+  }
+
   // Solo se incluyen filas con datos para no mostrar campos vacíos en el pase.
-  const textModulesData = [];
   if (dog.microchipId) {
     textModulesData.push({ id: 'microchip', header: 'Microchip', body: dog.microchipId });
   }
@@ -120,7 +145,8 @@ function buildDogPassObject(user, dog, now = new Date()) {
     state: 'ACTIVE',
     cardTitle: i18nValue('Milo Care'),
     header: i18nValue(dog.name),
-    hexBackgroundColor: '#4f8ef7',
+    // Negro-violeta premium, alineado con la identidad de marca.
+    hexBackgroundColor: '#13111f',
     textModulesData,
     linksModuleData: { uris },
     barcode: {
@@ -131,6 +157,13 @@ function buildDogPassObject(user, dog, now = new Date()) {
   };
 
   if (dog.breed) object.subheader = i18nValue(dog.breed);
+  // Logo de marca: solo si hay una imagen pública válida (WALLET_LOGO_URL).
+  if (process.env.WALLET_LOGO_URL) {
+    object.logo = {
+      sourceUri: { uri: process.env.WALLET_LOGO_URL },
+      contentDescription: i18nValue('Milo Care'),
+    };
+  }
   if (dog.photoUrl) {
     object.heroImage = {
       sourceUri: { uri: dog.photoUrl },
@@ -142,9 +175,9 @@ function buildDogPassObject(user, dog, now = new Date()) {
 }
 
 // Firma el JWT de "Save to Google Wallet" y devuelve la URL que abre el botón.
-function generateSaveUrl(user, dog, now = new Date()) {
+function generateSaveUrl(user, dog, now = new Date(), meta = {}) {
   const credentials = getCredentials();
-  const object = buildDogPassObject(user, dog, now);
+  const object = buildDogPassObject(user, dog, now, meta);
 
   const claims = {
     iss: credentials.client_email,

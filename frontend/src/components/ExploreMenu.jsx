@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
 import { generateWalletPass } from '../services/walletApi';
+import { useInstallPrompt } from '../utils/pwaInstall';
 import '../styles/explore-menu.css';
 
 /**
@@ -14,7 +15,19 @@ export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const [walletLoading, setWalletLoading] = useState(false);
+  const [iosHint, setIosHint] = useState(false);
   const ref = useRef(null);
+  const { installable, installed, ios, promptInstall } = useInstallPrompt();
+  const showInstall = !installed && (installable || ios);
+
+  async function handleInstall() {
+    if (installable) {
+      await promptInstall();
+      setOpen(false);
+    } else if (ios) {
+      setIosHint((v) => !v);
+    }
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -74,6 +87,21 @@ export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
               </span>
               <span className="explore-cta-arrow" aria-hidden="true">→</span>
             </button>
+          )}
+
+          {/* CTA secundario: instalar la app (habilita push + engagement) */}
+          {showInstall && (
+            <>
+              <button className="explore-install" onClick={handleInstall}>
+                <span className="explore-install-icon" aria-hidden="true">⬇️</span>
+                <span className="explore-cta-text">
+                  <strong>{t('explore.install.title')}</strong>
+                  <span>{t('explore.install.sub')}</span>
+                </span>
+                <span className="explore-install-badge">{t('explore.install.badge')}</span>
+              </button>
+              {ios && iosHint && <p className="explore-install-hint">{t('explore.install.iosHint')}</p>}
+            </>
           )}
 
           {items.map((it) => (

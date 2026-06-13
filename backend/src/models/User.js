@@ -203,6 +203,8 @@ const notificationPreferencesSchema = new Schema(
     // featureFlags.checkinEnabled (que habilita la feature a nivel servidor): este
     // permite que el usuario active/desactive el check-in desde su perfil.
     checkinEnabled: { type: Boolean, default: true },
+    // Canal de notificación del check-in diario (respeta 1/día por canal elegido).
+    channel: { type: String, enum: ['email', 'push', 'both'], default: 'email' },
     // Hora local (0–23) en la que el usuario quiere recibir el check-in diario.
     checkinHour: {
       type: Number,

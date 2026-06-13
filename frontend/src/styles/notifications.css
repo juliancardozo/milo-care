@@ -121,3 +121,13 @@ button.notif-zone-link { background: none; color: #4f8ef7; font-weight: 600; fon
 button.notif-zone-link:hover:not(:disabled) { background: #eff6ff; }
 button.notif-zone-del { background: none; color: #ef4444; font-weight: 600; font-size: 13px; padding: 4px 6px; }
 button.notif-zone-del:hover:not(:disabled) { background: #fef2f2; }
+
+/* Selector de canal del check-in */
+.notif-channel { display: inline-flex; gap: 6px; }
+button.notif-channel-btn {
+  border: 1px solid #e5e7eb; background: #fff; color: #475569; border-radius: 9px;
+  padding: 8px 12px; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+button.notif-channel-btn:hover:not(:disabled) { background: #f8fafc; }
+button.notif-channel-btn.active { background: #eff6ff; border-color: #93c5fd; color: #1d4ed8; }
+button.notif-channel-btn:disabled { opacity: 0.5; cursor: default; }

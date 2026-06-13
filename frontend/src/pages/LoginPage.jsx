@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { login } from '../services/api';
+import InstallPWA from '../components/InstallPWA';
 import { useI18n } from '../i18n/I18nProvider';
 
 export default function LoginPage() {
@@ -42,6 +43,7 @@ export default function LoginPage() {
 
   return (
     <div className="auth-page">
+      <InstallPWA />
       <h1>{t('auth.welcomeBack')}</h1>
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">

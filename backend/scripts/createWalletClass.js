@@ -1,7 +1,9 @@
 'use strict';
 
-// Crea (una sola vez) la Generic Class de Google Wallet que usan los pases de los perros.
-// Idempotente: si la clase ya existe, no hace nada.
+// Crea o ACTUALIZA la Generic Class de Google Wallet que usan los pases de los perros.
+// Define la plantilla de la tarjeta (cardTemplateInfo) con un layout de reconocimiento
+// social: racha de cuidado, rango, estado y antigüedad. Idempotente: si la clase ya
+// existe, la actualiza (PUT) para aplicar/refrescar la plantilla.
 //
 //   node scripts/createWalletClass.js
 //
@@ -14,6 +16,60 @@ const { GoogleAuth } = require('google-auth-library');
 const { getClassId } = require('../src/services/GoogleWalletService');
 
 const BASE = 'https://walletobjects.googleapis.com/walletobjects/v1';
+const SITE = 'https://milocare.online';
+// Banner opcional: solo se incluye si hay una imagen pública accesible (Google la valida).
+const LOGO = process.env.WALLET_LOGO_URL || '';
+
+function buildGenericClass(classId) {
+  const cls = {
+    id: classId,
+    // Plantilla de la cara del pase: dos filas de reconocimiento social.
+    classTemplateInfo: {
+      cardTemplateOverride: {
+        cardRowTemplateInfos: [
+          {
+            twoItems: {
+              startItem: { firstValue: { fields: [{ fieldPath: "object.textModulesData['days_caring']" }] } },
+              endItem: { firstValue: { fields: [{ fieldPath: "object.textModulesData['rank']" }] } },
+            },
+          },
+          {
+            twoItems: {
+              startItem: { firstValue: { fields: [{ fieldPath: "object.textModulesData['status']" }] } },
+              endItem: { firstValue: { fields: [{ fieldPath: "object.textModulesData['member_since']" }] } },
+            },
+          },
+        ],
+      },
+    },
+    // Descripción del programa (aparece en el detalle del pase).
+    textModulesData: [
+      {
+        id: 'program_overview',
+        header: 'Programa Milo Care',
+        body: 'Cada día que cuidás a tu perro suma a tu rango. Sé parte de la comunidad que cuida la salud de los perros de tu zona.',
+      },
+    ],
+    linksModuleData: {
+      uris: [{ id: 'official_site', uri: SITE, description: 'milocare.online' }],
+    },
+  };
+
+  // Banner del programa: solo si hay una imagen pública válida (evita rechazo de la API).
+  if (LOGO) {
+    cls.imageModulesData = [
+      {
+        id: 'badge_banner',
+        mainImage: {
+          sourceUri: { uri: LOGO },
+          contentDescription: { defaultValue: { language: 'es', value: 'Milo Care' } },
+        },
+      },
+    ];
+  }
+
+  return cls;
+}
 
 async function main() {
   const b64 = process.env.GOOGLE_WALLET_SA_KEY_B64;
@@ -26,26 +82,31 @@ async function main() {
   });
   const client = await auth.getClient();
   const classId = getClassId();
+  const genericClass = buildGenericClass(classId);
 
-  // ¿Ya existe?
+  let exists = false;
   try {
     await client.request({ url: `${BASE}/genericClass/${encodeURIComponent(classId)}`, method: 'GET' });
-    console.log(`✓ Generic class already exists: ${classId}`);
-    return;
+    exists = true;
   } catch (err) {
     const status = err.response && err.response.status;
     if (status && status !== 404) throw err;
   }
 
-  await client.request({
-    url: `${BASE}/genericClass`,
-    method: 'POST',
-    data: { id: classId },
-  });
-  console.log(`✓ Created generic class: ${classId}`);
+  if (exists) {
+    await client.request({
+      url: `${BASE}/genericClass/${encodeURIComponent(classId)}`,
+      method: 'PUT',
+      data: genericClass,
+    });
+    console.log(`✓ Updated generic class template: ${classId}`);
+  } else {
+    await client.request({ url: `${BASE}/genericClass`, method: 'POST', data: genericClass });
+    console.log(`✓ Created generic class: ${classId}`);
+  }
 }
 
 main().catch((err) => {
-  console.error('✗ Failed to create wallet class:', err.message || err);
+  console.error('✗ Failed to create/update wallet class:', err.message || err);
   process.exit(1);
 });

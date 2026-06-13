@@ -29,6 +29,7 @@ const behaviorsRoutes = require('./routes/behaviors');
 const referralsRoutes = require('./routes/referrals');
 const surprisesRoutes = require('./routes/surprises');
 const milestonesRoutes = require('./routes/milestones');
+const pushRoutes = require('./routes/push');
 
 const app = express();
 
@@ -57,6 +58,7 @@ app.use('/api/events', eventsRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/push', pushRoutes);
 app.use('/api/referrals', referralsRoutes);
 app.use('/api/checkins', publicCheckinsRouter);
 app.use('/api/public', publicDogsRoutes);

@@ -9,6 +9,11 @@ jest.mock('../../src/middleware/auth', () => (req, _res, next) => {
 
 jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
 
+jest.mock('../../src/models/DailyCheckin', () => ({
+  find: jest.fn(() => ({ select: () => ({ lean: () => Promise.resolve([]) }) })),
+  countDocuments: jest.fn().mockResolvedValue(0),
+}));
+
 jest.mock('../../src/config/featureFlags', () => ({
   reminderFullListEnabled: true,
   googleWalletEnabled: true,
