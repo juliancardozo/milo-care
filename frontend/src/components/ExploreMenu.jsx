@@ -53,6 +53,7 @@ export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
   const items = [
     dogId && { to: `/dogs/${dogId}/cards`, emoji: '🎨', tone: 'violet', title: t('explore.cards.title'), sub: t('explore.cards.sub'), badge: t('explore.new') },
     dogId && { to: `/dogs/${dogId}/album`, emoji: '📸', tone: 'amber', title: t('explore.album.title'), sub: t('explore.album.sub') },
+    dogId && { to: `/dogs/${dogId}/pdf-export`, emoji: '📄', tone: 'teal', title: t('explore.pdf.title'), sub: t('explore.pdf.sub') },
     { to: isPremium ? '/dogs/new' : '/upgrade', emoji: '🐶', tone: 'blue', title: t('explore.addDog.title'), sub: t('explore.addDog.sub') },
     { to: '/settings/notifications', emoji: '🔔', tone: 'green', title: t('explore.notifications.title'), sub: t('explore.notifications.sub') },
   ].filter(Boolean);

@@ -4,6 +4,77 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Changed — Topbar más profesional (idioma + menú de usuario)
+
+- **Idioma de una sola acción**: el `LanguageSwitcher` pasa de dos burbujas (🇪🇸/🇺🇸 +
+  atajo "←") a un **toggle único** que muestra el idioma actual (ES/EN) y al tocarlo cambia
+  al otro. Menos ruido, una sola decisión.
+- **Menú de usuario sin lista eterna de perros**: en vez de un ítem "Editar ficha de X" por
+  cada perro, ahora hay un **segundo nivel** — "Editar una ficha (N) ▸" que despliega los
+  perros con avatar y **scroll** si son muchos. Con 1 perro muestra el atajo directo; con 0,
+  "Agregar primer perro". Baja la carga cognitiva con cualquier cantidad de mascotas.
+
+### Added — Medicamentos de dosis única (sin frecuencia ni fecha de fin)
+
+- Nuevo toggle **"Dosis única"** en el alta de medicamentos: para tomas puntuales
+  (ej. antiparasitario), la **frecuencia y la fecha de fin dejan de ser obligatorias** y se
+  ocultan. La tarjeta muestra un chip "Dosis única" en lugar de la frecuencia.
+- **Backend**: `medicationSchema.oneTime` (bool) y `frequencyHours`/`nextReminderAt` ahora
+  opcionales (`default: null`); la ruta POST solo exige frecuencia para recurrentes.
+- **Bug latente corregido**: el schema usaba `status` pero la ruta filtraba/escribía
+  `isActive` (campo inexistente) → el filtro de activos no funcionaba. Se agregó
+  `isActive` (bool, default true) al schema, así "En curso/Finalizados" y `?active=true`
+  funcionan de verdad. Suite backend 149/149 verde.
+
+### Changed — Rediseño de Síntomas y Medicamentos (hiperpersonalizado + mobile-safe)
+
+- **Bug móvil corregido**: en Síntomas (y Medicamentos) los registros volcaban sus campos
+  como hijos sueltos de un flex `.record-item`, por lo que el botón **Eliminar se salía de
+  pantalla**. Ahora cada registro es una **tarjeta real** con footer de acciones que envuelve
+  y nunca desborda (nuevo `health-records.css`).
+- **Hiperpersonalización**: hero con el nombre del perro — *"¿Qué le pasó hoy a {perro}?"*
+  (síntomas) y *"El botiquín de {perro}"* (medicamentos), con estados vacíos cálidos
+  (*"{perro} está sin novedades 🐾"*). Se obtiene el nombre vía `getDog`.
+- **Síntomas**: acento de color por severidad (leve/moderado/severo), chips de fecha y
+  registro rápido, contador en el hero.
+- **Medicamentos** (antes con pinta de beta): secciones **En curso / Finalizados**, chips de
+  dosis · frecuencia · inicio · fin, tarjetas atenuadas para inactivos y acciones claras.
+
+### Changed — Salud en hoja nativa (dashboard móvil aún más limpio)
+
+- En móvil se **quita la sección "Registros de salud"** de debajo del panel: la salud
+  completa (vacunas, medicación, turnos, síntomas, historial) vive ahora en la **hoja
+  "Salud"** que abre la barra inferior (bottom sheet nativo). El dashboard móvil queda
+  reducido a lo esencial: ritual (check-in) + "Lo de hoy".
+- `BottomNav` refactorizado a un patrón de hoja genérico reutilizado por "Salud" y "Más".
+
+### Fixed — Ajuste responsive móvil (todo dentro de pantalla, carga cognitiva cero)
+
+- **Guardas globales anti-overflow**: `overflow-x: clip` en `html/body` (no rompe el
+  `sticky` del topbar como sí lo haría `hidden`), `text-size-adjust`, `img/svg` con
+  `max-width:100%` y `-webkit-tap-highlight-color` transparente.
+- **Topbar móvil compacto** (≤640): se oculta el menú "Explorar" (redundante con la barra
+  inferior; sus CTAs se movieron a "Más"), el atajo "← inicio" del idioma y el nombre +
+  chevron del UserMenu (solo avatar). Marca con elipsis. Deja de desbordar en 320–390px.
+- **Tarjeta de perfil**: fila limpia con `min-width:0` y elipsis en nombre/raza/edad,
+  avatar 60px, sin botones que la desborden (Wallet/editar salen del card en móvil).
+- **"Más" enriquecido**: ahora incluye **Wallet** e **instalar app** (con hint iOS), para
+  no perder nada al ocultar "Explorar" en móvil.
+- Breakpoint del dashboard unificado a **640px** (alineado con la barra inferior) + ajuste
+  fino para pantallas ≤360px (iPhone SE).
+
+### Changed — Dashboard móvil de baja carga cognitiva
+
+- **Barra de navegación inferior (móvil)**: nuevo `BottomNav` con feeling de app nativa
+  — `Inicio · Salud · ➕ · Álbum · Más`. El "+" central abre la hoja de registro rápido
+  (`QuickActionsFab` ahora soporta modo controlado `open`/`onOpenChange`); en desktop se
+  mantiene el FAB flotante. "Más" abre una hoja inferior con el resto de destinos.
+- **Dashboard reorganizado en 3 zonas** para bajar la carga cognitiva: ritual (check-in) →
+  **"Lo de hoy"** (recordatorios promovidos arriba, con estado "todo al día") → **Salud**
+  como fila compacta de *pills* (antes 5 tarjetas grandes que competían por atención).
+- **Resumen de salud (PDF)** movido del dashboard al menú *Explorar* y a la hoja "Más".
+- i18n ES/EN: `bottomNav.*`, `explore.pdf.*`, `dashboard.todayClear`.
+
 ### Added — Notificaciones push (Web Push / VAPID)
 
 - **Backend**: `web-push` + claves VAPID (env). Modelo `PushSubscription`, `pushService`

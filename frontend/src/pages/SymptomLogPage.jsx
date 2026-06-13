@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import BackLink from '../components/BackLink';
-import { getSymptoms, createSymptom, deleteSymptom } from '../services/api';
+import { getDog, getSymptoms, createSymptom, deleteSymptom } from '../services/api';
 import { useI18n } from '../i18n/I18nProvider';
+import '../styles/health-records.css';
 
 export default function SymptomLogPage() {
   const { t } = useI18n();
   const { dogId } = useParams();
   const [symptoms, setSymptoms] = useState([]);
+  const [dogName, setDogName] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [showForm, setShowForm] = useState(false);
 
   useEffect(() => {
+    getDog(dogId).then(({ data }) => setDogName(data?.name || '')).catch(() => {});
     getSymptoms(dogId)
       .then(({ data }) => setSymptoms(data.symptoms))
       .catch(() => setError(t('symptoms.errors.load')))
@@ -39,8 +42,9 @@ export default function SymptomLogPage() {
     }
   }
 
-  if (loading) return <div className="page"><p>{t('common.loading')}</p></div>;
+  if (loading) return <div className="hr-page"><p>{t('common.loading')}</p></div>;
 
+  const name = dogName || t('explore.yourDog');
   const severityLabels = {
     mild: t('symptoms.mild'),
     moderate: t('symptoms.moderate'),
@@ -48,30 +52,57 @@ export default function SymptomLogPage() {
   };
 
   return (
-    <div className="page">
+    <div className="hr-page">
       <BackLink />
-      <header className="page-header">
-        <h1>{t('symptoms.title')}</h1>
-        <button onClick={() => setShowForm(!showForm)} className="btn-primary">
+
+      <section className="hr-hero sym">
+        <span className="hr-hero-emoji" aria-hidden="true">🩺</span>
+        <h1>{t('symptoms.heroTitle', { dog: name })}</h1>
+        <p>{t('symptoms.heroSub')}</p>
+        {symptoms.length > 0 && (
+          <span className="hr-hero-meta">{t('symptoms.entries', { n: symptoms.length })}</span>
+        )}
+      </section>
+
+      <div className="hr-toolbar">
+        <button onClick={() => setShowForm(!showForm)} className={`hr-add ${showForm ? 'is-cancel' : ''}`}>
           {showForm ? t('common.cancel') : t('symptoms.add')}
         </button>
-      </header>
+      </div>
 
       {showForm && <AddSymptomForm onAdd={handleAdd} onCancel={() => setShowForm(false)} t={t} />}
       {error && <p className="server-error">{error}</p>}
 
       {symptoms.length === 0 ? (
-        <p>{t('symptoms.none')}</p>
+        <div className="hr-empty">
+          <div className="hr-empty-emoji" aria-hidden="true">🌿</div>
+          <h2>{t('symptoms.emptyTitle', { dog: name })}</h2>
+          <p>{t('symptoms.emptySub')}</p>
+        </div>
       ) : (
-        <ul className="record-list">
+        <ul className="hr-list">
           {symptoms.map((s) => (
-            <li key={s._id} className={`record-item severity-${s.severity}`}>
-              <strong>{s.description}</strong>
-              <span className={`badge-severity badge-${s.severity}`}>{severityLabels[s.severity]}</span>
-              {s.isQuickLog && <span className="badge-quicklog">{t('symptoms.quickLog')}</span>}
-              <span>{new Date(s.dateObserved).toLocaleDateString()}</span>
-              {s.notes && <p className="notes">{s.notes}</p>}
-              <button onClick={() => handleDelete(s._id)} className="btn-danger-sm">{t('common.delete')}</button>
+            <li key={s._id} className={`hr-card sev-${s.severity}`}>
+              <div className="hr-card-head">
+                <span className="hr-card-title">{s.description}</span>
+                <span className={`hr-badge sev-${s.severity}`}>{severityLabels[s.severity]}</span>
+              </div>
+              <div className="hr-meta">
+                <span className="hr-chip">
+                  <span className="hr-chip-ico" aria-hidden="true">📅</span>
+                  {t('symptoms.observedOn', { date: new Date(s.dateObserved).toLocaleDateString() })}
+                </span>
+                {s.isQuickLog && (
+                  <span className="hr-chip quick">
+                    <span className="hr-chip-ico" aria-hidden="true">⚡</span>
+                    {t('symptoms.quickLog')}
+                  </span>
+                )}
+              </div>
+              {s.notes && <p className="hr-notes">{s.notes}</p>}
+              <div className="hr-card-actions">
+                <button onClick={() => handleDelete(s._id)} className="hr-action danger">{t('common.delete')}</button>
+              </div>
             </li>
           ))}
         </ul>

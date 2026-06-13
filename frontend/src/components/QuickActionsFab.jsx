@@ -8,9 +8,14 @@ import '../styles/quick-actions.css';
 const SYMPTOM_TYPES = ['vomito', 'diarrea', 'tos', 'cojera', 'decaimiento', 'inapetencia', 'otro'];
 
 // view: 'menu' | 'symptom' | 'logro' | 'travesura' | 'done' | 'alert'
-export default function QuickActionsFab({ dog, onLogged }) {
+// Modo controlado opcional: la barra inferior móvil abre la misma hoja con su
+// botón "+" central (open/onOpenChange). Si no se pasan, gestiona su propio FAB.
+export default function QuickActionsFab({ dog, onLogged, open: openProp, onOpenChange }) {
   const { t } = useI18n();
-  const [open, setOpen] = useState(false);
+  const [openState, setOpenState] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = controlled ? openProp : openState;
+  const setOpen = (v) => { if (onOpenChange) onOpenChange(v); if (!controlled) setOpenState(v); };
   const [view, setView] = useState('menu');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');

@@ -13,6 +13,24 @@ export function isIosNotInstalled() {
   return isIos && !installed;
 }
 
+// Plataforma para guiar el opt-in (cada SO habilita las notificaciones distinto).
+export function getPlatform() {
+  const ua = navigator.userAgent || '';
+  if (/iPhone|iPad|iPod/i.test(ua)) return 'ios';
+  if (/Android/i.test(ua)) return 'android';
+  if (/Macintosh|Mac OS X/i.test(ua)) return 'macos';
+  if (/Windows/i.test(ua)) return 'windows';
+  return 'other';
+}
+
+export function notificationPermission() {
+  return typeof Notification !== 'undefined' ? Notification.permission : 'unsupported';
+}
+
+export function isStandalone() {
+  return Boolean(window.matchMedia?.('(display-mode: standalone)').matches || window.navigator.standalone);
+}
+
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
   const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');

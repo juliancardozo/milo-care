@@ -1,0 +1,116 @@
+/* Barra de navegación inferior — solo móvil (feeling de app nativa) */
+.bottom-nav { display: none; }
+
+@media (max-width: 640px) {
+  .bottom-nav {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 50;
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-around;
+    background: rgba(255, 255, 255, 0.92);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid var(--color-border);
+    padding: 8px 6px calc(8px + env(safe-area-inset-bottom, 0px));
+    box-shadow: 0 -6px 20px -12px rgba(15, 23, 42, 0.25);
+  }
+
+  /* Deja espacio para que la barra no tape el contenido del dashboard */
+  .dashboard-content { padding-bottom: 96px; }
+
+  /* En móvil el "+" vive en la barra: ocultamos el FAB flotante */
+  .qa-fab { display: none; }
+}
+
+.bn-tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 4px 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--color-muted);
+  font-size: 0;
+}
+.bn-tab:hover { text-decoration: none; color: var(--color-muted); }
+.bn-icon { font-size: 20px; line-height: 1; filter: grayscale(0.4); opacity: 0.7; transition: filter .15s, opacity .15s, transform .12s; }
+.bn-label { font-size: 10.5px; font-weight: 600; letter-spacing: -0.01em; }
+
+.bn-tab.active,
+.bn-tab.bn-sheet-trigger.active { color: var(--color-primary); }
+.bn-tab.active .bn-icon,
+.bn-sheet-trigger.active .bn-icon { filter: none; opacity: 1; transform: translateY(-1px); }
+
+/* Botón central "+" elevado */
+.bn-add {
+  flex: 0 0 auto;
+  width: 58px; height: 58px;
+  margin-top: -22px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #7c3aed, #4f8ef7);
+  color: #fff;
+  cursor: pointer;
+  display: grid; place-items: center;
+  box-shadow: 0 8px 18px -4px rgba(124, 58, 237, 0.5);
+  transition: transform .12s, box-shadow .15s;
+}
+.bn-add:hover { box-shadow: 0 10px 22px -4px rgba(124, 58, 237, 0.6); }
+.bn-add:active { transform: scale(0.94); }
+.bn-add-plus { font-size: 30px; line-height: 1; font-weight: 300; margin-top: -2px; }
+
+/* Hoja "Más" */
+.bn-sheet-overlay {
+  position: fixed; inset: 0; z-index: 60;
+  background: rgba(15, 23, 42, 0.45);
+  display: flex; align-items: flex-end;
+  animation: bn-fade .18s ease;
+}
+@keyframes bn-fade { from { opacity: 0; } to { opacity: 1; } }
+.bn-sheet {
+  width: 100%;
+  background: #fff;
+  border-radius: 22px 22px 0 0;
+  padding: 10px 18px calc(20px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -10px 40px -12px rgba(15, 23, 42, 0.35);
+  animation: bn-up .22s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes bn-up { from { transform: translateY(100%); } to { transform: none; } }
+.bn-sheet-grip { width: 40px; height: 4px; border-radius: 999px; background: #d8dde6; margin: 4px auto 12px; }
+.bn-sheet-title { font-size: 16px; color: #0f172a; margin: 0 0 14px; text-align: center; }
+.bn-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.bn-sheet-item,
+button.bn-sheet-item {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  width: 100%;
+  padding: 16px 8px;
+  background: #f7f8fb;
+  border: 1px solid #eef1f5;
+  border-radius: 16px;
+  text-decoration: none;
+  color: var(--color-text);
+  font-weight: 600;
+  transition: transform .12s, border-color .15s;
+}
+.bn-sheet-item:active { transform: scale(0.96); }
+.bn-sheet-item:hover,
+button.bn-sheet-item:hover:not(:disabled) {
+  text-decoration: none; color: var(--color-text);
+  background: #f7f8fb; border-color: var(--color-primary);
+}
+.bn-sheet-emoji { font-size: 26px; line-height: 1; }
+.bn-sheet-label { font-size: 12.5px; font-weight: 600; text-align: center; line-height: 1.25; }
+.bn-sheet-hint {
+  margin: 12px 4px 0; font-size: 12.5px; line-height: 1.45;
+  color: var(--color-muted); text-align: center;
+}
