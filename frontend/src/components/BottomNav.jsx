@@ -67,6 +67,7 @@ export default function BottomNav({ dogId, onQuickAdd }) {
     showInstall && { key: 'install', emoji: '⬇️', label: t('explore.install.title'), onClick: handleInstall },
     dogId && { key: 'cards', emoji: '🎨', label: t('explore.cards.title'), to: `/dogs/${dogId}/cards` },
     dogId && { key: 'pdf', emoji: '📄', label: t('explore.pdf.title'), to: `/dogs/${dogId}/pdf-export` },
+    dogId && { key: 'vetShare', emoji: '🏥', label: t('explore.vetShare.title'), to: `/dogs/${dogId}/share` },
     { key: 'addDog', emoji: '🐶', label: t('explore.addDog.title'), to: '/dogs/new' },
     { key: 'notif', emoji: '🔔', label: t('explore.notifications.title'), to: '/settings/notifications' },
     { key: 'account', emoji: '👤', label: t('bottomNav.account'), to: '/settings/account' },

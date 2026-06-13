@@ -26,6 +26,7 @@ const vaccinationSchema = new Schema(
     },
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
     requiresVetValidation: { type: Boolean, default: false },
+    vetValidatedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -50,6 +51,7 @@ const dewormingSchema = new Schema(
     },
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
     requiresVetValidation: { type: Boolean, default: false },
+    vetValidatedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -165,6 +167,9 @@ const dogSchema = new Schema(
     veterinarianPhone: { type: String, trim: true, default: '' },
     onboardingCompleted: { type: Boolean, default: false },
     onboardingCompletedAt: { type: Date, default: null },
+    // Compartir expediente con el veterinario: link tokenizado de solo lectura.
+    vetShareToken: { type: String, default: null, index: true },
+    vetShareCreatedAt: { type: Date, default: null },
     vaccinations: [vaccinationSchema],
     dewormingHistory: [dewormingSchema],
     medications: [medicationSchema],

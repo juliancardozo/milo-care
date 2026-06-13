@@ -1,0 +1,78 @@
+/* ── Página del tutor: compartir con vet ── */
+.vshare-page { max-width: 620px; margin: 0 auto; padding: 18px 16px 48px; }
+
+.vshare-hero {
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  color: #fff; border-radius: 20px; padding: 22px; margin-bottom: 18px;
+}
+.vshare-hero-emoji { font-size: 28px; }
+.vshare-hero h1 { font-size: 1.4rem; font-weight: 800; margin: 8px 0 6px; color: #fff; }
+.vshare-hero p { font-size: .92rem; line-height: 1.5; opacity: .95; margin: 0; }
+
+.vshare-card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 16px; padding: 20px;
+}
+.vshare-empty { text-align: center; }
+.vshare-empty p { color: var(--color-muted); margin-bottom: 16px; }
+
+.vshare-label { display: block; font-size: .8rem; font-weight: 700; color: var(--color-muted); margin-bottom: 6px; }
+.vshare-linkrow { display: flex; gap: 8px; }
+.vshare-input {
+  flex: 1; min-width: 0; padding: 11px 12px; font-size: .85rem;
+  border: 1.5px solid var(--color-border); border-radius: 10px; background: var(--color-bg); color: var(--color-text);
+}
+button.vshare-copy {
+  flex-shrink: 0; background: var(--color-text); color: #fff; border: none;
+  border-radius: 10px; padding: 11px 16px; font-weight: 700; font-size: .85rem; cursor: pointer;
+}
+
+.vshare-actions { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.vshare-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  border: none; border-radius: 12px; padding: 12px 16px; font-weight: 700; font-size: .9rem;
+  cursor: pointer; text-decoration: none; flex: 1; min-width: 0;
+}
+a.vshare-wa { background: #25d366; color: #fff; }
+a.vshare-wa:hover { filter: brightness(1.05); text-decoration: none; }
+button.vshare-revoke { background: transparent; border: 1.5px solid #fecaca; color: #b91c1c; }
+button.vshare-revoke:hover:not(:disabled) { background: #fef2f2; }
+.vshare-card > button.vshare-btn { background: #2563eb; color: #fff; width: 100%; }
+.vshare-note { margin-top: 14px; font-size: .8rem; color: var(--color-muted); line-height: 1.45; }
+
+/* ── Página pública del veterinario ── */
+.vrec-page { max-width: 640px; margin: 0 auto; padding: 16px 16px 48px; }
+.vrec-brand { font-size: .8rem; font-weight: 700; color: var(--color-muted); text-align: center; padding: 8px 0 16px; }
+.vrec-loading, .vrec-error { text-align: center; padding: 60px 20px; color: var(--color-muted); }
+.vrec-error span { font-size: 2.5rem; }
+.vrec-error h1 { font-size: 1.3rem; margin: 12px 0 6px; color: var(--color-text); }
+
+.vrec-dog {
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);
+  color: #fff; border-radius: 18px; padding: 18px 20px; margin-bottom: 16px;
+}
+.vrec-avatar { width: 68px; height: 68px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,.45); flex-shrink: 0; }
+.vrec-avatar-ph { display: grid; place-items: center; background: rgba(255,255,255,.25); font-size: 1.8rem; font-weight: 800; }
+.vrec-dog h1 { font-size: 1.5rem; font-weight: 800; margin: 0; color: #fff; }
+.vrec-dog-meta { font-size: .9rem; opacity: .92; margin: 3px 0 0; }
+.vrec-tutor { font-size: .82rem; opacity: .8; margin: 2px 0 0; }
+
+.vrec-section { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+.vrec-section h2 { font-size: 1rem; font-weight: 700; margin: 0 0 12px; color: var(--color-text); }
+.vrec-flags p { font-size: .88rem; color: #92400e; margin: 2px 0; }
+
+.vrec-list { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.vrec-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.vrec-item-main { min-width: 0; }
+.vrec-item-main strong { display: block; font-size: .92rem; color: var(--color-text); word-break: break-word; }
+.vrec-meta { font-size: .8rem; color: var(--color-muted); }
+
+button.vrec-validate {
+  flex-shrink: 0; background: #2563eb; color: #fff; border: none;
+  border-radius: 9px; padding: 7px 14px; font-size: .82rem; font-weight: 700; cursor: pointer;
+}
+button.vrec-validate:hover:not(:disabled) { background: #1d4ed8; }
+.vrec-validated { flex-shrink: 0; font-size: .8rem; font-weight: 700; color: #16a34a; background: #dcfce7; padding: 5px 11px; border-radius: 999px; }
+
+.vrec-disclaimer { font-size: .78rem; color: var(--color-muted); line-height: 1.5; text-align: center; margin-top: 18px; padding: 0 8px; }

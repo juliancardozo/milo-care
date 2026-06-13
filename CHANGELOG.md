@@ -4,6 +4,19 @@ Formato basado en [Keep a Changelog](https://keepachangelog.com/es/1.0.0/).
 
 ## [Unreleased]
 
+### Added — Compartir expediente con el veterinario (link tokenizado)
+
+- El tutor genera un **link de solo lectura** (`/dogs/:dogId/share`) para compartir el
+  expediente de su perro con el veterinario, sin que el vet cree cuenta. Copiar / WhatsApp /
+  revocar. Backend: `dog.vetShareToken` + rutas `GET/POST/DELETE /api/dogs/:dogId/vet-share`.
+- **Página pública del vet** (`/vet/:token`): expediente read-only (vacunas, desparasitación,
+  medicación activa, síntomas, consultas, alergias/condiciones) con datos mínimos del tutor.
+- **Validación veterinaria**: el vet puede marcar vacunas/desparasitaciones como validadas
+  (`POST /api/vet/:token/validate` → limpia `requiresVetValidation` + `vetValidatedAt`),
+  apoyándose en el flag clínico ya existente.
+- Acceso desde el menú "Explorar" y la hoja "Más". Tests: contract de vet-share (6 casos);
+  suite backend **161/161** verde.
+
 ### Added — Onboarding hiper-realista (Fase D)
 
 - **Ficha en vivo** (`LivePetCard`): mientras el tutor completa el onboarding, se arma una

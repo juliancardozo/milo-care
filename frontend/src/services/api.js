@@ -47,6 +47,13 @@ export const getAppointmentCatalog = () => api.get('/vaccines/appointments/catal
 export const getDogs = () => api.get('/dogs');
 export const getDog = (dogId) => api.get(`/dogs/${dogId}`);
 export const getHealthScore = (dogId) => api.get(`/dogs/${dogId}/health-score`);
+
+// Compartir expediente con el veterinario (link tokenizado de solo lectura)
+export const getVetShare = (dogId) => api.get(`/dogs/${dogId}/vet-share`);
+export const createVetShare = (dogId) => api.post(`/dogs/${dogId}/vet-share`);
+export const revokeVetShare = (dogId) => api.delete(`/dogs/${dogId}/vet-share`);
+export const getVetRecord = (token) => api.get(`/vet/${token}`);
+export const validateVetEvent = (token, payload) => api.post(`/vet/${token}/validate`, payload);
 export const createDog = (data) => api.post('/dogs', data);
 export const updateDog = (dogId, data) => api.patch(`/dogs/${dogId}`, data);
 export const deleteDog = (dogId) => api.delete(`/dogs/${dogId}`);

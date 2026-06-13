@@ -37,6 +37,8 @@ import PdfExportPage from './pages/PdfExportPage';
 import UpgradePage from './pages/UpgradePage';
 import SubscriptionPage from './pages/SubscriptionPage';
 import PublicPetPage from './pages/PublicPetPage';
+import VetRecordPage from './pages/VetRecordPage';
+import VetShareLinkPage from './pages/VetShareLinkPage';
 import AlbumPage from './pages/AlbumPage';
 import CardsPage from './pages/CardsPage';
 import { useI18n } from './i18n/I18nProvider';
@@ -50,9 +52,10 @@ export default function App() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isLanding = location.pathname === '/';
   const isPublicPet = location.pathname.startsWith('/p/');
-  // Hide the global app header on dashboard, landing, and the public pet page
+  const isVetRecord = location.pathname.startsWith('/vet/');
+  // Hide the global app header on dashboard, landing, and the public/vet pages
   // (each has its own chrome / is meant for logged-out visitors).
-  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard' && !isPublicPet;
+  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard' && !isPublicPet && !isVetRecord;
 
   return (
     <>
@@ -76,6 +79,7 @@ export default function App() {
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/p/:dogId" element={<PublicPetPage />} />
+        <Route path="/vet/:token" element={<VetRecordPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
@@ -94,6 +98,7 @@ export default function App() {
           <Route path="/dogs/:dogId/history" element={<HealthHistoryPage />} />
           <Route path="/dogs/:dogId/clinical-history" element={<ClinicalHistoryPage />} />
           <Route path="/dogs/:dogId/pdf-export" element={<PdfExportPage />} />
+          <Route path="/dogs/:dogId/share" element={<VetShareLinkPage />} />
           <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />
