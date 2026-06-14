@@ -200,6 +200,7 @@ const translations = {
       change: 'Cambiar foto',
       remove: 'Quitar foto',
       processing: 'Procesando…',
+      error: 'No pudimos procesar esa imagen. Probá con otra foto.',
     },
     album: {
       title: 'Álbum de {dog}',
@@ -788,6 +789,7 @@ const translations = {
       change: 'Change photo',
       remove: 'Remove photo',
       processing: 'Processing…',
+      error: "We couldn't process that image. Please try another photo.",
     },
     album: {
       title: "{dog}'s album",

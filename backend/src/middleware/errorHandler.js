@@ -42,6 +42,14 @@ function errorHandler(err, req, res, _next) {
     return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Validation failed.', details });
   }
 
+  // Body parser: payload demasiado grande (p. ej. foto sin comprimir)
+  if (err.type === 'entity.too.large' || err.status === 413) {
+    return res.status(413).json({
+      code: 'PAYLOAD_TOO_LARGE',
+      message: 'The uploaded content is too large. Please use a smaller image.',
+    });
+  }
+
   // Mongoose duplicate key
   if (err.code === 11000) {
     const field = Object.keys(err.keyPattern || {})[0] || 'field';

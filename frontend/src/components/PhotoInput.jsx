@@ -12,6 +12,7 @@ export default function PhotoInput({ value, onChange }) {
   const camRef = useRef(null);
   const galRef = useRef(null);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
   const mobile = isMobile();
 
   async function handleFile(e) {
@@ -19,11 +20,12 @@ export default function PhotoInput({ value, onChange }) {
     e.target.value = '';
     if (!file) return;
     setBusy(true);
+    setError('');
     try {
       const dataUrl = await fileToCompressedDataUrl(file);
       onChange(dataUrl);
     } catch {
-      // ignorar archivos inválidos
+      setError(t('photo.error'));
     } finally {
       setBusy(false);
     }
@@ -50,6 +52,8 @@ export default function PhotoInput({ value, onChange }) {
       {value && (
         <button type="button" className="photoinput-remove" onClick={() => onChange('')}>{t('photo.remove')}</button>
       )}
+
+      {error && <p className="photoinput-error" role="alert">{error}</p>}
     </div>
   );
 }

@@ -82,3 +82,4 @@ button.photoinput-btn:disabled { opacity: 0.6; cursor: default; }
 button.photoinput-btn.primary { background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff; border: none; }
 button.photoinput-btn.primary:hover:not(:disabled) { background: linear-gradient(135deg, #3f7ee7, #2a5fc0); }
 .photoinput-remove { background: none; border: none; color: #ef4444; font-weight: 600; font-size: 13px; cursor: pointer; align-self: flex-start; padding: 2px 0; }
+.photoinput-error { margin: 0; color: #ef4444; font-size: 13px; }
