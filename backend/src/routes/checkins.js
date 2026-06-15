@@ -11,6 +11,7 @@ const { questionForDate } = require('../services/checkinQuestionService');
 const { computeTrends, computeStreak } = require('../services/checkinAnalytics');
 const { verifyResponseToken } = require('../services/checkinTokenService');
 const referralService = require('../services/referralService');
+const notificationTracking = require('../services/notificationTracking');
 const { localDateString, addDaysToLocalDate } = require('../utils/localTime');
 
 const { ANSWERS } = DailyCheckin;
@@ -136,6 +137,10 @@ dogCheckinsRouter.post('/', authenticate, async (req, res, next) => {
       analytics.track('checkin_answered', { userId: user._id, dogId: dog._id, channel: 'app', meta: { question, answer } });
       analytics.track('checkin_streak_day', { userId: user._id, dogId: dog._id, channel: 'app' });
 
+      // Conversion tracking (Fase 4): responder el check-in cierra el embudo del
+      // nudge de re-engagement. Fire-and-forget.
+      notificationTracking.recordConversion(user._id, dog._id, ['reengagement']);
+
       // Activa un referido pendiente en el primer check-in (idempotente, no bloquea).
       referralService.activateForReferredUser(user).catch((err) => console.error('[checkins] referral activation failed:', err.message));
 
@@ -233,6 +238,7 @@ publicCheckinsRouter.get('/respond', async (req, res) => {
       });
 
       analytics.track('checkin_answered', { userId: user._id, dogId: dog._id, channel: 'email', meta: { question: payload.question, answer: payload.answer } });
+      notificationTracking.recordConversion(user._id, dog._id, ['reengagement']);
       analytics.track('checkin_streak_day', { userId: user._id, dogId: dog._id, channel: 'email' });
 
       // Activa un referido pendiente en el primer check-in (idempotente, no bloquea).

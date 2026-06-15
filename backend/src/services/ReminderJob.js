@@ -3,6 +3,19 @@
 const cron = require('node-cron');
 const User = require('../models/User');
 const EmailService = require('./EmailService');
+const Notifier = require('./NotificationDispatcher');
+const { localHour } = require('../utils/localTime');
+
+const APP = () => Notifier.appUrl();
+
+// Recordatorios basados en fecha (vacuna/desparasitación) se entregan a la hora
+// local elegida por el usuario (default 9am), no apenas vencen. Los de medicación
+// y citas tienen hora propia (dosis/turno), así que no se gatean.
+function isReminderHour(user, now) {
+  const tz = user.notificationPreferences?.timezone;
+  const hour = user.notificationPreferences?.reminderHour ?? 9;
+  return localHour(tz, now) === hour;
+}
 
 /**
  * Process vaccination reminders.
@@ -20,15 +33,24 @@ async function processVaccinationReminders(now) {
         if (vax.nextReminderAt && vax.nextReminderAt <= now) {
           if (String(vax.status || '').toLowerCase() === 'pending_vet_validation') continue;
           if (['cancelled', 'discarded', 'completed'].includes(String(vax.status || '').toLowerCase())) continue;
+          if (!isReminderHour(user, now)) continue; // esperar a la hora local del usuario
           try {
-            await EmailService.sendVaccinationReminder({
-              to: user.email,
-              userName: user.name,
-              dogName: dog.name,
-              vaccineName: vax.vaccineName,
-              nextDueDate: vax.nextDueDate,
-            });
-            console.log(`[ReminderJob] Vaccination reminder sent: user=${user._id} dog=${dog._id} vax=${vax._id}`);
+            await Notifier.dispatchToDog(user, dog, (r) => ({
+              push: {
+                type: 'vaccination',
+                title: `💉 Vacuna de ${dog.name}`,
+                body: `${vax.vaccineName} está por vencer. Tocá para ver la ficha.`,
+                data: { url: `${APP()}/dogs/${dog._id}/vaccinations` },
+              },
+              email: () => EmailService.sendVaccinationReminder({
+                to: r.email,
+                userName: r.name,
+                dogName: dog.name,
+                vaccineName: vax.vaccineName,
+                nextDueDate: vax.nextDueDate,
+              }),
+            }));
+            console.log(`[ReminderJob] Vaccination reminder sent: dog=${dog._id} vax=${vax._id}`);
           } catch (err) {
             console.error(`[ReminderJob] Vaccination reminder failed: ${err.message}`);
           }
@@ -57,14 +79,22 @@ async function processMedicationReminders(now) {
       for (const med of dog.medications) {
         if (med.status === 'active' && med.nextReminderAt && med.nextReminderAt <= now) {
           try {
-            await EmailService.sendMedicationReminder({
-              to: user.email,
-              userName: user.name,
-              dogName: dog.name,
-              medicationName: med.medicationName,
-              dosage: med.dosage,
-            });
-            console.log(`[ReminderJob] Medication reminder sent: user=${user._id} dog=${dog._id} med=${med._id}`);
+            await Notifier.dispatchToDog(user, dog, (r) => ({
+              push: {
+                type: 'medication',
+                title: `💊 Medicación de ${dog.name}`,
+                body: `Toca darle ${med.medicationName} (${med.dosage}).`,
+                data: { url: `${APP()}/dogs/${dog._id}/medications` },
+              },
+              email: () => EmailService.sendMedicationReminder({
+                to: r.email,
+                userName: r.name,
+                dogName: dog.name,
+                medicationName: med.medicationName,
+                dosage: med.dosage,
+              }),
+            }));
+            console.log(`[ReminderJob] Medication reminder sent: dog=${dog._id} med=${med._id}`);
           } catch (err) {
             console.error(`[ReminderJob] Medication reminder failed: ${err.message}`);
           }
@@ -94,15 +124,24 @@ async function processDewormingReminders(now) {
         if (!dew.nextReminderAt || dew.nextReminderAt > now) continue;
         const status = String(dew.status || '').toLowerCase();
         if (['pending_vet_validation', 'cancelled', 'discarded', 'completed'].includes(status)) continue;
+        if (!isReminderHour(user, now)) continue; // esperar a la hora local del usuario
         try {
-          await EmailService.sendDewormingReminder({
-            to: user.email,
-            userName: user.name,
-            dogName: dog.name,
-            productName: dew.productName,
-            nextDueDate: dew.nextDueDate,
-          });
-          console.log(`[ReminderJob] Deworming reminder sent: user=${user._id} dog=${dog._id} deworm=${dew._id}`);
+          await Notifier.dispatchToDog(user, dog, (r) => ({
+            push: {
+              type: 'deworming',
+              title: `🪱 Desparasitación de ${dog.name}`,
+              body: `${dew.productName} está por vencer. Tocá para ver la ficha.`,
+              data: { url: `${APP()}/dogs/${dog._id}/history` },
+            },
+            email: () => EmailService.sendDewormingReminder({
+              to: r.email,
+              userName: r.name,
+              dogName: dog.name,
+              productName: dew.productName,
+              nextDueDate: dew.nextDueDate,
+            }),
+          }));
+          console.log(`[ReminderJob] Deworming reminder sent: dog=${dog._id} deworm=${dew._id}`);
         } catch (err) {
           console.error(`[ReminderJob] Deworming reminder failed: ${err.message}`);
         }
@@ -130,15 +169,24 @@ async function processAppointmentReminders(now) {
       for (const appt of dog.appointments) {
         if (appt.status === 'upcoming' && appt.reminderAt && appt.reminderAt <= now) {
           try {
-            await EmailService.sendAppointmentReminder({
-              to: user.email,
-              userName: user.name,
-              dogName: dog.name,
-              appointmentTitle: appt.title || appt.clinicName || 'Consulta veterinaria',
-              clinicName: appt.clinicName || appt.vetName || '',
-              appointmentDate: appt.appointmentDate,
-            });
-            console.log(`[ReminderJob] Appointment reminder sent: user=${user._id} dog=${dog._id} appt=${appt._id}`);
+            const apptTitle = appt.title || appt.clinicName || 'Consulta veterinaria';
+            await Notifier.dispatchToDog(user, dog, (r) => ({
+              push: {
+                type: 'appointment',
+                title: `🩺 Cita de ${dog.name}`,
+                body: `${apptTitle} — no te la olvides. Tocá para ver los detalles.`,
+                data: { url: `${APP()}/dogs/${dog._id}/appointments` },
+              },
+              email: () => EmailService.sendAppointmentReminder({
+                to: r.email,
+                userName: r.name,
+                dogName: dog.name,
+                appointmentTitle: apptTitle,
+                clinicName: appt.clinicName || appt.vetName || '',
+                appointmentDate: appt.appointmentDate,
+              }),
+            }));
+            console.log(`[ReminderJob] Appointment reminder sent: dog=${dog._id} appt=${appt._id}`);
           } catch (err) {
             console.error(`[ReminderJob] Appointment reminder failed: ${err.message}`);
           }

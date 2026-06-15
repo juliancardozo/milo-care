@@ -25,6 +25,8 @@ jest.mock('../../src/services/analyticsService', () => ({ track: jest.fn() }));
 // La activación de referidos es fire-and-forget en el check-in; la mockeamos para
 // no tocar el modelo Referral (sin DB) en este contrato.
 jest.mock('../../src/services/referralService', () => ({ activateForReferredUser: jest.fn().mockResolvedValue({ activated: false }) }));
+// Conversión es fire-and-forget (toca el modelo Event sin DB); la mockeamos.
+jest.mock('../../src/services/notificationTracking', () => ({ recordConversion: jest.fn() }));
 
 const request = require('supertest');
 const jwt = require('jsonwebtoken');

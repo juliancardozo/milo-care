@@ -185,6 +185,51 @@ function tplPasswordReset({ resetUrl }) {
   });
 }
 
+function tplOverdueCare({ userName, dogName, itemName, kind, dueDate }) {
+  const label = kind === 'deworming' ? 'desparasitación' : 'vacuna';
+  const emoji = kind === 'deworming' ? '🪱' : '💉';
+  const dateStr = dueDate ? fmtDate(dueDate) : null;
+  return layout({
+    title: `${dogName} tiene una ${label} atrasada`,
+    preheader: `La ${label} ${itemName} de ${dogName} está vencida.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">${emoji} ${dogName} tiene una ${label} atrasada</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        La ${label} <strong>${itemName}</strong> de <strong>${dogName}</strong> ya está
+        <strong>vencida</strong>${dateStr ? ` (vencía el ${dateStr})` : ''}.
+      </p>
+      <div style="background:#fef2f2;border-left:4px solid #ef4444;border-radius:4px;padding:14px 18px;margin:20px 0;">
+        <strong>🐕 ${dogName}</strong><br/>
+        ${label.charAt(0).toUpperCase() + label.slice(1)}: ${itemName}<br/>
+        Estado: <strong style="color:#b91c1c;">Atrasada</strong>
+      </div>
+      <p>Coordiná un turno con tu veterinario para ponerla al día.</p>
+      <p style="color:#6b7280;font-size:13px;">
+        Esta recomendación es informativa. Siempre consultá con un veterinario licenciado.
+      </p>
+    `,
+  });
+}
+
+function tplReengagement({ userName, dogName }) {
+  return layout({
+    title: `¿Cómo está ${dogName}?`,
+    preheader: `Hace unos días que no sabemos de ${dogName}.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">¿Cómo está ${dogName}? 🐾</h2>
+      <p>Hola ${userName},</p>
+      <p>
+        Hace unos días que no registrás cómo viene ${dogName}. Un check-in rápido
+        ayuda a detectar a tiempo cualquier cambio en su salud.
+      </p>
+      <p>Tocá abajo para contarnos cómo está hoy.</p>
+    `,
+    ctaUrl: process.env.APP_URL || 'http://localhost:5173',
+    ctaLabel: `Ver a ${dogName}`,
+  });
+}
+
 function tplCoTutorInvite({ inviterName, dogName, acceptUrl, isNewUser }) {
   const intro = isNewUser
     ? `<strong>${inviterName}</strong> te invitó a co-gestionar a <strong>${dogName}</strong> en Milo Care. Creá tu cuenta y ${dogName} ya va a estar compartido con vos.`
@@ -487,6 +532,26 @@ const EmailService = {
     });
   },
 
+  /** Campaña de vencidos (Fase 3): vacuna/desparasitación atrasada. */
+  async sendOverdueCare({ to, userName, dogName, itemName, kind, dueDate }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `${dogName} tiene una ${kind === 'deworming' ? 'desparasitación' : 'vacuna'} atrasada`,
+      html: tplOverdueCare({ userName, dogName, itemName, kind, dueDate }),
+    });
+  },
+
+  /** Re-engagement (Fase 3): hace días sin check-in. */
+  async sendReengagement({ to, userName, dogName }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `¿Cómo está ${dogName}? 🐾`,
+      html: tplReengagement({ userName, dogName }),
+    });
+  },
+
   /** Invitación a co-tutor (Premium). Dos variantes: cuenta nueva vs. existente. */
   async sendCoTutorInvite({ to, inviterName, dogName, acceptUrl, isNewUser }) {
     await sendWithRetry({
@@ -518,6 +583,8 @@ const EmailService = {
     premiumInterest: tplPremiumInterest,
     premiumInterestConfirmation: tplPremiumInterestConfirmation,
     coTutorInvite: tplCoTutorInvite,
+    overdueCare: tplOverdueCare,
+    reengagement: tplReengagement,
     dailyCheckin: tplDailyCheckin,
     symptomAlert: tplSymptomAlert,
     referralActivated: tplReferralActivated,

@@ -249,7 +249,7 @@ router.patch('/me/profile', authenticate, async (req, res, next) => {
 
 router.patch('/me/notifications', authenticate, async (req, res, next) => {
   try {
-    const { enabled, vaccinationWindowDays, appointmentWindowHours, checkinEnabled, checkinHour, timezone, channel } = req.body;
+    const { enabled, vaccinationWindowDays, appointmentWindowHours, checkinEnabled, checkinHour, reminderHour, timezone, channel } = req.body;
 
     const update = {};
     if (typeof enabled === 'boolean') update['notificationPreferences.enabled'] = enabled;
@@ -277,6 +277,12 @@ router.patch('/me/notifications', authenticate, async (req, res, next) => {
         return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'checkinHour must be an integer 0–23.' });
       }
       update['notificationPreferences.checkinHour'] = checkinHour;
+    }
+    if (reminderHour !== undefined) {
+      if (!Number.isInteger(reminderHour) || reminderHour < 0 || reminderHour > 23) {
+        return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'reminderHour must be an integer 0–23.' });
+      }
+      update['notificationPreferences.reminderHour'] = reminderHour;
     }
     if (timezone !== undefined) {
       const tz = String(timezone).trim();

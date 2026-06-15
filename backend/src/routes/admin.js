@@ -297,6 +297,50 @@ router.get('/metrics/summary', async (_req, res, next) => {
   }
 });
 
+// ── GET /api/admin/notifications/funnel ──────────────────────────────────────
+// Embudo de notificaciones (Fase 4): enviadas → clics → conversiones por campaña,
+// con CTR y tasa de conversión. ?days=N (default 28).
+router.get('/notifications/funnel', async (req, res, next) => {
+  try {
+    const days = Math.min(180, Math.max(1, Number(req.query.days) || 28));
+    const since = new Date(Date.now() - days * 864e5);
+
+    const rows = await Event.aggregate([
+      { $match: { type: { $in: ['notification.sent', 'notification.clicked', 'notification.converted'] }, ts: { $gte: since } } },
+      { $group: { _id: { campaign: '$payload.campaign', type: '$type' }, count: { $sum: 1 } } },
+    ]);
+
+    // Reorganiza a { campaign: { sent, clicked, converted } }.
+    const byCampaign = {};
+    for (const r of rows) {
+      const c = r._id.campaign || 'unknown';
+      const key = r._id.type.split('.')[1]; // sent | clicked | converted
+      (byCampaign[c] ||= { sent: 0, clicked: 0, converted: 0 })[key] = r.count;
+    }
+
+    const pct = (n, d) => (d > 0 ? Math.round((n / d) * 100) : 0);
+    const campaigns = Object.entries(byCampaign).map(([campaign, f]) => ({
+      campaign,
+      ...f,
+      ctr: pct(f.clicked, f.sent),
+      conversionRate: pct(f.converted, f.sent),
+    })).sort((a, b) => b.sent - a.sent);
+
+    const totals = campaigns.reduce((t, c) => ({
+      sent: t.sent + c.sent, clicked: t.clicked + c.clicked, converted: t.converted + c.converted,
+    }), { sent: 0, clicked: 0, converted: 0 });
+
+    return res.json({
+      generatedAt: new Date(),
+      windowDays: days,
+      totals: { ...totals, ctr: pct(totals.clicked, totals.sent), conversionRate: pct(totals.converted, totals.sent) },
+      campaigns,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // ── GET /api/admin/leads ─────────────────────────────────────────────────────
 
 router.get('/leads', async (req, res, next) => {

@@ -19,6 +19,8 @@ const CHECKIN_QUESTIONS = ['comida', 'energia', 'agua', 'animo', 'digestion'];
 const CHECKIN_ANSWERS = ['bien', 'regular', 'mal'];
 const SYMPTOM_TYPES = ['vomito', 'diarrea', 'apetito', 'letargo', 'tos_respiracion', 'picazon_piel', 'cojera_dolor', 'ojos_oidos', 'otro'];
 const SEVERITIES = ['leve', 'media', 'fuerte'];
+// Fase 4 — conversion tracking: campañas de notificación rastreadas.
+const NOTIFICATION_CAMPAIGNS = ['vaccination', 'medication', 'deworming', 'appointment', 'overdue', 'reengagement', 'checkin'];
 
 const EVENTS = {
   // ── identity ──────────────────────────────────────────────────────────────
@@ -65,6 +67,12 @@ const EVENTS = {
   'alert.shown': { group: 'outcome', payload: { ruleId: { kind: 'code' }, alertType: { kind: 'code' } } },
   'alert.actioned': { group: 'outcome', payload: { ruleId: { kind: 'code' }, action: { kind: 'enum', values: ['cita_agendada', 'descartada', 'ignorada'] } } },
   'visit.outcome': { group: 'outcome', payload: { followUp: { kind: 'enum', values: ['nada', 'tratamiento', 'serio'] } } },
+
+  // ── notification (Fase 4 — conversion tracking) ─────────────────────────────
+  // Embudo: sent → clicked → converted, por campaña y canal.
+  'notification.sent': { group: 'outcome', payload: { campaign: { kind: 'enum', values: NOTIFICATION_CAMPAIGNS }, channel: { kind: 'enum', values: ['email', 'push'] } } },
+  'notification.clicked': { group: 'outcome', payload: { campaign: { kind: 'enum', values: NOTIFICATION_CAMPAIGNS }, channel: { kind: 'enum', values: ['email', 'push'] } } },
+  'notification.converted': { group: 'outcome', payload: { campaign: { kind: 'enum', values: NOTIFICATION_CAMPAIGNS } } },
 };
 
 function validateField(spec, value) {
@@ -117,4 +125,4 @@ function validateEvent(type, payload = {}) {
 
 const EVENT_TYPES = Object.keys(EVENTS);
 
-module.exports = { EVENTS, EVENT_TYPES, validateEvent, SYMPTOM_TYPES, CHECKIN_QUESTIONS };
+module.exports = { EVENTS, EVENT_TYPES, validateEvent, SYMPTOM_TYPES, CHECKIN_QUESTIONS, NOTIFICATION_CAMPAIGNS };

@@ -1,6 +1,10 @@
 'use strict';
 
 const { emitEvent } = require('../core/events/eventBus');
+const { NOTIFICATION_CAMPAIGNS } = require('../core/events/catalog');
+
+const isCampaign = (c) => NOTIFICATION_CAMPAIGNS.includes(c);
+const normChannel = (ch) => (ch === 'push' ? 'push' : 'email');
 
 /**
  * Adaptador de compatibilidad: traduce las llamadas legacy `track(type, opts)` al
@@ -42,6 +46,12 @@ const LEGACY_MAP = {
 
   location_optin: ({ meta }) => ({ type: 'location.optin', payload: { zoneLevel: meta?.zoneLevel || (meta?.city ? 'city' : meta?.region ? 'region' : 'country') } }),
   location_deleted: () => ({ type: 'location.optout', payload: {} }),
+
+  // Fase 4 — conversion tracking (embudo de notificaciones). Campañas desconocidas
+  // (p. ej. el push de prueba) se descartan en silencio devolviendo null.
+  notification_sent: ({ channel, meta }) => (isCampaign(meta?.campaign) ? { type: 'notification.sent', payload: { campaign: meta.campaign, channel: normChannel(channel) } } : null),
+  notification_clicked: ({ channel, meta }) => (isCampaign(meta?.campaign) ? { type: 'notification.clicked', payload: { campaign: meta.campaign, channel: normChannel(channel) } } : null),
+  notification_converted: ({ meta }) => (isCampaign(meta?.campaign) ? { type: 'notification.converted', payload: { campaign: meta.campaign } } : null),
 };
 
 /**

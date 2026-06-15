@@ -31,12 +31,25 @@ self.addEventListener('notificationclick', (event) => {
   // Si tocó una acción (bien/regular/mal), abrir su URL de respuesta; si no, la app.
   const url = (event.action && d.urls && d.urls[event.action]) || d.url || '/dashboard';
 
+  // Conversion tracking (Fase 4): avisar el clic al backend. Best-effort, no bloquea.
+  const trackClick = d.click
+    ? fetch('/api/notifications/clicked', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(d.click),
+        keepalive: true,
+      }).catch(() => {})
+    : Promise.resolve();
+
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      // Si hay una ventana abierta y es una acción sin URL específica, enfocarla.
-      const existing = clients.find((c) => 'focus' in c);
-      if (existing && !event.action) return existing.focus();
-      return self.clients.openWindow(url);
-    })
+    Promise.all([
+      trackClick,
+      self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+        // Si hay una ventana abierta y es una acción sin URL específica, enfocarla.
+        const existing = clients.find((c) => 'focus' in c);
+        if (existing && !event.action) return existing.focus();
+        return self.clients.openWindow(url);
+      }),
+    ])
   );
 });

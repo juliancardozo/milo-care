@@ -3,6 +3,7 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const DogAccess = require('../services/DogAccess');
+const notificationTracking = require('../services/notificationTracking');
 
 const router = express.Router({ mergeParams: true });
 
@@ -75,6 +76,10 @@ router.post('/', authenticate, async (req, res, next) => {
       source: 'manual',
     });
     await user.save();
+
+    // Conversion tracking (Fase 4): cargar una vacuna cierra el embudo de los
+    // recordatorios/avisos de vencido de vacunación. Fire-and-forget.
+    notificationTracking.recordConversion(user._id, dog._id, ['vaccination', 'overdue']);
 
     const newVac = dog.vaccinations[dog.vaccinations.length - 1];
     return res.status(201).json(newVac);

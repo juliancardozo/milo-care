@@ -27,6 +27,9 @@ const vaccinationSchema = new Schema(
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
     requiresVetValidation: { type: Boolean, default: false },
     vetValidatedAt: { type: Date, default: null },
+    // Campaña de vencidos (Fase 3): última vez que se avisó que está atrasada
+    // (idempotencia/cadencia de escalado, ~cada 14 días).
+    overdueNotifiedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -52,6 +55,8 @@ const dewormingSchema = new Schema(
     source: { type: String, enum: ['manual', 'suggested', 'imported'], default: 'manual' },
     requiresVetValidation: { type: Boolean, default: false },
     vetValidatedAt: { type: Date, default: null },
+    // Campaña de vencidos (Fase 3): idempotencia del aviso de atraso.
+    overdueNotifiedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
@@ -234,6 +239,17 @@ const notificationPreferencesSchema = new Schema(
       max: 23,
       validate: { validator: Number.isInteger, message: 'checkinHour must be an integer 0–23' },
     },
+    // Hora local (0–23) para recordatorios/campañas (vacunas, desparasitación,
+    // vencidos, re-engagement). Default 9am: mañana, sin molestar de madrugada.
+    reminderHour: {
+      type: Number,
+      default: 9,
+      min: 0,
+      max: 23,
+      validate: { validator: Number.isInteger, message: 'reminderHour must be an integer 0–23' },
+    },
+    // Fecha local (YYYY-MM-DD) del último nudge de re-engagement (≤1 cada 7 días).
+    lastReengagementOn: { type: String, default: null },
     // Zona horaria IANA usada para calcular la hora local del check-in y la fecha
     // diaria. Default rioplatense.
     timezone: { type: String, trim: true, default: 'America/Argentina/Buenos_Aires' },

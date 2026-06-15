@@ -55,6 +55,7 @@ export default function NotificationPreferencesPage() {
     appointmentWindowHours: prefs.appointmentWindowHours,
     checkinEnabled: prefs.checkinEnabled !== false,
     checkinHour: prefs.checkinHour != null ? prefs.checkinHour : 19,
+    reminderHour: prefs.reminderHour != null ? prefs.reminderHour : 9,
     channel: prefs.channel || 'email',
   });
   const [saving, setSaving] = useState(false);
@@ -260,6 +261,14 @@ export default function NotificationPreferencesPage() {
               />
               <span className="notif-unit">{t('notifications.unitHours')}</span>
             </span>
+          </div>
+
+          <div className={`notif-row ${form.enabled ? '' : 'notif-disabled'}`}>
+            <span>
+              <span className="notif-row-label">{t('notifications.reminderHour')}</span>
+              <div className="notif-row-hint">{t('notifications.reminderHourHint')}</div>
+            </span>
+            <HourSelect value={form.reminderHour} disabled={!form.enabled} onChange={(v) => set({ reminderHour: v })} />
           </div>
         </section>
 
