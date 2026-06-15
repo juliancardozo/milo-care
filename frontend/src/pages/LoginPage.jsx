@@ -63,6 +63,7 @@ export default function LoginPage() {
         <button type="submit" disabled={loading}>{loading ? t('auth.loggingIn') : t('auth.login')}</button>
       </form>
       <p><Link to="/forgot-password">{t('auth.forgotPassword')}</Link></p>
+      <p className="auth-magic"><Link to="/magic-link">✨ {t('auth.magicCta')}</Link></p>
       <p>{t('auth.noAccount')} <Link to="/register">{t('auth.signUp')}</Link></p>
     </div>
   );

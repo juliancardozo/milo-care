@@ -11,6 +11,8 @@ import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
 import ForgotPasswordPage from './pages/ForgotPasswordPage';
 import ResetPasswordPage from './pages/ResetPasswordPage';
+import MagicLinkPage from './pages/MagicLinkPage';
+import MagicLoginPage from './pages/MagicLoginPage';
 import DashboardPage from './pages/DashboardPage';
 import DogListPage from './pages/DogListPage';
 import DogProfileSetupPage from './pages/DogProfileSetupPage';
@@ -80,6 +82,8 @@ export default function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         <Route path="/reset-password" element={<ResetPasswordPage />} />
+        <Route path="/magic-link" element={<MagicLinkPage />} />
+        <Route path="/magic-login" element={<MagicLoginPage />} />
         <Route path="/p/:dogId" element={<PublicPetPage />} />
         <Route path="/vet/:token" element={<VetRecordPage />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />

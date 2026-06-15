@@ -19,6 +19,8 @@ export const login = (data) => api.post('/auth/login', data);
 export const logout = () => api.post('/auth/logout');
 export const forgotPassword = (email) => api.post('/auth/forgot-password', { email });
 export const resetPassword = (data) => api.post('/auth/reset-password', data);
+export const requestMagicLink = (email) => api.post('/auth/magic-link', { email });
+export const magicLogin = (data) => api.post('/auth/magic-login', data);
 export const deleteAccount = () => api.delete('/auth/me');
 export const updateProfile = (data) => api.patch('/auth/me/profile', data);
 export const updateNotificationPreferences = (data) => api.patch('/auth/me/notifications', data);

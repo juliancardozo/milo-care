@@ -250,6 +250,25 @@ function tplCoTutorInvite({ inviterName, dogName, acceptUrl, isNewUser }) {
   });
 }
 
+function tplMagicLink({ userName, magicUrl }) {
+  return layout({
+    title: 'Tu link de ingreso — Milo Care',
+    preheader: 'Entrá a Milo Care sin contraseña. El enlace vence en 15 minutos.',
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Ingresá a Milo Care 🐾</h2>
+      <p>Hola ${userName || ''},</p>
+      <p>Tocá el botón para entrar a tu cuenta sin contraseña. El enlace es válido por <strong>15 minutos</strong> y se usa una sola vez.</p>
+      <p>Si no pediste este enlace, podés ignorar este correo con total seguridad.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:20px;">
+        Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br/>
+        <a href="${magicUrl}" style="word-break:break-all;">${magicUrl}</a>
+      </p>
+    `,
+    ctaUrl: magicUrl,
+    ctaLabel: 'Entrar a Milo Care',
+  });
+}
+
 function tplPremiumInterest({ userName, userEmail, userId, dogsCount, requestedAt }) {
   const dateStr = fmtDateTime(requestedAt || new Date());
   return layout({
@@ -481,6 +500,16 @@ const EmailService = {
     });
   },
 
+  /** Magic link de ingreso sin contraseña (vence en 15 min) */
+  async sendMagicLink({ to, userName, magicUrl }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: 'Tu link de ingreso a Milo Care 🐾',
+      html: tplMagicLink({ userName, magicUrl }),
+    });
+  },
+
   /** Restablecimiento de contraseña */
   async sendPasswordReset({ to, resetUrl }) {
     await sendWithRetry({
@@ -580,6 +609,7 @@ const EmailService = {
     medication: tplMedicationReminder,
     appointment: tplAppointmentReminder,
     passwordReset: tplPasswordReset,
+    magicLink: tplMagicLink,
     premiumInterest: tplPremiumInterest,
     premiumInterestConfirmation: tplPremiumInterestConfirmation,
     coTutorInvite: tplCoTutorInvite,

@@ -9,6 +9,7 @@ const validator = require('validator');
 
 const User = require('../models/User');
 const PasswordResetToken = require('../models/PasswordResetToken');
+const MagicLoginToken = require('../models/MagicLoginToken');
 const EmailService = require('../services/EmailService');
 const referralService = require('../services/referralService');
 const coTutorService = require('../services/CoTutorService');
@@ -20,6 +21,7 @@ const router = express.Router();
 
 const SALT_ROUNDS = 12;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
+const MAGIC_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 min — login link de vida corta
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -53,6 +55,18 @@ const resetLimiter = rateLimit({
   keyGenerator: (req) => (req.body.email || '').toLowerCase(),
   handler: (_req, res) =>
     res.status(429).json({ code: 'RATE_LIMIT_EXCEEDED', message: 'Too many reset requests. Try again in 1 hour.' }),
+  standardHeaders: true,
+  legacyHeaders: false,
+  skip: (req) => !req.body.email,
+});
+
+// Rate limiter para magic link (mismo criterio: por email, 3/hora).
+const magicLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 3,
+  keyGenerator: (req) => (req.body.email || '').toLowerCase(),
+  handler: (_req, res) =>
+    res.status(429).json({ code: 'RATE_LIMIT_EXCEEDED', message: 'Too many login link requests. Try again in 1 hour.' }),
   standardHeaders: true,
   legacyHeaders: false,
   skip: (req) => !req.body.email,
@@ -210,6 +224,68 @@ router.post('/reset-password', async (req, res, next) => {
     await resetToken.save();
 
     return res.json({ message: 'Password updated successfully. You can now log in.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/magic-link ─────────────────────────────────────────────────
+// "Fast forward": pide un link de ingreso sin contraseña al correo. Anti-enumeración
+// (siempre 200) y rate-limited, igual que forgot-password.
+
+router.post('/magic-link', magicLimiter, async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'A valid email is required.' });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (user) {
+      await MagicLoginToken.deleteMany({ userId: user._id });
+
+      const plainToken = crypto.randomBytes(32).toString('hex');
+      const tokenHash = await bcrypt.hash(plainToken, SALT_ROUNDS);
+      const expiresAt = new Date(Date.now() + MAGIC_TOKEN_TTL_MS);
+      await MagicLoginToken.create({ userId: user._id, tokenHash, expiresAt });
+
+      const magicUrl = `${process.env.APP_URL || 'http://localhost:5173'}/magic-login?token=${plainToken}&userId=${user._id}`;
+      await EmailService.sendMagicLink({ to: user.email, userName: user.name, magicUrl });
+    }
+
+    return res.json({ message: 'If an account with this email exists, a login link has been sent.' });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ── POST /api/auth/magic-login ────────────────────────────────────────────────
+// Canjea el token del magic link e inicia sesión (devuelve JWT), igual que login.
+
+router.post('/magic-login', async (req, res, next) => {
+  try {
+    const { token, userId } = req.body;
+    if (!token || !userId) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'token and userId are required.' });
+    }
+
+    const magicToken = await MagicLoginToken.findOne({
+      userId,
+      usedAt: null,
+      expiresAt: { $gt: new Date() },
+    });
+    if (!magicToken || !(await bcrypt.compare(token, magicToken.tokenHash))) {
+      return res.status(400).json({ code: 'INVALID_MAGIC_TOKEN', message: 'Login link is invalid or has expired.' });
+    }
+
+    magicToken.usedAt = new Date();
+    await magicToken.save();
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
+
+    const authToken = signToken(user);
+    return res.json({ user: userResponse(user), token: authToken });
   } catch (err) {
     next(err);
   }
