@@ -6,13 +6,14 @@
  *
  * Usage:
  *   cd backend && node scripts/seed-milo.js
+ *   SEED_USER_EMAIL=owner@test.com node scripts/seed-milo.js
  */
 
 require('dotenv').config();
 const mongoose = require('mongoose');
 const User = require('../src/models/User');
 
-const ADMIN_EMAIL = 'julian.cardozo.viggiano@gmail.com';
+const DEFAULT_TARGET_EMAIL = 'julian.cardozo.viggiano@gmail.com';
 const CLINIC_UY = 'Clínica Veterinaria (Montevideo)';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -426,12 +427,13 @@ const MILO = {
 async function main() {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error('MONGODB_URI no está definida en .env');
+  const targetEmail = process.env.SEED_USER_EMAIL || DEFAULT_TARGET_EMAIL;
 
   await mongoose.connect(uri);
   console.log('✓ Conectado a MongoDB');
 
-  const user = await User.findOne({ email: ADMIN_EMAIL });
-  if (!user) throw new Error(`Usuario no encontrado: ${ADMIN_EMAIL}`);
+  const user = await User.findOne({ email: targetEmail });
+  if (!user) throw new Error(`Usuario no encontrado: ${targetEmail}`);
   console.log(`✓ Usuario encontrado: ${user.name} (${user.email})`);
 
   // Remove existing Milo to avoid duplicates on re-run
