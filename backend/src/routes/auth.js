@@ -11,6 +11,7 @@ const User = require('../models/User');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const EmailService = require('../services/EmailService');
 const referralService = require('../services/referralService');
+const coTutorService = require('../services/CoTutorService');
 const { deleteUserEvents } = require('../core/events/eventBus');
 const pushService = require('../services/pushService');
 const authenticate = require('../middleware/auth');
@@ -61,7 +62,7 @@ const resetLimiter = rateLimit({
 
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password, referralCode } = req.body;
+    const { name, email, password, referralCode, inviteToken } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'name, email, and password are required.' });
@@ -95,6 +96,17 @@ router.post('/register', async (req, res, next) => {
       referralService.registerReferral({ code: referralCode, newUser: user }).catch((err) => {
         console.error('[Auth] registerReferral failed:', err.message);
       });
+    }
+
+    // Co-tutor: si la cuenta se creó desde un link de invitación, materializar el
+    // acceso al perro compartido. Se espera (await) para que el perro ya esté
+    // vinculado al responder, pero no rompe el registro si falla (p. ej. email distinto).
+    if (inviteToken) {
+      try {
+        await coTutorService.acceptInvite({ token: inviteToken, user });
+      } catch (err) {
+        console.error('[Auth] coTutor acceptInvite failed:', err.message);
+      }
     }
 
     // Fire-and-forget — welcome email must not block or fail the registration response

@@ -54,6 +54,14 @@ export const createVetShare = (dogId) => api.post(`/dogs/${dogId}/vet-share`);
 export const revokeVetShare = (dogId) => api.delete(`/dogs/${dogId}/vet-share`);
 export const getVetRecord = (token) => api.get(`/vet/${token}`);
 export const validateVetEvent = (token, payload) => api.post(`/vet/${token}/validate`, payload);
+
+// Co-tutores (Premium): gestión por el dueño + aceptación por invitación.
+export const getCoTutors = (dogId) => api.get(`/dogs/${dogId}/cotutores`);
+export const inviteCoTutor = (dogId, email) => api.post(`/dogs/${dogId}/cotutores`, { email });
+export const revokeCoTutor = (dogId, userId) => api.delete(`/dogs/${dogId}/cotutores/${userId}`);
+export const revokeCoTutorInvite = (dogId, email) => api.delete(`/dogs/${dogId}/cotutores`, { params: { email } });
+export const peekInvite = (token) => api.get(`/cotutores/${token}`);
+export const acceptInvite = (token) => api.post(`/cotutores/${token}/accept`);
 export const createDog = (data) => api.post('/dogs', data);
 export const updateDog = (dogId, data) => api.patch(`/dogs/${dogId}`, data);
 export const deleteDog = (dogId) => api.delete(`/dogs/${dogId}`);

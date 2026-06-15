@@ -14,7 +14,7 @@ function mockMakeQuery(data) {
   return q;
 }
 
-jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
+jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn().mockResolvedValue(null) }));
 jest.mock('../../src/models/DailyCheckin', () => {
   const m = { create: jest.fn(), find: jest.fn(() => mockMakeQuery([])) };
   m.QUESTIONS = ['comida', 'energia', 'agua', 'animo', 'digestion'];

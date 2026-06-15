@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 const EmailService = require('../services/EmailService');
 const analytics = require('../services/analyticsService');
 const { evaluateVomitRule } = require('../services/symptomAlertService');
@@ -23,9 +23,9 @@ const QUICK_TYPES = {
 // GET /api/dogs/:dogId/symptoms (ordered by dateObserved desc)
 router.get('/', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
 
     const symptoms = [...dog.symptoms].sort((a, b) => new Date(b.dateObserved) - new Date(a.dateObserved));
     return res.json({ symptoms });
@@ -53,9 +53,9 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: `severity must be one of: ${validSeverities.join(', ')}.` });
     }
 
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     dog.symptoms.push({
       symptomType: description,
@@ -85,9 +85,9 @@ router.post('/quick', authenticate, async (req, res, next) => {
       });
     }
 
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const now = new Date();
     dog.symptoms.push({
@@ -127,9 +127,9 @@ router.post('/quick', authenticate, async (req, res, next) => {
 // PATCH /api/dogs/:dogId/symptoms/:symId
 router.patch('/:symId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const symptom = dog.symptoms.id(req.params.symId);
     if (!symptom) return res.status(404).json({ code: 'NOT_FOUND', message: 'Symptom not found.' });
@@ -161,9 +161,9 @@ router.patch('/:symId', authenticate, async (req, res, next) => {
 // DELETE /api/dogs/:dogId/symptoms/:symId
 router.delete('/:symId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const symptom = dog.symptoms.id(req.params.symId);
     if (!symptom) return res.status(404).json({ code: 'NOT_FOUND', message: 'Symptom not found.' });

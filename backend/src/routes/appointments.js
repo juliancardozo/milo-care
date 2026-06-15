@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 
 const router = express.Router({ mergeParams: true });
 
@@ -16,9 +16,9 @@ function computeAppointmentReminder(appointmentDate, windowHours) {
 // GET /api/dogs/:dogId/appointments
 router.get('/', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
 
     const appointments = [...dog.appointments].sort((a, b) => new Date(a.appointmentDate) - new Date(b.appointmentDate));
     return res.json({ appointments });
@@ -44,9 +44,9 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'appointmentDate must be a valid date.' });
     }
 
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const windowHours = user.notificationPreferences?.appointmentWindowHours || 24;
     const reminderAt = computeAppointmentReminder(apptDate, windowHours);
@@ -79,9 +79,9 @@ router.post('/', authenticate, async (req, res, next) => {
 // PATCH /api/dogs/:dogId/appointments/:apptId
 router.patch('/:apptId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const appt = dog.appointments.id(req.params.apptId);
     if (!appt) return res.status(404).json({ code: 'NOT_FOUND', message: 'Appointment not found.' });
@@ -113,9 +113,9 @@ router.patch('/:apptId', authenticate, async (req, res, next) => {
 // DELETE /api/dogs/:dogId/appointments/:apptId
 router.delete('/:apptId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const appt = dog.appointments.id(req.params.apptId);
     if (!appt) return res.status(404).json({ code: 'NOT_FOUND', message: 'Appointment not found.' });

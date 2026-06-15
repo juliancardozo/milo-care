@@ -2,7 +2,8 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
+const { NotFoundError } = require('../middleware/errorHandler');
 
 const router = express.Router({ mergeParams: true });
 
@@ -13,11 +14,9 @@ const router = express.Router({ mergeParams: true });
 router.get('/', authenticate, async (req, res, next) => {
   try {
     const { dogId } = req.params;
-    const user = await User.findById(req.user.id);
-    if (!user) throw new NotFoundError('User not found');
-
-    const dog = user.dogs?.id(dogId);
-    if (!dog) throw new NotFoundError('Dog not found');
+    const found = await DogAccess.resolveDog(req.user.id, dogId);
+    if (!found) throw new NotFoundError('Dog not found');
+    const { dog } = found;
 
     res.json(dog.consultations || []);
   } catch (error) {
@@ -40,11 +39,9 @@ router.post('/', authenticate, async (req, res, next) => {
       });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) throw new NotFoundError('User not found');
-
-    const dog = user.dogs?.id(dogId);
-    if (!dog) throw new NotFoundError('Dog not found');
+    const found = await DogAccess.resolveDog(req.user.id, dogId);
+    if (!found) throw new NotFoundError('Dog not found');
+    const { owner: user, dog } = found;
 
     const consultation = {
       vetName: vetName || '',
@@ -76,11 +73,9 @@ router.patch('/:consultId', authenticate, async (req, res, next) => {
     const { dogId, consultId } = req.params;
     const { vetName, clinicName, reason, dateOfConsult, findings, recommendations } = req.body;
 
-    const user = await User.findById(req.user.id);
-    if (!user) throw new NotFoundError('User not found');
-
-    const dog = user.dogs?.id(dogId);
-    if (!dog) throw new NotFoundError('Dog not found');
+    const found = await DogAccess.resolveDog(req.user.id, dogId);
+    if (!found) throw new NotFoundError('Dog not found');
+    const { owner: user, dog } = found;
 
     const consultation = dog.consultations?.id(consultId);
     if (!consultation) throw new NotFoundError('Consultation not found');
@@ -108,11 +103,9 @@ router.delete('/:consultId', authenticate, async (req, res, next) => {
   try {
     const { dogId, consultId } = req.params;
 
-    const user = await User.findById(req.user.id);
-    if (!user) throw new NotFoundError('User not found');
-
-    const dog = user.dogs?.id(dogId);
-    if (!dog) throw new NotFoundError('Dog not found');
+    const found = await DogAccess.resolveDog(req.user.id, dogId);
+    if (!found) throw new NotFoundError('Dog not found');
+    const { owner: user, dog } = found;
 
     const consultation = dog.consultations?.id(consultId);
     if (!consultation) throw new NotFoundError('Consultation not found');

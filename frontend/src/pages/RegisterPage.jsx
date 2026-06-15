@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { register } from '../services/api';
@@ -10,7 +10,11 @@ export default function RegisterPage() {
   const { t } = useI18n();
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const [form, setForm] = useState({ name: '', email: '', password: '' });
+  const [searchParams] = useSearchParams();
+  // Invitación de co-tutor: token + email pre-cargado (y bloqueado) del invitado.
+  const inviteToken = searchParams.get('invite');
+  const invitedEmail = searchParams.get('email');
+  const [form, setForm] = useState({ name: '', email: invitedEmail || '', password: '' });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,10 +38,14 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const referralCode = getStoredRef();
-      const { data } = await register(referralCode ? { ...form, referralCode } : form);
+      const payload = { ...form };
+      if (referralCode) payload.referralCode = referralCode;
+      if (inviteToken) payload.inviteToken = inviteToken;
+      const { data } = await register(payload);
       clearStoredRef();
       dispatch(setCredentials({ user: data.user, token: data.token }));
-      navigate('/dogs/new');
+      // Si vino de una invitación, el perro ya quedó compartido → al panel.
+      navigate(inviteToken ? '/dashboard' : '/dogs/new');
     } catch (err) {
       const msg = err.response?.data?.message || t('auth.errors.registerFailed');
       setServerError(msg);
@@ -51,7 +59,10 @@ export default function RegisterPage() {
   return (
     <div className="auth-page">
       <h1>{t('auth.createAccountTitle')}</h1>
-      {invitedBy && (
+      {inviteToken && (
+        <p className="referral-invite-note">{t('cotutor.signupBanner')}</p>
+      )}
+      {!inviteToken && invitedBy && (
         <p className="referral-invite-note">{t('referrals.invitedBanner', { code: invitedBy })}</p>
       )}
       <form onSubmit={handleSubmit} noValidate>
@@ -62,7 +73,7 @@ export default function RegisterPage() {
         </div>
         <div className="field">
           <label htmlFor="email">{t('common.email')}</label>
-          <input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-invalid={!!errors.email} />
+          <input id="email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} aria-invalid={!!errors.email} readOnly={!!invitedEmail} />
           {errors.email && <span className="field-error">{errors.email}</span>}
         </div>
         <div className="field">

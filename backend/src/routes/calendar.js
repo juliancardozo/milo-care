@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 const { buildCalendar } = require('../services/CalendarEngine');
 
 const router = express.Router();
@@ -14,9 +14,9 @@ function matchStatus(item, statusFilter) {
 
 router.get('/dogs/:dogId/calendar', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
 
     const calendar = buildCalendar(dog.toObject());
     const statusFilter = req.query.status;
@@ -67,9 +67,9 @@ router.get('/dogs/:dogId/calendar', authenticate, async (req, res, next) => {
 
 router.get('/dogs/:dogId/summary', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
 
     const calendar = buildCalendar(dog.toObject());
     return res.json(calendar);

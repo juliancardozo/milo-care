@@ -56,6 +56,11 @@ function errorHandler(err, req, res, _next) {
     return res.status(409).json({ code: 'EMAIL_ALREADY_EXISTS', message: `${field} already exists.` });
   }
 
+  // Errores de dominio con status/code explícitos (p. ej. CoTutorService).
+  if (typeof err.status === 'number' && typeof err.code === 'string') {
+    return res.status(err.status).json({ code: err.code, message: err.message });
+  }
+
   console.error('[ErrorHandler]', err);
   return res.status(500).json({ code: 'INTERNAL_ERROR', message: 'An unexpected error occurred.' });
 }

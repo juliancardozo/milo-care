@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 
 const router = express.Router({ mergeParams: true });
 
@@ -16,9 +16,9 @@ function computeVaccinationReminder(nextDueDate, windowDays) {
 // GET /api/dogs/:dogId/vaccinations
 router.get('/', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
     return res.json({ vaccinations: dog.vaccinations });
   } catch (err) {
     next(err);
@@ -43,9 +43,9 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'dateAdministered must be a valid date.' });
     }
 
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const duplicate = dog.vaccinations.some(
       (v) =>
@@ -86,9 +86,9 @@ router.post('/', authenticate, async (req, res, next) => {
 // PATCH /api/dogs/:dogId/vaccinations/:vacId
 router.patch('/:vacId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const vac = dog.vaccinations.id(req.params.vacId);
     if (!vac) return res.status(404).json({ code: 'NOT_FOUND', message: 'Vaccination not found.' });
@@ -113,9 +113,9 @@ router.patch('/:vacId', authenticate, async (req, res, next) => {
 // DELETE /api/dogs/:dogId/vaccinations/:vacId
 router.delete('/:vacId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const vac = dog.vaccinations.id(req.params.vacId);
     if (!vac) return res.status(404).json({ code: 'NOT_FOUND', message: 'Vaccination not found.' });

@@ -12,7 +12,7 @@ function mockMakeQuery(data) {
   return q;
 }
 
-jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
+jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn().mockResolvedValue(null) }));
 jest.mock('../../src/models/BehaviorLog', () => {
   const m = {
     create: jest.fn(),

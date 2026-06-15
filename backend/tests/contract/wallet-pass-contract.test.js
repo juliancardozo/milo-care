@@ -7,7 +7,7 @@ jest.mock('../../src/middleware/auth', () => (req, _res, next) => {
   next();
 });
 
-jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
+jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn().mockResolvedValue(null) }));
 
 jest.mock('../../src/models/DailyCheckin', () => ({
   find: jest.fn(() => ({ select: () => ({ lean: () => Promise.resolve([]) }) })),

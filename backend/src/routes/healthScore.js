@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 const DailyCheckin = require('../models/DailyCheckin');
 const { computeStreak } = require('../services/checkinAnalytics');
 const { localDateString } = require('../utils/localTime');
@@ -14,11 +14,9 @@ const router = express.Router({ mergeParams: true });
 // GET /api/dogs/:dogId/health-score
 router.get('/', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
-
-    const dog = user.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const now = new Date();
     const tz = user.notificationPreferences?.timezone || 'America/Argentina/Buenos_Aires';

@@ -2,6 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
+const DogAccess = require('../services/DogAccess');
 const User = require('../models/User');
 const DailyCheckin = require('../models/DailyCheckin');
 const EmailService = require('../services/EmailService');
@@ -59,9 +60,9 @@ const dogCheckinsRouter = express.Router({ mergeParams: true });
 // GET /today — pregunta del día + si ya respondió (para la card del dashboard)
 dogCheckinsRouter.get('/today', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const tz = userTimezone(user);
     const localDate = localDateString(tz);
@@ -85,9 +86,9 @@ dogCheckinsRouter.get('/today', authenticate, async (req, res, next) => {
 // GET / — historial (?from=&to= en localDate YYYY-MM-DD)
 dogCheckinsRouter.get('/', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
 
     const query = { dogId: dog._id };
     const { from, to } = req.query;
@@ -112,9 +113,9 @@ dogCheckinsRouter.post('/', authenticate, async (req, res, next) => {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: `answer must be one of: ${ANSWERS.join(', ')}.` });
     }
 
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const tz = userTimezone(user);
     const localDate = localDateString(tz);
@@ -153,9 +154,9 @@ dogCheckinsRouter.post('/', authenticate, async (req, res, next) => {
 // GET /trends — agregación 7/30 días + patrones
 dogCheckinsRouter.get('/trends', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const tz = userTimezone(user);
     const localDate = localDateString(tz);
@@ -173,9 +174,9 @@ dogCheckinsRouter.get('/trends', authenticate, async (req, res, next) => {
 // GET /streak — racha de cuidado
 dogCheckinsRouter.get('/streak', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const tz = userTimezone(user);
     const localDate = localDateString(tz);

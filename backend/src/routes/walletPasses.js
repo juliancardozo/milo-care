@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 const DailyCheckin = require('../models/DailyCheckin');
 const featureFlags = require('../config/featureFlags');
 const GoogleWalletService = require('../services/GoogleWalletService');
@@ -25,11 +25,9 @@ router.post('/', authenticate, async (req, res, next) => {
       });
     }
 
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
-
-    const dog = user.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     // Datos de reconocimiento social para la tarjeta.
     const now = new Date();

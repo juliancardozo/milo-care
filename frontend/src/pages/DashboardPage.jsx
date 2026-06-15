@@ -170,6 +170,18 @@ export default function DashboardPage() {
                   <p className="dog-profile-age">
                     {activeDog.ageDisplay ?? `${activeDog.ageYears} ${t('dashboard.yearsOld')}`}
                   </p>
+                  {activeDog.shared && (
+                    <span
+                      className="dog-shared-badge"
+                      style={{
+                        display: 'inline-block', marginTop: 4, padding: '2px 8px',
+                        fontSize: 12, fontWeight: 600, color: '#6d28d9',
+                        background: '#ede9fe', borderRadius: 999,
+                      }}
+                    >
+                      👥 {t('cotutor.sharedBadge', { owner: activeDog.ownerName || '' })}
+                    </span>
+                  )}
                 </div>
                 <Link to={`/dogs/${activeDog.id}/edit`} className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
                 <AddToWalletButton dogId={activeDog.id} className="dog-profile-wallet" />

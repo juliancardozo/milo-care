@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 const BehaviorLog = require('../models/BehaviorLog');
 const analytics = require('../services/analyticsService');
 
@@ -10,15 +10,11 @@ const { KINDS } = BehaviorLog;
 
 const router = express.Router({ mergeParams: true });
 
-// Verifica que el perro pertenezca al usuario autenticado.
+// Verifica que el usuario (dueño o co-tutor) tenga acceso al perro.
 async function loadDog(req, res) {
-  const user = await User.findById(req.user.id);
-  const dog = user?.dogs.id(req.params.dogId);
-  if (!dog) {
-    res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
-    return null;
-  }
-  return { user, dog };
+  const found = await DogAccess.loadForRequest(req, res);
+  if (!found) return null;
+  return { user: found.owner, dog: found.dog };
 }
 
 // GET /api/dogs/:dogId/behaviors — feed del álbum (más nuevo primero)

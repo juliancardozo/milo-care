@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 
 const router = express.Router({ mergeParams: true });
 
@@ -16,9 +16,9 @@ function computeMedicationReminder(startDate, frequencyHours) {
 // GET /api/dogs/:dogId/medications?active=true
 router.get('/', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { dog } = found;
 
     let meds = dog.medications;
     if (req.query.active === 'true') meds = meds.filter((m) => m.isActive);
@@ -49,9 +49,9 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'startDate must be a valid date.' });
     }
 
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const freq = oneTime ? null : Number(frequencyHours);
     const nextReminderAt = computeMedicationReminder(start, freq);
@@ -79,9 +79,9 @@ router.post('/', authenticate, async (req, res, next) => {
 // PATCH /api/dogs/:dogId/medications/:medId
 router.patch('/:medId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const med = dog.medications.id(req.params.medId);
     if (!med) return res.status(404).json({ code: 'NOT_FOUND', message: 'Medication not found.' });
@@ -113,9 +113,9 @@ router.patch('/:medId', authenticate, async (req, res, next) => {
 // DELETE /api/dogs/:dogId/medications/:medId
 router.delete('/:medId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const med = dog.medications.id(req.params.medId);
     if (!med) return res.status(404).json({ code: 'NOT_FOUND', message: 'Medication not found.' });

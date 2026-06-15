@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { login } from '../services/api';
@@ -10,6 +10,9 @@ export default function LoginPage() {
   const { t } = useI18n();
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  // Destino tras login (p. ej. volver a aceptar una invitación de co-tutor).
+  const next = searchParams.get('next');
   const [form, setForm] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
@@ -32,7 +35,7 @@ export default function LoginPage() {
     try {
       const { data } = await login(form);
       dispatch(setCredentials({ user: data.user, token: data.token }));
-      navigate('/dashboard');
+      navigate(next && next.startsWith('/') ? next : '/dashboard');
     } catch (err) {
       const msg = err.response?.data?.message || t('auth.errors.loginFailed');
       setServerError(msg);

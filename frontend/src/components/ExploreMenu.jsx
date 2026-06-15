@@ -55,6 +55,7 @@ export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
     dogId && { to: `/dogs/${dogId}/album`, emoji: '📸', tone: 'amber', title: t('explore.album.title'), sub: t('explore.album.sub') },
     dogId && { to: `/dogs/${dogId}/pdf-export`, emoji: '📄', tone: 'teal', title: t('explore.pdf.title'), sub: t('explore.pdf.sub') },
     dogId && { to: `/dogs/${dogId}/share`, emoji: '🏥', tone: 'blue', title: t('explore.vetShare.title'), sub: t('explore.vetShare.sub') },
+    dogId && { to: `/dogs/${dogId}/cotutores`, emoji: '👥', tone: 'violet', title: t('cotutor.manageTitle'), sub: t('cotutor.menuSub') },
     { to: isPremium ? '/dogs/new' : '/upgrade', emoji: '🐶', tone: 'blue', title: t('explore.addDog.title'), sub: t('explore.addDog.sub') },
     { to: '/settings/notifications', emoji: '🔔', tone: 'green', title: t('explore.notifications.title'), sub: t('explore.notifications.sub') },
   ].filter(Boolean);

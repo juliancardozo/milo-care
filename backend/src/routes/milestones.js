@@ -2,7 +2,7 @@
 
 const express = require('express');
 const authenticate = require('../middleware/auth');
-const User = require('../models/User');
+const DogAccess = require('../services/DogAccess');
 const Milestone = require('../models/Milestone');
 const DailyCheckin = require('../models/DailyCheckin');
 const BehaviorLog = require('../models/BehaviorLog');
@@ -27,13 +27,9 @@ function vaccinesUpToDate(dog, now) {
 }
 
 async function loadDog(req, res) {
-  const user = await User.findById(req.user.id);
-  const dog = user?.dogs.id(req.params.dogId);
-  if (!dog) {
-    res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
-    return null;
-  }
-  return { user, dog };
+  const found = await DogAccess.loadForRequest(req, res);
+  if (!found) return null;
+  return { user: found.owner, dog: found.dog };
 }
 
 // GET / — detecta y persiste hitos nuevos; devuelve pendientes + historial.

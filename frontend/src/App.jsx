@@ -39,6 +39,8 @@ import SubscriptionPage from './pages/SubscriptionPage';
 import PublicPetPage from './pages/PublicPetPage';
 import VetRecordPage from './pages/VetRecordPage';
 import VetShareLinkPage from './pages/VetShareLinkPage';
+import CoTutorsPage from './pages/CoTutorsPage';
+import InviteAcceptPage from './pages/InviteAcceptPage';
 import AlbumPage from './pages/AlbumPage';
 import CardsPage from './pages/CardsPage';
 import { useI18n } from './i18n/I18nProvider';
@@ -80,6 +82,7 @@ export default function App() {
         <Route path="/reset-password" element={<ResetPasswordPage />} />
         <Route path="/p/:dogId" element={<PublicPetPage />} />
         <Route path="/vet/:token" element={<VetRecordPage />} />
+        <Route path="/invite/:token" element={<InviteAcceptPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
@@ -99,6 +102,7 @@ export default function App() {
           <Route path="/dogs/:dogId/clinical-history" element={<ClinicalHistoryPage />} />
           <Route path="/dogs/:dogId/pdf-export" element={<PdfExportPage />} />
           <Route path="/dogs/:dogId/share" element={<VetShareLinkPage />} />
+          <Route path="/dogs/:dogId/cotutores" element={<CoTutorsPage />} />
           <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />
           <Route path="/dashboard/reminders/full" element={<FullRemindersListPage />} />

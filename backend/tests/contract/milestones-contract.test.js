@@ -10,7 +10,7 @@ function mockMakeQuery(data) {
   return q;
 }
 
-jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
+jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn().mockResolvedValue(null) }));
 jest.mock('../../src/models/Milestone', () => ({ updateOne: jest.fn(), find: jest.fn(), findOneAndUpdate: jest.fn() }));
 jest.mock('../../src/models/DailyCheckin', () => ({ find: jest.fn(() => mockMakeQuery([])) }));
 jest.mock('../../src/models/BehaviorLog', () => ({ countDocuments: jest.fn().mockResolvedValue(0) }));

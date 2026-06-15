@@ -3,6 +3,7 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const TierService = require('../services/TierService');
+const DogAccess = require('../services/DogAccess');
 const User = require('../models/User');
 
 const router = express.Router();
@@ -51,7 +52,7 @@ function formatAge(obj) {
   return `${prefix}${years} años`;
 }
 
-function dogResponse(dog) {
+function dogResponse(dog, role = 'owner', owner = null) {
   const obj = dog.toObject ? dog.toObject() : dog;
   const dob = obj.dateOfBirth ? new Date(obj.dateOfBirth) : null;
   const confidence = obj.birthDateConfidence || 'exact';
@@ -83,6 +84,12 @@ function dogResponse(dog) {
     veterinarianPhone: obj.veterinarianPhone || '',
     allergies: obj.allergies || [],
     conditions: obj.conditions || [],
+    // Co-tutores: rol del solicitante y, si es compartido, datos del dueño.
+    role,
+    shared: role !== 'owner',
+    ownerName: role !== 'owner' && owner ? owner.name : null,
+    ownerId: role !== 'owner' && owner ? String(owner._id) : null,
+    cotutorCount: Array.isArray(obj.caregivers) ? obj.caregivers.length : 0,
   };
 }
 
@@ -91,7 +98,21 @@ router.get('/', authenticate, async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
-    return res.json({ dogs: user.dogs.map(dogResponse) });
+
+    const own = user.dogs.map((d) => dogResponse(d, 'owner', user));
+
+    // Perros compartidos: documentos de otros usuarios donde soy co-tutor.
+    const sharedOwners = await User.find({ 'dogs.caregivers.userId': user._id });
+    const shared = [];
+    for (const o of sharedOwners) {
+      for (const d of o.dogs) {
+        if (d.caregivers.some((c) => String(c.userId) === String(user._id))) {
+          shared.push(dogResponse(d, 'cotutor', o));
+        }
+      }
+    }
+
+    return res.json({ dogs: [...own, ...shared] });
   } catch (err) {
     next(err);
   }
@@ -137,10 +158,9 @@ router.post('/', authenticate, async (req, res, next) => {
 // GET /api/dogs/:dogId
 router.get('/:dogId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
-    return res.json(dogResponse(dog));
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    return res.json(dogResponse(found.dog, found.role, found.owner));
   } catch (err) {
     next(err);
   }
@@ -149,9 +169,9 @@ router.get('/:dogId', authenticate, async (req, res, next) => {
 // PATCH /api/dogs/:dogId
 router.patch('/:dogId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    const { owner: user, dog } = found;
 
     const {
       name, breed, dateOfBirth, photoUrl,
@@ -222,9 +242,12 @@ router.patch('/:dogId', authenticate, async (req, res, next) => {
 // DELETE /api/dogs/:dogId
 router.delete('/:dogId', authenticate, async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    const dog = user?.dogs.id(req.params.dogId);
-    if (!dog) return res.status(404).json({ code: 'DOG_NOT_FOUND', message: 'Dog not found.' });
+    const found = await DogAccess.loadForRequest(req, res);
+    if (!found) return;
+    if (found.role !== 'owner') {
+      return res.status(403).json({ code: 'OWNER_ONLY', message: 'Only the owner can delete this dog.' });
+    }
+    const { owner: user, dog } = found;
 
     dog.deleteOne();
     await user.save();

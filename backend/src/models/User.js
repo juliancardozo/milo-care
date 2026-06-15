@@ -137,6 +137,17 @@ const consultationSchema = new Schema(
   { timestamps: true }
 );
 
+// Co-tutores (Premium): otros usuarios con acceso de gestión total al perro.
+// La relación vive embebida en el perro (el dueño es implícito: el doc contenedor).
+// Las invitaciones pendientes viven en la colección CoTutorInvite (keyed por email).
+const caregiverSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
+    addedAt: { type: Date, default: Date.now },
+  },
+  { _id: false }
+);
+
 const dogSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 100 },
@@ -170,6 +181,7 @@ const dogSchema = new Schema(
     // Compartir expediente con el veterinario: link tokenizado de solo lectura.
     vetShareToken: { type: String, default: null, index: true },
     vetShareCreatedAt: { type: Date, default: null },
+    caregivers: [caregiverSchema],
     vaccinations: [vaccinationSchema],
     dewormingHistory: [dewormingSchema],
     medications: [medicationSchema],
