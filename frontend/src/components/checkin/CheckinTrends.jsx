@@ -5,7 +5,7 @@ import { getCheckinTrends } from '../../services/checkinApi';
 
 const CATEGORIES = ['comida', 'energia', 'agua', 'animo', 'digestion'];
 
-function TrendRow({ category, counts, label }) {
+function TrendRow({ counts, label }) {
   const total = counts.total || 0;
   const pct = (n) => (total > 0 ? `${(n / total) * 100}%` : '0%');
   return (
@@ -50,7 +50,6 @@ export default function CheckinTrends({ dog }) {
         CATEGORIES.map((c) => (
           <TrendRow
             key={c}
-            category={c}
             counts={w30[c] || { bien: 0, regular: 0, mal: 0, total: 0 }}
             label={t(`checkin.catLabel.${c}`)}
           />

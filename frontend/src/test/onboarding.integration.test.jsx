@@ -6,6 +6,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import onboardingReducer from '../store/onboardingSlice';
 import DogOnboardingPage from '../pages/DogOnboardingPage';
+import { I18nProvider } from '../i18n/I18nProvider';
 import * as onboardingApi from '../services/onboardingApi';
 
 describe('Onboarding integration', () => {
@@ -68,9 +69,11 @@ describe('Onboarding integration', () => {
 
     render(
       <Provider store={store}>
-        <MemoryRouter>
-          <DogOnboardingPage />
-        </MemoryRouter>
+        <I18nProvider>
+          <MemoryRouter>
+            <DogOnboardingPage />
+          </MemoryRouter>
+        </I18nProvider>
       </Provider>
     );
 
@@ -81,31 +84,31 @@ describe('Onboarding integration', () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText('Dog onboarding')).toBeInTheDocument();
+      expect(screen.getByText('Tus datos')).toBeInTheDocument();
     });
 
-    await user.type(screen.getByLabelText('Name'), 'Owner');
+    await user.type(screen.getByLabelText('Nombre'), 'Owner');
     await user.type(screen.getByLabelText('Email'), 'owner@example.com');
-    await user.click(screen.getByRole('button', { name: /Save and continue/i }));
+    await user.click(screen.getByRole('button', { name: /Continuar/i }));
 
-    expect(screen.getByText(/must accept the disclaimer/i)).toBeInTheDocument();
+    expect(screen.getByText(/aceptar el aviso legal/i)).toBeInTheDocument();
   });
 
   it('advances to next step when owner step is valid', async () => {
     renderPage();
 
     await waitFor(() => {
-      expect(screen.getByText('Dog onboarding')).toBeInTheDocument();
+      expect(screen.getByText('Tus datos')).toBeInTheDocument();
     });
 
-    await user.type(screen.getByLabelText('Name'), 'Owner');
+    await user.type(screen.getByLabelText('Nombre'), 'Owner');
     await user.type(screen.getByLabelText('Email'), 'owner@example.com');
-    await user.selectOptions(screen.getByLabelText('Country'), 'AR');
+    await user.selectOptions(screen.getByLabelText('País'), 'AR');
     await user.click(screen.getByLabelText(/advisory and not a clinical diagnosis/i));
-    await user.click(screen.getByRole('button', { name: /Save and continue/i }));
+    await user.click(screen.getByRole('button', { name: /Continuar/i }));
 
     await waitFor(() => {
-      expect(screen.getByText('Dog details')).toBeInTheDocument();
+      expect(screen.getByText('Contanos de tu perro')).toBeInTheDocument();
     });
   });
 });

@@ -214,9 +214,9 @@ const translations = {
     cotutor: {
       menuLabel: '👥 Co-tutores',
       menuSub: 'Compartí el cuidado con tu familia',
-      ownerOnly: 'Solo el dueño del perro puede gestionar co-tutores.',
+      ownerOnly: 'Solo el dueño del perro puede gestionar cuidadores.',
       manageTitle: 'Co-tutores',
-      manageIntro: 'Invitá a alguien a co-gestionar a {dog}. Va a poder ver y administrar todo su cuidado, igual que vos.',
+      manageIntro: 'Invitá a alguien a cuidar a {dog}. Va a poder ver y administrar todo su cuidado, igual que vos.',
       premiumNeeded: 'Los co-tutores son una función Premium. Pasate a Premium para compartir el cuidado de tu perro.',
       goPremium: 'Conocer Premium',
       emailLabel: 'Email del co-tutor',
@@ -237,7 +237,7 @@ const translations = {
       confirmRevoke: '¿Quitar a este co-tutor? Va a perder el acceso al instante.',
       // Aceptación
       inviteTitle: 'Te invitaron a cuidar a {dog} 🐾',
-      inviteIntro: '{inviter} te invitó a co-gestionar a {dog} en Milo Care.',
+      inviteIntro: '{inviter} te invitó a cuidar a {dog} en Milo Care.',
       acceptAs: 'Vas a aceptar con la cuenta {email}.',
       acceptCta: 'Aceptar y cuidar a {dog}',
       acceptFailed: 'No pudimos aceptar la invitación.',
@@ -247,7 +247,7 @@ const translations = {
       wrongAccount: 'Esta invitación es para {email}. Iniciá sesión con esa cuenta para aceptarla.',
       invalidTitle: 'Invitación no válida',
       invalidInvite: 'Esta invitación no existe, ya se usó o venció.',
-      signupBanner: 'Estás creando tu cuenta para co-cuidar un perro en Milo Care 🐾',
+      signupBanner: 'Estás creando tu cuenta para cuidar un perro en Milo Care 🐾',
       sharedBadge: 'Compartido por {owner}',
     },
     album: {

@@ -232,13 +232,13 @@ function tplReengagement({ userName, dogName }) {
 
 function tplCoTutorInvite({ inviterName, dogName, acceptUrl, isNewUser }) {
   const intro = isNewUser
-    ? `<strong>${inviterName}</strong> te invitó a co-gestionar a <strong>${dogName}</strong> en Milo Care. Creá tu cuenta y ${dogName} ya va a estar compartido con vos.`
-    : `<strong>${inviterName}</strong> te invitó a co-gestionar a <strong>${dogName}</strong> en Milo Care. Vas a poder ver y administrar todo su cuidado.`;
+    ? `<strong>${inviterName}</strong> te invitó a cuidar a <strong>${dogName}</strong> en Milo Care. Creá tu cuenta y ${dogName} ya va a estar compartido con vos.`
+    : `<strong>${inviterName}</strong> te invitó a cuidar a <strong>${dogName}</strong> en Milo Care. Vas a poder ver y administrar todo su cuidado.`;
   return layout({
     title: `${inviterName} te invitó a cuidar a ${dogName} 🐾`,
-    preheader: `Co-gestioná el cuidado de ${dogName} en Milo Care.`,
+    preheader: `Compartan el cuidado de ${dogName} en Milo Care.`,
     body: `
-      <h2 style="margin:0 0 16px;font-size:22px;">Te invitaron a co-cuidar a ${dogName} 🐾</h2>
+      <h2 style="margin:0 0 16px;font-size:22px;">Te invitaron a cuidar a ${dogName} 🐾</h2>
       <p>${intro}</p>
       <p>Como co-tutor vas a poder cargar vacunas, medicamentos, citas y síntomas, igual que ${inviterName}.</p>
       <p style="color:#6b7280;font-size:13px;margin-top:20px;">
