@@ -104,4 +104,10 @@ export const getFullRemindersList = (windowDays) =>
     params: windowDays ? { windowDays } : undefined,
   });
 
+export const dismissReminder = (dedupeKey) =>
+  api.post('/dashboard/reminders/dismiss', { dedupeKey });
+
+export const restoreReminder = (dedupeKey) =>
+  api.post('/dashboard/reminders/restore', { dedupeKey });
+
 export default api;

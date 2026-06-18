@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { captureRefFromUrl } from './services/referralApi';
+import { captureClinicFromUrl } from './services/clinicApi';
 import { selectIsAuthenticated } from './store/authSlice';
 import ProtectedRoute from './components/ProtectedRoute';
 import LandingPage from './pages/LandingPage';
@@ -33,6 +34,11 @@ import AdminDashboardPage from './pages/admin/AdminDashboardPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminLeadsPage from './pages/admin/AdminLeadsPage';
+import AdminClinicsPage from './pages/admin/AdminClinicsPage';
+import VetRoute from './components/VetRoute';
+import VetPanelPage from './pages/vet/VetPanelPage';
+import VetRegisterPage from './pages/vet/VetRegisterPage';
+import ClinicLandingPage from './pages/ClinicLandingPage';
 import ClinicalHistoryPage from './pages/ClinicalHistoryPage';
 import RemindersPage from './pages/RemindersPage';
 import PdfExportPage from './pages/PdfExportPage';
@@ -51,15 +57,18 @@ export default function App() {
   const location = useLocation();
   const { t } = useI18n();
 
-  // Persiste el código de referido entrante (?ref=CODE) hasta el registro.
-  useEffect(() => { captureRefFromUrl(); }, []);
+  // Persiste el código de referido (?ref=CODE) y la clínica entrante (?c=slug) hasta el registro.
+  useEffect(() => { captureRefFromUrl(); captureClinicFromUrl(); }, []);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const isLanding = location.pathname === '/';
   const isPublicPet = location.pathname.startsWith('/p/');
   const isVetRecord = location.pathname.startsWith('/vet/');
-  // Hide the global app header on dashboard, landing, and the public/vet pages
+  const isClinicLanding = location.pathname.startsWith('/c/');
+  const isVetPortal = location.pathname.startsWith('/vet-portal');
+  // Hide the global app header on dashboard, landing, and the public/vet/clinic pages
   // (each has its own chrome / is meant for logged-out visitors).
-  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard' && !isPublicPet && !isVetRecord;
+  const showGlobalHeader = !isLanding && location.pathname !== '/dashboard'
+    && !isPublicPet && !isVetRecord && !isClinicLanding && !isVetPortal;
 
   return (
     <>
@@ -87,6 +96,8 @@ export default function App() {
         <Route path="/p/:dogId" element={<PublicPetPage />} />
         <Route path="/vet/:token" element={<VetRecordPage />} />
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
+        <Route path="/c/:slug" element={<ClinicLandingPage />} />
+        <Route path="/vet-portal/register" element={<VetRegisterPage />} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>
@@ -115,11 +126,17 @@ export default function App() {
           <Route path="/subscription" element={<SubscriptionPage />} />
         </Route>
 
+        {/* Vet portal (rol 'vet') */}
+        <Route element={<VetRoute />}>
+          <Route path="/vet-portal" element={<VetPanelPage />} />
+        </Route>
+
         {/* Admin routes */}
         <Route element={<AdminRoute />}>
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+          <Route path="/admin/clinics" element={<AdminClinicsPage />} />
           <Route path="/admin/leads" element={<AdminLeadsPage />} />
         </Route>
 

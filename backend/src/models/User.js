@@ -275,7 +275,15 @@ const userSchema = new Schema(
     passwordHash: { type: String, required: true },
     name: { type: String, required: true, trim: true, maxlength: 100 },
     tier: { type: String, enum: ['free', 'premium'], default: 'free' },
-    role: { type: String, enum: ['user', 'admin'], default: 'user' },
+    // 'vet': dueño de una clínica (accede a su panel). 'adminVet': admin + gestión de clínicas.
+    role: { type: String, enum: ['user', 'admin', 'vet', 'adminVet'], default: 'user' },
+    // Atribución de origen del Kit de Activación Veterinaria. Si el usuario entró por
+    // el QR/link de una clínica (`/c/:slug`) dentro de la ventana de 7 días, queda
+    // vinculado acá. Sin código de clínica → sin atribución.
+    acquisitionClinicId: { type: mongoose.Schema.Types.ObjectId, ref: 'Clinic', default: null, index: true },
+    acquisitionClinicAt: { type: Date, default: null },
+    // Idempotencia de la Capa 2 (mes premium gratis para pacientes de clínica aliada).
+    clinicIncentiveGrantedAt: { type: Date, default: null },
     // Último pedido de interés en Premium (se notifica al admin por email).
     // Agnóstico al proveedor de pago: usado para deduplicar pedidos dentro de 24h.
     premiumInterestAt: { type: Date, default: null },
@@ -300,6 +308,9 @@ const userSchema = new Schema(
       },
     },
     notificationPreferences: { type: notificationPreferencesSchema, default: () => ({}) },
+    // Recordatorios descartados por el usuario (por dedupeKey). Descarte no destructivo:
+    // ocultan el recordatorio sin tocar el registro de salud subyacente.
+    dismissedReminderKeys: { type: [String], default: [] },
     // Zona opt-in del tutor (sin coordenadas) + momento del consentimiento.
     location: { type: locationSchema, default: null },
     locationConsentAt: { type: Date, default: null },

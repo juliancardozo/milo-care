@@ -12,6 +12,7 @@ const PasswordResetToken = require('../models/PasswordResetToken');
 const MagicLoginToken = require('../models/MagicLoginToken');
 const EmailService = require('../services/EmailService');
 const referralService = require('../services/referralService');
+const clinicService = require('../services/clinicService');
 const coTutorService = require('../services/CoTutorService');
 const { deleteUserEvents } = require('../core/events/eventBus');
 const pushService = require('../services/pushService');
@@ -76,7 +77,7 @@ const magicLimiter = rateLimit({
 
 router.post('/register', async (req, res, next) => {
   try {
-    const { name, email, password, referralCode, inviteToken } = req.body;
+    const { name, email, password, referralCode, inviteToken, clinicSlug, clinicCapturedAt, clinicSrc } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'name, email, and password are required.' });
@@ -104,6 +105,16 @@ router.post('/register', async (req, res, next) => {
       passwordHash,
       referralCode: referralCodeForUser,
     });
+
+    // Atribución de clínica (Kit Veterinario): si entró por un QR/link `/c/:slug`
+    // dentro de la ventana de 7 días, queda vinculado. No bloquea el registro.
+    if (clinicSlug) {
+      try {
+        await clinicService.attributeSignup({ user, clinicSlug, capturedAt: clinicCapturedAt, src: clinicSrc });
+      } catch (err) {
+        console.error('[Auth] clinic attributeSignup failed:', err.message);
+      }
+    }
 
     // Registrar la relación de referido si vino un código (no bloquea el registro).
     if (referralCode) {

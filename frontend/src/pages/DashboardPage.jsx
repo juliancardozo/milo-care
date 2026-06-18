@@ -1,22 +1,24 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { selectCurrentUser } from '../store/authSlice';
+import { selectCurrentUser, selectIsVet } from '../store/authSlice';
 import { getDogs, getFullRemindersList } from '../services/api';
 import OfflineIndicator from '../components/OfflineIndicator';
 import LanguageSwitcher from '../components/LanguageSwitcher';
 import UserMenu from '../components/UserMenu';
 import UpgradeBanner from '../components/UpgradeBanner';
-import AddToWalletButton from '../components/AddToWalletButton';
 import CheckinCard from '../components/checkin/CheckinCard';
-import HealthScoreCard from '../components/HealthScoreCard';
+import DogContextHeader from '../components/DogContextHeader';
 import QuickActionsFab from '../components/QuickActionsFab';
 import BottomNav from '../components/BottomNav';
 import ExploreMenu from '../components/ExploreMenu';
 import LocationConsentModal, { wasLocationPromptDismissed } from '../components/LocationConsentModal';
 import MilestoneCelebration from '../components/MilestoneCelebration';
+import PreventiveCareCard from '../components/PreventiveCareCard';
 import { getMilestones } from '../services/milestoneApi';
 import { useI18n } from '../i18n/I18nProvider';
+import { typeMeta, relativeDueLabel } from '../utils/reminderDisplay';
+import '../styles/dashboard-hero.css';
 
 const BRACHY_HINT = ['bulldog', 'pug', 'boston', 'shih tzu', 'lhasa', 'boxer', 'pekin', 'frances', 'french'];
 
@@ -28,20 +30,10 @@ function springSummerMonth() {
 
 const HEALTH_SECTION_KEYS = ['vaccinations', 'medications', 'appointments', 'symptoms', 'history'];
 
-function DogAvatar({ dog }) {
-  if (dog.photoUrl) {
-    return <img src={dog.photoUrl} alt={dog.name} className="dog-avatar-img" />;
-  }
-  return (
-    <div className="dog-avatar-placeholder">
-      {dog.name.charAt(0).toUpperCase()}
-    </div>
-  );
-}
-
 export default function DashboardPage() {
   const { t } = useI18n();
   const user = useSelector(selectCurrentUser);
+  const isVet = useSelector(selectIsVet);
   const [dogs, setDogs] = useState([]);
   const [activeDogId, setActiveDogId] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -61,13 +53,21 @@ export default function DashboardPage() {
   useEffect(() => {
     getFullRemindersList()
       .then(({ data }) => {
-        setRemindersPreview((data.reminders || []).slice(0, 5));
+        setRemindersPreview(data.reminders || []);
       })
       .catch(() => {
         setRemindersPreview([]);
       });
   }, []);
   const activeDog = dogs.find((d) => d.id === activeDogId);
+
+  // Recordatorios scopeados al perro activo: la portada queda 100% coherente con
+  // el perro elegido. "Ver todo" sigue mostrando todos los perros.
+  const dogReminders = remindersPreview.filter((r) => r.petId === activeDogId);
+  // Separamos lo atrasado (acción urgente) de lo que viene (foco a futuro).
+  const overdueReminders = dogReminders.filter((r) => r.status === 'overdue');
+  const upcomingReminders = dogReminders.filter((r) => r.status !== 'overdue').slice(0, 4);
+  const now = new Date();
   const isPremium = (user?.effectiveTier ?? user?.tier) === 'premium';
 
   // Modal de opt-in de zona: solo si no dio consentimiento, es temporada relevante
@@ -130,102 +130,96 @@ export default function DashboardPage() {
         {dogs.length === 0 ? (
           /* Empty state */
           <div className="dashboard-empty">
-            <div className="dashboard-empty-icon">🐶</div>
-            <h2>{t('dashboard.addFirstDog')}</h2>
-            <p>{t('dashboard.addFirstDogDesc')}</p>
-            <Link to="/dogs/new" className="btn">{t('dashboard.createDogProfile')}</Link>
+            <div className="dashboard-empty-icon">{isVet ? '🏥' : '🐶'}</div>
+            <h2>{isVet ? t('vetPanel.emptyTitle') : t('dashboard.addFirstDog')}</h2>
+            <p>{isVet ? t('vetPanel.emptyDesc') : t('dashboard.addFirstDogDesc')}</p>
+            <div className="dashboard-empty-actions">
+              {isVet && (
+                <Link to="/vet-portal" className="btn">{t('vetPanel.goToPanel')}</Link>
+              )}
+              <Link to="/dogs/new" className={`btn ${isVet ? 'btn-secondary' : ''}`}>
+                {t('dashboard.createDogProfile')}
+              </Link>
+            </div>
           </div>
         ) : (
           <>
-            {/* Check-in diario: ritual de 10 segundos, arriba de todo */}
-            {activeDog && <CheckinCard key={activeDog.id} dog={activeDog} />}
-
-            {/* Health Score: el "por qué volver" — estado de salud + próxima acción */}
-            {activeDog && <HealthScoreCard dogId={activeDog.id} dogName={activeDog.name} />}
+            {/* Hero unificado: switcher (primero) + identidad + Health Score + "⋯" */}
+            <DogContextHeader dogs={dogs} activeDogId={activeDogId} onSelect={setActiveDogId} />
 
             {!isPremium && dogs.length >= 1 && <UpgradeBanner />}
 
-            {/* Dog switcher tabs */}
-            {dogs.length > 1 && (
-              <nav className="dog-tabs">
-                {dogs.map((d) => (
-                  <button
-                    key={d.id}
-                    onClick={() => setActiveDogId(d.id)}
-                    className={`dog-tab ${d.id === activeDogId ? 'active' : ''}`}
-                  >
-                    {d.name}
-                  </button>
-                ))}
-              </nav>
-            )}
-
-            {/* Dog profile card (slim) */}
+            {/* Zona HOY: el ritual de check-in (pregunta si falta; strip slim si ya está) */}
             {activeDog && (
-              <div className="dog-profile-card">
-                <DogAvatar dog={activeDog} />
-                <div className="dog-profile-info">
-                  <h1 className="dog-profile-name">{activeDog.name}</h1>
-                  <p className="dog-profile-meta">{activeDog.breed}</p>
-                  <p className="dog-profile-age">
-                    {activeDog.ageDisplay ?? `${activeDog.ageYears} ${t('dashboard.yearsOld')}`}
-                  </p>
-                  {activeDog.shared && (
-                    <span
-                      className="dog-shared-badge"
-                      style={{
-                        display: 'inline-block', marginTop: 4, padding: '2px 8px',
-                        fontSize: 12, fontWeight: 600, color: '#6d28d9',
-                        background: '#ede9fe', borderRadius: 999,
-                      }}
-                    >
-                      👥 {t('cotutor.sharedBadge', { owner: activeDog.ownerName || '' })}
-                    </span>
-                  )}
-                </div>
-                <Link to={`/dogs/${activeDog.id}/edit`} className="dog-profile-edit">{t('dashboard.editProfile')}</Link>
-                <AddToWalletButton dogId={activeDog.id} className="dog-profile-wallet" />
-              </div>
+              <section className="dash-zone" id="today">
+                <h2 className="dash-section-label">{t('dashboard.zones.today')}</h2>
+                <CheckinCard key={activeDog.id} dog={activeDog} />
+              </section>
             )}
 
-            {/* Zona 2 — "Lo de hoy": el único foco accionable de la pantalla */}
-            <section className="card today-card" id="today">
+            {/* Zona LO QUE VIENE: recordatorios del perro activo */}
+            <section className="dash-zone card today-card" id="upcoming">
               <div className="page-header" style={{ marginBottom: 8 }}>
                 <h2>{t('remindersFullList.previewTitle')}</h2>
                 <Link to="/dashboard/reminders/full">{t('common.viewAll')}</Link>
               </div>
-              {remindersPreview.length === 0 ? (
-                <p className="today-clear">{t('dashboard.todayClear')}</p>
-              ) : (
-                <ul className="record-list">
-                  {remindersPreview.map((r) => (
-                    <li key={r.id} className="record-item">
-                      <div className="record-info">
-                        <h3>{r.title}</h3>
-                        <p>{r.petName}</p>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
+
+              {/* Atrasados: una sola fila de alerta que invita a ponerse al día */}
+              {overdueReminders.length > 0 && (
+                <Link to="/dashboard/reminders/full" className="today-overdue">
+                  <span className="today-overdue-icon" aria-hidden="true">⚠️</span>
+                  <span className="today-overdue-text">
+                    {overdueReminders.length === 1
+                      ? t('dashboard.overdueOne')
+                      : t('dashboard.overdueMany', { n: overdueReminders.length })}
+                  </span>
+                  <span className="today-overdue-cta">{t('dashboard.overdueCta')} →</span>
+                </Link>
               )}
+
+              {upcomingReminders.length > 0 ? (
+                <ul className="today-list">
+                  {upcomingReminders.map((r) => {
+                    const meta = typeMeta(r.sourceType);
+                    return (
+                      <li key={r.id} className="today-item" style={{ '--today-accent': meta.accent }}>
+                        <span className="today-item-icon" aria-hidden="true">{meta.icon}</span>
+                        <div className="today-item-body">
+                          <h3 className="today-item-title">{r.title}</h3>
+                          <p className="today-item-meta">{r.petName}</p>
+                        </div>
+                        <span className="today-item-due">{relativeDueLabel(r.dueAt, now, t)}</span>
+                      </li>
+                    );
+                  })}
+                </ul>
+              ) : overdueReminders.length === 0 ? (
+                <p className="today-clear">{t('dashboard.todayClear')}</p>
+              ) : null}
             </section>
 
-            {/* Zona 3 — Salud: navegación compacta (no compite por atención) */}
-            <section className="health-sections" id="salud">
-              <h2 className="health-sections-title">{t('dashboard.healthRecords')}</h2>
-              <div className="health-pills">
-                {HEALTH_SECTION_KEYS.map((key) => (
-                  <Link key={key} to={`/dogs/${activeDogId}/${key}`} className="health-pill">
-                    <span className="health-pill-emoji" aria-hidden="true">
-                      {key === 'vaccinations' && '💉'}
-                      {key === 'medications' && '💊'}
-                      {key === 'appointments' && '🏥'}
-                      {key === 'symptoms' && '🩺'}
-                      {key === 'history' && '📋'}
-                    </span>
-                    <span className="health-pill-label">{t(`dashboard.sections.${key}.label`)}</span>
-                  </Link>
-                ))}
+            {/* Zona CUIDADO: tip preventivo + accesos a los registros de salud */}
+            <section className="dash-zone dash-care" id="care">
+              <h2 className="dash-section-label">{t('dashboard.zones.care')}</h2>
+              <div className="dash-care-grid">
+                {activeDog && <PreventiveCareCard dogId={activeDog.id} dogName={activeDog.name} />}
+                <div className="health-sections" id="salud">
+                  <h3 className="health-sections-title">{t('dashboard.healthRecords')}</h3>
+                  <div className="health-pills">
+                    {HEALTH_SECTION_KEYS.map((key) => (
+                      <Link key={key} to={`/dogs/${activeDogId}/${key}`} className="health-pill">
+                        <span className="health-pill-emoji" aria-hidden="true">
+                          {key === 'vaccinations' && '💉'}
+                          {key === 'medications' && '💊'}
+                          {key === 'appointments' && '🏥'}
+                          {key === 'symptoms' && '🩺'}
+                          {key === 'history' && '📋'}
+                        </span>
+                        <span className="health-pill-label">{t(`dashboard.sections.${key}.label`)}</span>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
               </div>
             </section>
 

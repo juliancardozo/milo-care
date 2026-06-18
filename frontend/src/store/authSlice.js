@@ -46,4 +46,6 @@ export const selectToken = (state) => state.auth.token;
 export const selectIsAuthenticated = (state) => !!state.auth.token;
 export const selectUserTier = (state) => state.auth.user?.tier;
 export const selectUserRole = (state) => state.auth.user?.role ?? 'user';
-export const selectIsAdmin = (state) => state.auth.user?.role === 'admin';
+// adminVet es superconjunto de admin (todas sus funcionalidades + gestión de clínicas).
+export const selectIsAdmin = (state) => ['admin', 'adminVet'].includes(state.auth.user?.role);
+export const selectIsVet = (state) => state.auth.user?.role === 'vet';

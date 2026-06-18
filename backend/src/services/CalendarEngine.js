@@ -3,6 +3,10 @@
 const { calculate } = require('./RiskProfileCalculator');
 const { getSchedule, buildDueDate } = require('./VaccineRulesEngine');
 const { calculateAgeInMonths, lifeStageFromAgeMonths } = require('./ValidationService');
+const {
+  internalDewormingIntervalDays,
+  nextDewormingDueDate,
+} = require('./preventiveScheduling');
 
 function toPlainDate(date) {
   if (!date) return null;
@@ -71,26 +75,67 @@ function generateVaccineSchedule(dog, existingVaccines = [], riskProfile = { lev
   }));
 }
 
-function generateDewormingSchedule(dog, existingDeworming = [], riskProfile = { level: 'low', factors: [] }) {
-  const cadence = calculate(riskProfile?.lifestyle || {}).dewormingCadenceDays || riskProfile.dewormingCadenceDays || 90;
-  const hasHistory = Array.isArray(existingDeworming) && existingDeworming.length > 0;
-  const dueDate = buildDueDate(new Date(), hasHistory ? cadence : 30);
+function addDays(date, days) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + days);
+  return d;
+}
 
-  return [
-    {
-      id: `deworm-${Math.random().toString(36).slice(2, 8)}`,
-      productName: hasHistory ? 'Desparasitación de seguimiento' : 'Plan inicial de desparasitación',
-      parasiteType: 'internal',
+function generateDewormingSchedule(dog, existingDeworming = [], riskProfile = { level: 'low', factors: [] }) {
+  const ageMonths = calculateAgeInMonths(dog.birthDate || dog.dateOfBirth);
+  const riskLevel = riskProfile.level || 'low';
+  const needsValidation = riskLevel === 'high' || !dog.hasVeterinarian;
+  const history = Array.isArray(existingDeworming) ? existingDeworming : [];
+  const events = [];
+
+  // ── Interno: cadencia por etapa de vida (Fase C) ──────────────────────────
+  const internalDays = internalDewormingIntervalDays(ageMonths, riskLevel);
+  const hasInternalHistory = history.some((d) => ['internal', 'both'].includes(String(d.parasiteType || 'internal')));
+  const internalDue = addDays(new Date(), hasInternalHistory ? internalDays : 30);
+  events.push({
+    id: `deworm-int-${Math.random().toString(36).slice(2, 8)}`,
+    productName: hasInternalHistory ? 'Desparasitación interna de seguimiento' : 'Plan inicial de desparasitación interna',
+    parasiteType: 'internal',
+    dateAdministered: null,
+    nextDueDate: internalDue,
+    nextReminderAt: internalDue,
+    veterinarian: '',
+    notes: `Desparasitación interna sugerida cada ${internalDays} días según etapa de vida y riesgo. Consultá con tu veterinario.`,
+    status: needsValidation ? 'pending_vet_validation' : 'suggested',
+    source: 'suggested',
+    requiresVetValidation: needsValidation,
+  });
+
+  // ── Externo: cadencia por producto cargado (Fase B) ───────────────────────
+  // Si ya hay un antiparasitario externo en el historial, derivamos el próximo
+  // del propio producto (Bravecto 3 meses, pipeta mensual, collar ~7 meses…).
+  const lastExternal = [...history]
+    .filter((d) => ['external', 'both'].includes(String(d.parasiteType)))
+    .sort((a, b) => new Date(b.dateAdministered || 0) - new Date(a.dateAdministered || 0))[0];
+  if (lastExternal) {
+    const next = nextDewormingDueDate({
+      productName: lastExternal.productName,
+      parasiteType: 'external',
+      fromDate: lastExternal.dateAdministered || new Date(),
+      ageMonths,
+      riskLevel,
+    });
+    events.push({
+      id: `deworm-ext-${Math.random().toString(36).slice(2, 8)}`,
+      productName: `Antiparasitario externo de seguimiento (${lastExternal.productName || 'producto'})`,
+      parasiteType: 'external',
       dateAdministered: null,
-      nextDueDate: dueDate,
-      nextReminderAt: dueDate,
+      nextDueDate: next.dueDate,
+      nextReminderAt: next.dueDate,
       veterinarian: '',
-      notes: 'Cadencia de desparasitación sugerida según riesgo de estilo de vida. Consultá con tu veterinario.',
-      status: riskProfile.level === 'high' || !dog.hasVeterinarian ? 'pending_vet_validation' : 'suggested',
+      notes: next.note,
+      status: needsValidation ? 'pending_vet_validation' : 'suggested',
       source: 'suggested',
-      requiresVetValidation: riskProfile.level === 'high' || !dog.hasVeterinarian,
-    },
-  ];
+      requiresVetValidation: needsValidation,
+    });
+  }
+
+  return events;
 }
 
 function generateCheckupSchedule(dog, riskProfile = { level: 'low' }) {

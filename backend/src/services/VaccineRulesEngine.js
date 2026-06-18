@@ -2,6 +2,7 @@
 
 const vaccinationRules = require('../config/vaccinationRules');
 const { calculateAgeInMonths, lifeStageFromAgeMonths } = require('./ValidationService');
+const { nextVaccineDueDate } = require('./preventiveScheduling');
 
 function buildDueDate(baseDate, offsetMonths) {
   const date = new Date(baseDate);
@@ -87,20 +88,35 @@ function getSchedule(country, ageMonths, riskProfile = { level: 'low', factors: 
 }
 
 function getNextDue(vaccineType, lastAdminDate, country = 'AR') {
-  const region = vaccinationRules[country] || vaccinationRules.AR;
-  if (!lastAdminDate) return buildDueDate(new Date(), vaccineType.toLowerCase().includes('rabies') ? region.rabiesRequiredFromMonths : 12);
-  return buildDueDate(lastAdminDate, vaccineType.toLowerCase().includes('rabies') ? 12 : 12);
+  // Deriva la próxima dosis del catálogo clínico (rabia anual, core 3 años, etc.).
+  const from = lastAdminDate ? new Date(lastAdminDate) : new Date();
+  const suggestion = nextVaccineDueDate({ vaccineName: vaccineType, fromDate: from, country });
+  if (suggestion) return suggestion.dueDate;
+  // Fallback para vacunas no catalogadas: refuerzo anual.
+  return buildDueDate(from, 12);
 }
 
 function validateMandates(country, vaccineType) {
-  const region = vaccinationRules[country] || vaccinationRules.AR;
+  const region = vaccinationRules[String(country || 'AR').toUpperCase()] || vaccinationRules.AR;
   const normalized = String(vaccineType || '').trim().toLowerCase();
-  const isMandatory = normalized.includes('rabies');
+  const isRabies = normalized.includes('rabia') || normalized.includes('rabies') || normalized.includes('rabica');
+
+  if (!isRabies) {
+    return {
+      isMandatory: false,
+      explanation: 'Esta vacuna es recomendación profesional/WSAVA basada en riesgo, no obligatoria por ley. Consultá con tu veterinario de confianza.',
+    };
+  }
+
+  // Rabia: el matiz regulatorio depende del país.
+  const rabies = region.rabies || {};
   return {
-    isMandatory,
-    explanation: isMandatory
-      ? `La vacuna antirrábica es obligatoria en ${country || 'AR/UY'} a partir de los ${region.rabiesRequiredFromMonths} meses.`
-      : 'Esta vacuna es opcional o basada en riesgo. Consultá con tu veterinario de confianza.',
+    isMandatory: Boolean(rabies.mandatory),
+    explanation: rabies.note
+      || `Antirrábica: aplicable desde los ${region.rabiesRequiredFromMonths} meses.`,
+    authority: rabies.authority || null,
+    law: rabies.law || null,
+    reason: rabies.reason || null,
   };
 }
 

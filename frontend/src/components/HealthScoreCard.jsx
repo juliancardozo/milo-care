@@ -27,11 +27,12 @@ function ScoreRing({ score, color }) {
 
 const DOT = { good: '#22c55e', warn: '#f59e0b', bad: '#ef4444' };
 
-export default function HealthScoreCard({ dogId, dogName }) {
+export default function HealthScoreCard({ dogId, dogName, variant = 'card' }) {
   const { t } = useI18n();
   const [data, setData] = useState(null);
   const [open, setOpen] = useState(false);
   const [failed, setFailed] = useState(false);
+  const inline = variant === 'inline';
 
   useEffect(() => {
     if (!dogId) return;
@@ -48,7 +49,7 @@ export default function HealthScoreCard({ dogId, dogName }) {
 
   if (!data) {
     return (
-      <section className="hs-card hs-card-loading" aria-busy="true">
+      <section className={`hs-card hs-card-loading ${inline ? 'hs-inline' : ''}`} aria-busy="true">
         <div className="hs-ring-skeleton" />
         <div className="hs-skeleton-lines">
           <span /><span />
@@ -64,11 +65,11 @@ export default function HealthScoreCard({ dogId, dogName }) {
     .sort((a, b) => (b.max - b.points) - (a.max - a.points))[0];
 
   return (
-    <section className="hs-card" style={{ '--hs-color': grade.color }}>
+    <section className={`hs-card ${inline ? 'hs-inline' : ''}`} style={{ '--hs-color': grade.color }}>
       <div className="hs-top">
         <ScoreRing score={score} color={grade.color} />
         <div className="hs-summary">
-          <span className="hs-eyebrow">{t('healthScore.title')}</span>
+          <span className="hs-eyebrow">{dogName ? t('healthScore.titleWithDog', { dog: dogName }) : t('healthScore.title')}</span>
           <strong className="hs-grade" style={{ color: grade.color }}>{grade.label}</strong>
           {nextStep ? (
             <p className="hs-next">

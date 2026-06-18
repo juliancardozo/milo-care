@@ -1,0 +1,78 @@
+/* ── Health history page ──────────────────────────────────── */
+.hh-page { max-width: 760px; }
+
+.hh-header { margin-bottom: 16px; }
+.hh-header h1 { font-size: 1.5rem; font-weight: 800; }
+.hh-subtitle { color: var(--color-muted); font-size: .92rem; margin-top: 4px; }
+
+/* Filters (also serve as counts) */
+.hh-filters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.hh-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 999px; padding: 7px 13px; font-size: .85rem; font-weight: 600;
+  color: var(--color-text); cursor: pointer; transition: all .15s;
+}
+.hh-chip:hover { border-color: var(--color-primary); }
+.hh-chip-on { background: var(--color-primary); border-color: var(--color-primary); color: #fff; }
+.hh-chip-count {
+  font-size: .72rem; font-weight: 700; background: var(--color-bg); color: var(--color-muted);
+  border-radius: 999px; padding: 1px 7px; min-width: 18px; text-align: center;
+}
+.hh-chip-on .hh-chip-count { background: rgba(255,255,255,.25); color: #fff; }
+
+/* Sections */
+.hh-section { margin-bottom: 14px; }
+.hh-section-title { font-size: 1.05rem; font-weight: 700; color: var(--color-text); display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.hh-subhead {
+  font-size: .74rem; font-weight: 700; color: var(--color-muted);
+  text-transform: uppercase; letter-spacing: .04em; margin: 14px 0 6px;
+}
+.hh-subhead:first-of-type { margin-top: 0; }
+
+/* Items */
+.hh-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.hh-item {
+  display: flex; align-items: center; gap: 12px;
+  border: 1px solid var(--color-border); border-left: 4px solid var(--hh-accent, var(--color-primary));
+  border-radius: var(--radius); padding: 10px 12px;
+}
+.hh-item-icon {
+  font-size: 1.05rem; width: 34px; height: 34px; flex-shrink: 0;
+  display: grid; place-items: center; background: var(--color-bg); border-radius: 9px;
+}
+.hh-item-body { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.hh-item-title { font-weight: 600; font-size: .95rem; color: var(--color-text); word-break: break-word; }
+.hh-item-meta { font-size: .82rem; color: var(--color-muted); }
+.hh-item-right { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0; }
+.hh-item-date { font-size: .78rem; color: var(--color-muted); white-space: nowrap; }
+
+/* Badges */
+.hh-badge { font-size: .68rem; font-weight: 700; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+.hh-badge-done { background: #d1fae5; color: #065f46; }
+.hh-badge-info { background: #dbeafe; color: #1e40af; }
+.hh-badge-warn { background: #fef3c7; color: #92400e; }
+.hh-badge-danger { background: #fee2e2; color: #991b1b; }
+.hh-badge-muted { background: #f3f4f6; color: #6b7280; }
+
+/* Empty */
+.hh-empty { text-align: center; padding: 48px 16px; color: var(--color-muted); }
+.hh-empty-icon { font-size: 2.6rem; display: block; margin-bottom: 10px; }
+.hh-empty-title { font-size: 1.05rem; font-weight: 600; color: var(--color-text); }
+
+/* Skeleton */
+.hh-skeletons { display: flex; flex-direction: column; gap: 14px; }
+.hh-skel-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px; }
+.hh-skel-title { display: block; width: 40%; height: 16px; border-radius: 6px; margin-bottom: 12px; }
+.hh-skel-row { display: flex; gap: 12px; padding: 8px 0; }
+.hh-skel-row span:first-child { width: 60%; height: 12px; }
+.hh-skel-row span:last-child { width: 20%; height: 12px; margin-left: auto; }
+.hh-skel-title, .hh-skel-row span {
+  background: linear-gradient(90deg, #eef1f5 25%, #f7f9fb 50%, #eef1f5 75%);
+  background-size: 200% 100%; animation: hh-shimmer 1.2s infinite; border-radius: 6px; display: block;
+}
+@keyframes hh-shimmer { to { background-position: -200% 0; } }
+
+@media (max-width: 560px) {
+  .hh-item-right { align-items: flex-start; }
+}

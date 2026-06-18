@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useSelector } from 'react-redux';
+import { selectIsVet } from '../store/authSlice';
 import { useI18n } from '../i18n/I18nProvider';
 import { generateWalletPass } from '../services/walletApi';
 import { useInstallPrompt } from '../utils/pwaInstall';
@@ -17,6 +19,7 @@ export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
   const [walletLoading, setWalletLoading] = useState(false);
   const [iosHint, setIosHint] = useState(false);
   const ref = useRef(null);
+  const isVet = useSelector(selectIsVet);
   const { installable, installed, ios, promptInstall } = useInstallPrompt();
   const showInstall = !installed && (installable || ios);
 
@@ -51,6 +54,7 @@ export default function ExploreMenu({ dogId, dogName = '', isPremium }) {
   }
 
   const items = [
+    isVet && { to: '/vet-portal', emoji: '🏥', tone: 'blue', title: t('explore.vetPanel.title'), sub: t('explore.vetPanel.sub'), badge: t('explore.new') },
     dogId && { to: `/dogs/${dogId}/cards`, emoji: '🎨', tone: 'violet', title: t('explore.cards.title'), sub: t('explore.cards.sub'), badge: t('explore.new') },
     dogId && { to: `/dogs/${dogId}/album`, emoji: '📸', tone: 'amber', title: t('explore.album.title'), sub: t('explore.album.sub') },
     dogId && { to: `/dogs/${dogId}/pdf-export`, emoji: '📄', tone: 'teal', title: t('explore.pdf.title'), sub: t('explore.pdf.sub') },

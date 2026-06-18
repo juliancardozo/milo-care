@@ -77,6 +77,7 @@ function collectAppointmentReminders(dog, now) {
 function buildEligibleReminderSet({ user, windowDays, includeOverdue = true, now = getUTCNow() }) {
   const dogs = user?.dogs || [];
   const windowEnd = getWindowEnd(windowDays, now);
+  const dismissed = new Set(user?.dismissedReminderKeys || []);
 
   const allReminders = dogs.flatMap((dog) => [
     ...collectVaccinationReminders(dog, now),
@@ -89,6 +90,7 @@ function buildEligibleReminderSet({ user, windowDays, includeOverdue = true, now
   const seen = new Set();
   for (const item of allReminders) {
     if (seen.has(item.dedupeKey)) continue;
+    if (dismissed.has(item.dedupeKey)) continue; // descartado por el usuario
     seen.add(item.dedupeKey);
     deduped.push(item);
   }

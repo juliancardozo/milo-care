@@ -1,0 +1,113 @@
+/* ── Dashboard refactor: hero unificado + zonas ─────────────────────────────── */
+
+/* Rótulos de sección (calma + jerarquía) */
+.dash-section-label {
+  font-size: .74rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--color-muted); margin: 0 0 10px 2px;
+}
+.dash-zone { margin-bottom: 22px; }
+
+/* ── Hero del perro ─────────────────────────────────────────────────────────── */
+.dog-hero {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  padding: 14px 18px 18px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+
+/* Switcher (primero) */
+.dog-hero-switcher {
+  display: flex; gap: 8px; overflow-x: auto; padding-bottom: 10px; margin-bottom: 12px;
+  border-bottom: 1px solid var(--color-border);
+  scrollbar-width: none;
+}
+.dog-hero-switcher::-webkit-scrollbar { display: none; }
+.dog-chip {
+  display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0;
+  padding: 5px 13px 5px 6px; border-radius: 999px;
+  border: 1.5px solid var(--color-border); background: transparent;
+  color: var(--color-muted); font-weight: 600; font-size: .88rem; cursor: pointer;
+  transition: all .15s;
+}
+.dog-chip:hover { border-color: var(--color-primary); color: var(--color-text); }
+.dog-chip.active { border-color: var(--color-primary); background: rgba(79,142,247,.10); color: var(--color-primary-dark); }
+.dog-avatar-img.dog-chip-avatar, .dog-avatar-placeholder.dog-chip-avatar {
+  width: 28px; height: 28px; border-width: 2px; font-size: .85rem;
+}
+
+/* Cuerpo: identidad + health score lado a lado */
+.dog-hero-main { display: flex; align-items: center; gap: 18px; }
+.dog-hero-id { display: flex; align-items: center; gap: 14px; flex: 1; min-width: 0; position: relative; }
+.dog-avatar-img.dog-hero-avatar, .dog-avatar-placeholder.dog-hero-avatar {
+  width: 60px; height: 60px; border-width: 3px; font-size: 1.5rem;
+}
+.dog-hero-id-text { min-width: 0; }
+.dog-hero-name { font-size: 1.45rem; font-weight: 800; line-height: 1.1; margin: 0; color: var(--color-text); }
+.dog-hero-meta { font-size: .9rem; color: var(--color-muted); margin: 2px 0 0; }
+.dog-hero-shared {
+  display: inline-block; margin-top: 5px; padding: 2px 8px; font-size: .72rem; font-weight: 600;
+  color: #6d28d9; background: #ede9fe; border-radius: 999px;
+}
+
+/* Menú "⋯" */
+.dog-hero-kebab { margin-left: auto; position: relative; align-self: flex-start; }
+.dog-hero-kebab-btn {
+  width: 36px; height: 36px; border-radius: 10px; border: 1px solid var(--color-border);
+  background: var(--color-bg); color: var(--color-muted); font-size: 1.25rem; line-height: 1;
+  cursor: pointer; transition: all .15s;
+}
+.dog-hero-kebab-btn:hover { border-color: var(--color-primary); color: var(--color-text); }
+.dog-hero-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 30;
+  min-width: 210px; background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 12px; box-shadow: var(--shadow-lg); padding: 6px; display: flex; flex-direction: column; gap: 2px;
+}
+.dog-hero-menu-item {
+  display: flex; align-items: center; gap: 9px; padding: 9px 11px; border-radius: 8px;
+  font-size: .9rem; font-weight: 600; color: var(--color-text); text-decoration: none;
+}
+.dog-hero-menu-item:hover { background: var(--color-bg); text-decoration: none; }
+.dog-hero-menu-wallet { padding: 4px; }
+.dog-hero-wallet .btn {
+  width: 100%; display: flex; align-items: center; justify-content: center; gap: 7px;
+  background: var(--color-primary); color: #fff; border: none; border-radius: 8px;
+  padding: 9px 11px; font-size: .9rem; font-weight: 700; cursor: pointer;
+}
+.dog-hero-wallet .btn:hover { background: var(--color-primary-dark); }
+.dog-hero-wallet .form-error { font-size: .75rem; margin: 4px 0 0; }
+
+/* Health Score inline (sin chrome de card; vive dentro del hero) */
+.hs-card.hs-inline {
+  background: transparent; border: none; box-shadow: none; padding: 0; margin: 0;
+  flex-shrink: 0; max-width: 300px;
+}
+.hs-inline .hs-top { gap: 12px; }
+.hs-inline .hs-ring { width: 88px; height: 88px; }
+.hs-inline .hs-eyebrow { font-size: .72rem; }
+.hs-inline .hs-grade { font-size: 1.05rem; }
+.hs-inline .hs-next { font-size: .82rem; }
+
+/* ── Zona CUIDADO (tip + registros, lado a lado en desktop) ──────────────────── */
+.dash-care-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 14px; align-items: start; }
+.dash-care-grid .preventive-card,
+.dash-care-grid .health-sections { margin: 0; }
+
+/* ── Check-in slim (estado respondido) ──────────────────────────────────────── */
+.checkin-card.checkin-slim { padding: 12px 16px; }
+.checkin-slim-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.checkin-slim-icon { font-size: 1rem; }
+.checkin-slim-msg { font-size: .95rem; font-weight: 600; color: var(--color-text); margin: 0; flex: 1; min-width: 0; }
+.checkin-slim .checkin-trends-toggle { margin-left: auto; }
+
+/* Empty state con varias acciones (ej. vet sin perros) */
+.dashboard-empty-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+/* ── Responsive ─────────────────────────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .dog-hero-main { flex-direction: column; align-items: stretch; gap: 14px; }
+  .hs-card.hs-inline { max-width: none; }
+  .hs-inline .hs-top { justify-content: flex-start; }
+  .dash-care-grid { grid-template-columns: 1fr; }
+}

@@ -4,6 +4,8 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const DogAccess = require('../services/DogAccess');
 const notificationTracking = require('../services/notificationTracking');
+const { nextVaccineDueDate } = require('../services/preventiveScheduling');
+const { calculateAgeInMonths } = require('../services/ValidationService');
 
 const router = express.Router({ mergeParams: true });
 
@@ -57,8 +59,27 @@ router.post('/', authenticate, async (req, res, next) => {
       return res.status(409).json({ code: 'DUPLICATE_VACCINATION', message: 'A vaccination with this name and date already exists.' });
     }
 
+    // Cuidado preventivo proactivo: si el usuario no indicó la próxima dosis,
+    // la derivamos del catálogo clínico (rabia anual, core 3 años, lepto anual…),
+    // según país y etapa de vida. Así no se procrastina el refuerzo.
+    let effectiveNextDue = nextDueDate ? new Date(nextDueDate) : null;
+    let autoNote = '';
+    if (!effectiveNextDue) {
+      const ageMonths = calculateAgeInMonths(dog.birthDate || dog.dateOfBirth);
+      const suggestion = nextVaccineDueDate({
+        vaccineName,
+        fromDate: adminDate,
+        country: dog.countryProfile || 'AR',
+        ageMonths,
+      });
+      if (suggestion) {
+        effectiveNextDue = suggestion.dueDate;
+        autoNote = suggestion.note;
+      }
+    }
+
     const windowDays = user.notificationPreferences?.vaccinationWindowDays || 7;
-    const nextReminderAt = nextDueDate ? computeVaccinationReminder(new Date(nextDueDate), windowDays) : null;
+    const nextReminderAt = effectiveNextDue ? computeVaccinationReminder(effectiveNextDue, windowDays) : null;
 
     dog.vaccinations.push({
       vaccineName,
@@ -67,8 +88,8 @@ router.post('/', authenticate, async (req, res, next) => {
       antigenGroup: antigenGroup || '',
       administrationRoute: administrationRoute || '',
       dateAdministered: adminDate,
-      nextDueDate: nextDueDate ? new Date(nextDueDate) : null,
-      notes: notes || '',
+      nextDueDate: effectiveNextDue,
+      notes: notes || autoNote || '',
       lotNumber: lotNumber || '',
       veterinarian: veterinarian || '',
       nextReminderAt,

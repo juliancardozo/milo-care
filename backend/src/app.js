@@ -34,6 +34,9 @@ const notificationsRoutes = require('./routes/notifications');
 const healthScoreRoutes = require('./routes/healthScore');
 const { shareRouter: vetShareRouter, publicVetRouter } = require('./routes/vetShare');
 const { manageRouter: cotutoresManageRouter, acceptRouter: cotutoresAcceptRouter } = require('./routes/cotutores');
+const clinicsAdminRoutes = require('./routes/clinics');
+const vetPortalRoutes = require('./routes/vetPortal');
+const publicClinicsRoutes = require('./routes/publicClinics');
 
 const app = express();
 
@@ -67,12 +70,15 @@ app.use('/api/onboarding', onboardingRoutes);
 app.use('/api', calendarRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/vaccines', vaccinesRoutes);
+app.use('/api/admin/clinics', clinicsAdminRoutes); // antes de /api/admin (prefijo más específico)
 app.use('/api/admin', adminRoutes);
+app.use('/api/vet-portal', vetPortalRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/referrals', referralsRoutes);
 app.use('/api/checkins', publicCheckinsRouter);
+app.use('/api/public/clinics', publicClinicsRoutes); // antes de /api/public (prefijo más específico)
 app.use('/api/public', publicDogsRoutes);
 app.use('/api', landingRoutes);
 

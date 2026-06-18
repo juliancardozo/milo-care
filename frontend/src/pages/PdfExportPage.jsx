@@ -34,17 +34,20 @@ export default function PdfExportPage() {
   const previewWrapRef = useRef(null);
   const [scale, setScale] = useState(1);
   const [scaledHeight, setScaledHeight] = useState(null);
+  const [zoom, setZoom] = useState('fit'); // 'fit' | 'full'
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [dog, setDog] = useState(null);
   const [checkins, setCheckins] = useState([]);
 
-  const symptoms = useSelector(selectSymptoms);
-  const consultations = useSelector(selectConsultations);
-  const vaccinations = useSelector(selectVaccinations);
-  const medications = useSelector(selectMedications);
-  const appointments = useSelector(selectAppointments);
+  // Blindaje: el store podría tener una forma inesperada si otra página la dejó.
+  const toArr = (v) => (Array.isArray(v) ? v : []);
+  const symptoms = toArr(useSelector(selectSymptoms));
+  const consultations = toArr(useSelector(selectConsultations));
+  const vaccinations = toArr(useSelector(selectVaccinations));
+  const medications = toArr(useSelector(selectMedications));
+  const appointments = toArr(useSelector(selectAppointments));
 
   useEffect(() => {
     async function loadPdfData() {
@@ -64,13 +67,19 @@ export default function PdfExportPage() {
           getCheckinHistory(dogId).catch(() => ({ data: { checkins: [] } })),
         ]);
 
+        // Los endpoints devuelven el array envuelto ({ medications: [...] }),
+        // salvo consultations que es array directo. Extraemos siempre un array
+        // para que el store nunca guarde un objeto (rompería .filter/.map).
+        const arr = (v) => (Array.isArray(v) ? v : []);
+        const pick = (data, key) => arr(data?.[key] ?? data);
+
         setDog(dogRes.data || null);
-        setCheckins(checkinsRes.data?.checkins || []);
-        dispatch(setSymptoms(symptomsRes.data || []));
-        dispatch(setConsultations(consultationsRes.data || []));
-        dispatch(setVaccinations(vaccinationsRes.data || []));
-        dispatch(setMedications(medicationsRes.data || []));
-        dispatch(setAppointments(appointmentsRes.data || []));
+        setCheckins(pick(checkinsRes.data, 'checkins'));
+        dispatch(setSymptoms(pick(symptomsRes.data, 'symptoms')));
+        dispatch(setConsultations(pick(consultationsRes.data, 'consultations')));
+        dispatch(setVaccinations(pick(vaccinationsRes.data, 'vaccinations')));
+        dispatch(setMedications(pick(medicationsRes.data, 'medications')));
+        dispatch(setAppointments(pick(appointmentsRes.data, 'appointments')));
       } catch (err) {
         setError(err.response?.data?.message || err.message || 'Error loading PDF data');
       } finally {
@@ -83,13 +92,14 @@ export default function PdfExportPage() {
 
   // El template se renderiza a ancho A4 fijo (794px) para que el PDF salga
   // siempre consistente; el preview se escala para entrar en cualquier viewport.
+  // En modo 'full' se muestra a tamaño real (scroll horizontal) para leerlo en mobile.
   useEffect(() => {
     const TEMPLATE_W = 794;
     function recompute() {
       const wrap = previewWrapRef.current;
       const el = templateRef.current;
       if (!wrap || !el) return;
-      const s = Math.min(1, wrap.clientWidth / TEMPLATE_W);
+      const s = zoom === 'full' ? 1 : Math.min(1, wrap.clientWidth / TEMPLATE_W);
       setScale(s);
       setScaledHeight(el.offsetHeight * s);
     }
@@ -97,7 +107,7 @@ export default function PdfExportPage() {
     const tid = setTimeout(recompute, 300);
     window.addEventListener('resize', recompute);
     return () => { clearTimeout(tid); window.removeEventListener('resize', recompute); };
-  }, [loading, dog, symptoms, consultations, vaccinations, medications, appointments, checkins]);
+  }, [zoom, loading, dog, symptoms, consultations, vaccinations, medications, appointments, checkins]);
 
   async function handleGeneratePdf() {
     if (!templateRef.current) return;
@@ -144,46 +154,114 @@ export default function PdfExportPage() {
     }
   }
 
+  const activeMeds = medications.filter((m) => m.status === 'active').length;
+  const summaryItems = [
+    { icon: '📋', label: t('pdf.includes.profile'), count: dog ? 1 : 0, always: true },
+    { icon: '💉', label: t('pdf.includes.vaccinations'), count: vaccinations.length },
+    { icon: '💊', label: t('pdf.includes.medications'), count: activeMeds },
+    { icon: '🏥', label: t('pdf.includes.symptoms'), count: symptoms.length },
+    { icon: '👨‍⚕️', label: t('pdf.includes.consultations'), count: consultations.length },
+    { icon: '📅', label: t('pdf.includes.appointments'), count: appointments.length },
+    { icon: '🐾', label: t('pdf.includes.checkins'), count: checkins.length },
+  ];
+
+  const downloadLabel = loading
+    ? (t('pdf.generating') || 'Generando…')
+    : `📥 ${t('pdf.download') || 'Descargar PDF'}`;
+
   return (
     <div className="pdf-export-page">
       <BackLink to={`/dogs/${dogId}`} label={t('common.backToDog') || 'Back to Dog'} />
 
       <header className="pdfx-header">
-        <h1>{t('pdf.title') || 'Resumen de salud'}</h1>
-        <div className="pdfx-actions">
+        <div className="pdfx-heading">
+          <h1>{t('pdf.title') || 'Resumen de salud'}</h1>
+          <p className="pdfx-subtitle">{t('pdf.pageSubtitle')}</p>
+        </div>
+        <div className="pdfx-actions pdfx-actions-desktop">
           <Link to={`/dogs/${dogId}/share`} className="pdfx-btn-ghost">
             🏥 {t('explore.vetShare.title')}
           </Link>
           <button className="pdfx-btn" onClick={handleGeneratePdf} disabled={loading}>
-            {loading ? (t('pdf.generating') || 'Generando…') : `📥 ${t('pdf.download') || 'Descargar PDF'}`}
+            {downloadLabel}
           </button>
         </div>
       </header>
 
       {error && <div className="alert alert-danger">{error}</div>}
 
-      {!error && loading && <div className="loading">{t('common.loading') || 'Loading...'}</div>}
+      {loading ? (
+        <div className="pdfx-skeleton">
+          <div className="pdfx-skeleton-summary" />
+          <div className="pdfx-skeleton-page" />
+        </div>
+      ) : (
+        <>
+          {/* Resumen de lo que incluye el PDF */}
+          <section className="pdfx-summary card">
+            <h2 className="pdfx-summary-title">{t('pdf.includesTitle')}</h2>
+            <div className="pdfx-chips">
+              {summaryItems
+                .filter((it) => it.always || it.count > 0)
+                .map((it) => (
+                  <span key={it.label} className="pdfx-chip">
+                    <span className="pdfx-chip-icon" aria-hidden="true">{it.icon}</span>
+                    {it.label}
+                    {!it.always && <span className="pdfx-chip-count">{it.count}</span>}
+                  </span>
+                ))}
+            </div>
+          </section>
 
-      {!loading ? (
-        <div className="pdf-preview">
-          <div className="pdf-measure" ref={previewWrapRef}>
-            <div className="pdf-scaler" style={{ height: scaledHeight ?? undefined }}>
-              <div className="pdf-scaler-inner" style={{ transform: `scale(${scale})` }}>
-                <PdfTemplate
-                  ref={templateRef}
-                  dog={dog}
-                  symptoms={symptoms}
-                  consultations={consultations}
-                  vaccinations={vaccinations}
-                  medications={medications}
-                  appointments={appointments}
-                  checkins={checkins}
-                />
+          {/* Vista previa */}
+          <section className="pdf-preview">
+            <div className="pdfx-preview-bar">
+              <span className="pdfx-preview-label">{t('pdf.previewLabel')}</span>
+              <div className="pdfx-zoom" role="group" aria-label={t('pdf.zoom.label')}>
+                <button
+                  type="button"
+                  className={`pdfx-zoom-btn ${zoom === 'fit' ? 'pdfx-zoom-on' : ''}`}
+                  onClick={() => setZoom('fit')}
+                >
+                  {t('pdf.zoom.fit')}
+                </button>
+                <button
+                  type="button"
+                  className={`pdfx-zoom-btn ${zoom === 'full' ? 'pdfx-zoom-on' : ''}`}
+                  onClick={() => setZoom('full')}
+                >
+                  {t('pdf.zoom.full')}
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+
+            <div className={`pdf-measure ${zoom === 'full' ? 'pdf-measure-scroll' : ''}`} ref={previewWrapRef}>
+              <div className="pdf-scaler" style={{ height: scaledHeight ?? undefined }}>
+                <div className="pdf-scaler-inner" style={{ transform: `scale(${scale})` }}>
+                  <PdfTemplate
+                    ref={templateRef}
+                    dog={dog}
+                    symptoms={symptoms}
+                    consultations={consultations}
+                    vaccinations={vaccinations}
+                    medications={medications}
+                    appointments={appointments}
+                    checkins={checkins}
+                  />
+                </div>
+              </div>
+            </div>
+          </section>
+        </>
+      )}
+
+      {/* Barra de acción fija (mobile): el CTA siempre a mano */}
+      <div className="pdfx-actionbar-mobile">
+        <Link to={`/dogs/${dogId}/share`} className="pdfx-btn-ghost">🏥</Link>
+        <button className="pdfx-btn" onClick={handleGeneratePdf} disabled={loading}>
+          {downloadLabel}
+        </button>
+      </div>
     </div>
   );
 }

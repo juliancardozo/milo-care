@@ -1,0 +1,226 @@
+/* ── Kit de Activación Veterinaria ─────────────────────────────────────────── */
+
+/* Landing /c/:slug (co-branding) */
+.cl-landing { max-width: 480px; display: grid; place-items: center; min-height: 80vh; }
+.cl-card {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-top: 4px solid var(--color-primary); border-radius: 16px;
+  padding: 32px 24px; text-align: center; box-shadow: var(--shadow-lg); width: 100%;
+}
+.cl-skeleton { min-height: 320px; }
+.cl-logo { max-height: 64px; max-width: 180px; object-fit: contain; margin-bottom: 8px; }
+.cl-paw { font-size: 2.6rem; display: block; margin-bottom: 6px; }
+.cl-kicker { font-size: .8rem; font-weight: 700; color: var(--color-primary); text-transform: uppercase; letter-spacing: .05em; }
+.cl-title { font-size: 1.5rem; font-weight: 800; line-height: 1.2; margin: 6px 0 10px; }
+.cl-sub { color: var(--color-muted); font-size: .95rem; }
+.cl-bullets { list-style: none; text-align: left; margin: 18px auto; max-width: 320px; display: flex; flex-direction: column; gap: 8px; }
+.cl-bullets li { font-size: .92rem; }
+.cl-cta {
+  width: 100%; background: var(--color-primary); color: #fff; border: none;
+  border-radius: 12px; padding: 14px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.cl-cta:hover { background: var(--color-primary-dark); }
+.cl-disclaimer { font-size: .78rem; color: var(--color-muted); margin-top: 12px; }
+
+/* Vet panel — dashboard a pantalla completa, sin scroll (desktop) */
+.vp-shell {
+  height: 100vh; box-sizing: border-box; max-width: 1120px; margin: 0 auto;
+  padding: 18px 20px; display: grid; grid-template-rows: auto 1fr; gap: 14px; overflow: hidden;
+}
+.vp-skeleton { min-height: 60vh; border-radius: 12px; background: var(--color-surface); }
+.vp-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.vp-back { display: inline-block; font-size: .82rem; font-weight: 600; color: var(--color-muted); text-decoration: none; margin-bottom: 4px; }
+.vp-back:hover { color: var(--color-primary); }
+.vp-clinic { font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
+.vp-period { color: var(--color-muted); font-size: .85rem; text-transform: capitalize; }
+.vp-window { font-size: .74rem; font-weight: 700; color: var(--color-muted); background: var(--color-bg); border-radius: 999px; padding: 4px 10px; white-space: nowrap; }
+
+.vp-grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 16px; min-height: 0; }
+.vp-main { display: grid; grid-template-rows: auto auto auto 1fr; gap: 12px; min-height: 0; }
+.vp-side { display: flex; flex-direction: column; gap: 12px; min-height: 0; }
+.vp-side .card, .vp-main .card { margin: 0; }
+
+.vp-hero {
+  display: flex; align-items: center; gap: 16px;
+  background: linear-gradient(135deg, #eef6ff 0%, #f3fdf8 100%);
+  border: 1px solid var(--color-border); border-radius: 16px; padding: 14px 18px;
+}
+.vp-hero-num { font-size: 2.4rem; font-weight: 800; color: var(--color-primary); line-height: 1; }
+.vp-hero-text { color: var(--color-text); font-size: .92rem; font-weight: 600; }
+
+.vp-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.vp-stat { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 12px 8px; text-align: center; }
+.vp-stat-num { display: block; font-size: 1.6rem; font-weight: 800; color: var(--color-text); line-height: 1; }
+.vp-stat-label { font-size: .72rem; color: var(--color-muted); text-transform: uppercase; letter-spacing: .03em; }
+
+.vp-section { margin-bottom: 0; }
+.vp-section-title { font-size: .98rem; font-weight: 700; margin-bottom: 10px; }
+.vp-qr-hint { color: var(--color-muted); font-size: .88rem; margin: -4px 0 16px; }
+.vp-empty { color: var(--color-muted); font-size: .9rem; }
+
+/* La lista de vencimientos absorbe el alto sobrante y scrollea internamente */
+.vp-weekly { padding-top: 14px; padding-bottom: 14px; }
+.vp-due { display: flex; flex-direction: column; min-height: 0; }
+.vp-due .vp-due-list { overflow-y: auto; flex: 1; min-height: 0; padding-right: 2px; }
+.vp-qr-card { display: flex; flex-direction: column; align-items: center; }
+
+/* Weekly bars */
+.vp-bars { display: flex; align-items: flex-end; justify-content: space-around; gap: 12px; height: 92px; }
+.vp-bar-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; height: 100%; justify-content: flex-end; }
+.vp-bar-value { font-size: .8rem; font-weight: 700; color: var(--color-text); }
+.vp-bar-track { width: 70%; max-width: 48px; flex: 1; display: flex; align-items: flex-end; background: var(--color-bg); border-radius: 6px 6px 0 0; }
+.vp-bar-fill { width: 100%; background: var(--color-primary); border-radius: 6px 6px 0 0; min-height: 3px; transition: height .3s; }
+.vp-bar-label { font-size: .76rem; color: var(--color-muted); }
+
+/* Due list */
+.vp-due-list { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.vp-due-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); padding: 10px 12px; }
+.vp-due-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.vp-due-dog { font-weight: 600; font-size: .95rem; }
+.vp-due-meta { font-size: .82rem; color: var(--color-muted); }
+.vp-due-badge { font-size: .72rem; font-weight: 700; border-radius: 999px; padding: 4px 10px; background: #fef3c7; color: #92400e; white-space: nowrap; }
+.vp-due-overdue { background: #fee2e2; color: #991b1b; }
+
+/* Share (columna lateral) */
+.vp-share { display: flex; gap: 10px; }
+.vp-share-btn { flex: 1; background: var(--color-primary); color: #fff; border: none; border-radius: 12px; padding: 12px 14px; font-size: .9rem; font-weight: 700; cursor: pointer; }
+.vp-share-btn:hover { background: var(--color-primary-dark); }
+.vp-share-wa { background: #25d366; color: #fff; border: none; border-radius: 12px; padding: 12px 18px; font-weight: 700; cursor: pointer; }
+.vp-link { flex-basis: 100%; font-size: .8rem; color: var(--color-muted); word-break: break-all; }
+.vp-embedded { margin-top: 12px; }
+
+/* Vet self-register */
+.vr-page { max-width: 460px; }
+.vr-sub { color: var(--color-muted); font-size: .92rem; margin-bottom: 16px; }
+
+/* Admin clinics */
+.ac-page { max-width: 820px; }
+.ac-form-card { margin-bottom: 14px; }
+.ac-form { display: flex; flex-direction: column; gap: 12px; margin-top: 12px; }
+.ac-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
+.ac-grid label { display: flex; flex-direction: column; gap: 4px; font-size: .82rem; font-weight: 600; color: var(--color-muted); }
+.ac-grid input, .ac-grid select { padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 8px; font-size: .9rem; }
+.ac-section-hint { font-size: .82rem; color: var(--color-muted); margin-top: 4px; }
+.ac-created { margin-top: 12px; font-size: .88rem; }
+.ac-created code, .ac-item-meta code { background: var(--color-bg); padding: 2px 6px; border-radius: 6px; font-size: .82rem; }
+.ac-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.ac-item { display: flex; align-items: center; justify-content: space-between; gap: 12px; border: 1px solid var(--color-border); border-radius: var(--radius); padding: 10px 12px; }
+.ac-item-body { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.ac-item-name { font-weight: 700; }
+.ac-item-meta { font-size: .82rem; color: var(--color-muted); word-break: break-word; }
+
+/* ── QR card (mostrador / carnet) ──────────────────────────────────────────── */
+.qrc-wrap { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+
+.qrc-card {
+  --qrc-brand: #4f8ef7;
+  --qrc-brand-dark: #1e3a5f;
+  position: relative;
+  width: 340px;
+  box-sizing: border-box;
+  padding: 30px 28px 26px;
+  border-radius: 28px;
+  text-align: center;
+  overflow: hidden;
+  color: #0c2440;
+  background:
+    radial-gradient(120% 80% at 85% -10%, var(--qrc-tint, rgba(79,142,247,.16)) 0%, rgba(255,255,255,0) 55%),
+    linear-gradient(165deg, #ffffff 0%, #f5f9ff 50%, #eefcf6 100%);
+  border: 1px solid rgba(12, 36, 64, .07);
+  box-shadow: 0 24px 60px rgba(7, 32, 71, .18), 0 2px 6px rgba(7, 32, 71, .06);
+}
+
+/* Textura sutil de patitas */
+.qrc-paw { position: absolute; font-size: 7rem; opacity: .05; line-height: 1; pointer-events: none; }
+.qrc-paw-1 { top: -18px; right: -10px; transform: rotate(18deg); }
+.qrc-paw-2 { bottom: -22px; left: -14px; transform: rotate(-12deg); }
+
+.qrc-head {
+  display: flex; flex-direction: column; align-items: center; gap: 4px; margin-bottom: 14px;
+}
+.qrc-logo { max-height: 40px; max-width: 150px; object-fit: contain; }
+.qrc-host { font-size: 1.05rem; font-weight: 800; color: var(--qrc-brand-dark); letter-spacing: -.01em; }
+.qrc-presents {
+  font-size: .64rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--qrc-brand); opacity: .9;
+}
+
+.qrc-headline {
+  font-size: 1.42rem; font-weight: 800; line-height: 1.15; letter-spacing: -.02em;
+  margin: 0 auto 6px; max-width: 16ch;
+}
+.qrc-sub { font-size: .9rem; color: #5b6b7e; line-height: 1.4; margin: 0 auto 18px; max-width: 26ch; }
+
+.qrc-tile {
+  display: inline-flex; padding: 16px; background: #fff; border-radius: 22px;
+  box-shadow: 0 10px 28px rgba(7, 32, 71, .12); border: 1px solid rgba(12, 36, 64, .05);
+}
+.qrc-qrbox { position: relative; width: 196px; height: 196px; }
+.qrc-qr { display: block; width: 196px; height: 196px; border-radius: 6px; }
+
+/* Marca de pata centrada (DOM puro → captura fiable en PNG/impresión) */
+.qrc-mark {
+  position: absolute; inset: 0; margin: auto; width: 52px; height: 52px;
+  display: grid; place-items: center; background: #fff; border-radius: 15px;
+}
+.qrc-badge { position: relative; width: 42px; height: 42px; border-radius: 11px; background: var(--qrc-brand); }
+.qrc-badge i { position: absolute; background: #fff; border-radius: 50%; }
+.qrc-toe { width: 7px; height: 7px; }
+.qrc-toe-1 { left: 5px; top: 11px; }
+.qrc-toe-2 { left: 13px; top: 5px; }
+.qrc-toe-3 { right: 13px; top: 5px; }
+.qrc-toe-4 { right: 5px; top: 11px; }
+.qrc-pad { left: 11px; top: 20px; width: 20px; height: 15px; }
+
+.qrc-scan {
+  display: inline-flex; align-items: center; gap: 6px; margin: 16px auto 0;
+  font-size: .82rem; font-weight: 600; color: var(--qrc-brand-dark);
+}
+
+.qrc-foot { margin-top: 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.qrc-url {
+  font-size: .82rem; font-weight: 700; color: var(--qrc-brand-dark);
+  background: var(--qrc-url-bg, rgba(79,142,247,.12));
+  border: 1px solid var(--qrc-url-border, rgba(79,142,247,.28));
+  border-radius: 999px; padding: 6px 14px; word-break: break-all;
+}
+.qrc-courtesy { font-size: .76rem; color: #7a8798; }
+.qrc-brandmark { font-size: .72rem; font-weight: 700; color: var(--qrc-brand); letter-spacing: .02em; }
+
+.qrc-actions { display: flex; gap: 10px; }
+.qrc-btn {
+  background: var(--color-primary); color: #fff; border: none; border-radius: 12px;
+  padding: 12px 20px; font-size: .92rem; font-weight: 700; cursor: pointer; transition: filter .15s;
+}
+.qrc-btn:hover { filter: brightness(1.06); }
+.qrc-btn:disabled { opacity: .6; cursor: default; }
+.qrc-btn-ghost { background: var(--color-surface); color: var(--color-text); border: 1px solid var(--color-border); }
+
+/* QR compacto (panel sin scroll): tarjeta completa offscreen sólo para exportar */
+.qrc-compact { width: 100%; gap: 12px; }
+.qrc-compact .qrc-cardholder { position: absolute; left: -99999px; top: 0; pointer-events: none; }
+.qrc-mini { display: flex; align-items: center; gap: 14px; width: 100%; }
+.qrc-mini-qr {
+  flex-shrink: 0; padding: 8px; background: #fff; border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(7, 32, 71, .1); border: 1px solid rgba(12, 36, 64, .06);
+}
+.qrc-qr-sm { display: block; width: 104px; height: 104px; border-radius: 4px; }
+.qrc-mini-body { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.qrc-mini-title { font-size: .92rem; font-weight: 700; }
+.qrc-mini-url { font-size: .78rem; color: var(--color-muted); word-break: break-all; }
+.qrc-compact .qrc-actions { margin-top: 2px; }
+.qrc-compact .qrc-btn { padding: 9px 14px; font-size: .85rem; }
+
+/* En pantallas chicas se vuelve apilable y con scroll normal */
+@media (max-width: 880px) {
+  .vp-shell { height: auto; overflow: visible; grid-template-rows: auto auto; }
+  .vp-grid { grid-template-columns: 1fr; }
+  .vp-due .vp-due-list { max-height: 320px; }
+}
+
+@media (max-width: 560px) {
+  .vp-hero-num { font-size: 2rem; }
+  .vp-stat-num { font-size: 1.4rem; }
+  .qrc-card { width: 300px; }
+  .qrc-mini { flex-direction: column; text-align: center; align-items: center; }
+}

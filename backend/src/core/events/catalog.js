@@ -62,6 +62,10 @@ const EVENTS = {
   'surprise.claimed': { group: 'growth', payload: { rewardType: { kind: 'enum', values: ['breed_fact', 'sticker', 'boosted_referral'] } } },
   'premium.started': { group: 'growth', payload: { source: { kind: 'enum', values: ['referral', 'paid'] } } },
   'premium.expired': { group: 'growth', payload: {} },
+  // Kit de Activación Veterinaria.
+  'clinic.registered': { group: 'growth', payload: { source: { kind: 'enum', values: ['admin', 'self'] } } },
+  'clinic.signup': { group: 'growth', payload: { src: { kind: 'enum', values: ['qr', 'link', 'unknown'] } } },
+  'clinic.activated': { group: 'growth', payload: {} },
 
   // ── outcome ─────────────────────────────────────────────────────────────────
   'alert.shown': { group: 'outcome', payload: { ruleId: { kind: 'code' }, alertType: { kind: 'code' } } },

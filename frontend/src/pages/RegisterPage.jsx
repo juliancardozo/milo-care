@@ -4,7 +4,9 @@ import { useDispatch } from 'react-redux';
 import { setCredentials } from '../store/authSlice';
 import { register } from '../services/api';
 import { getStoredRef, clearStoredRef } from '../services/referralApi';
+import { getStoredClinic, clearStoredClinic, getPublicClinic } from '../services/clinicApi';
 import { useI18n } from '../i18n/I18nProvider';
+import { useEffect } from 'react';
 
 export default function RegisterPage() {
   const { t } = useI18n();
@@ -18,6 +20,16 @@ export default function RegisterPage() {
   const [errors, setErrors] = useState({});
   const [serverError, setServerError] = useState('');
   const [loading, setLoading] = useState(false);
+  // Co-branding: si entró por el QR/link de una clínica, mostramos "Recomendado por…".
+  const [clinicName, setClinicName] = useState('');
+
+  useEffect(() => {
+    const stored = getStoredClinic();
+    if (!stored) return;
+    getPublicClinic(stored.slug)
+      .then(({ data }) => setClinicName(data.clinic?.name || ''))
+      .catch(() => setClinicName(''));
+  }, []);
 
   function validate() {
     const e = {};
@@ -41,8 +53,15 @@ export default function RegisterPage() {
       const payload = { ...form };
       if (referralCode) payload.referralCode = referralCode;
       if (inviteToken) payload.inviteToken = inviteToken;
+      const clinic = getStoredClinic();
+      if (clinic) {
+        payload.clinicSlug = clinic.slug;
+        payload.clinicCapturedAt = new Date(clinic.ts).toISOString();
+        payload.clinicSrc = clinic.src;
+      }
       const { data } = await register(payload);
       clearStoredRef();
+      clearStoredClinic();
       dispatch(setCredentials({ user: data.user, token: data.token }));
       // Si vino de una invitación, el perro ya quedó compartido → al panel.
       navigate(inviteToken ? '/dashboard' : '/dogs/new');
@@ -64,6 +83,9 @@ export default function RegisterPage() {
       )}
       {!inviteToken && invitedBy && (
         <p className="referral-invite-note">{t('referrals.invitedBanner', { code: invitedBy })}</p>
+      )}
+      {clinicName && (
+        <p className="referral-invite-note">🏥 {t('register.recommendedBy', { clinic: clinicName })}</p>
       )}
       <form onSubmit={handleSubmit} noValidate>
         <div className="field">

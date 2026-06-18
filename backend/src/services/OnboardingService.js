@@ -14,6 +14,7 @@ const {
 } = require('./ValidationService');
 const { calculate } = require('./RiskProfileCalculator');
 const { buildCalendar } = require('./CalendarEngine');
+const clinicService = require('./clinicService');
 
 function normalizeList(value) {
   if (!value) return [];
@@ -309,6 +310,12 @@ async function confirmSession(sessionId, userId, options = {}) {
   };
   await user.save();
   await session.deleteOne();
+
+  // Capa 2 del Kit Veterinario: al confirmar el primer perro (activación), si el
+  // usuario fue atribuido a una clínica con incentivo, otorga premium una vez.
+  clinicService.grantClinicIncentiveOnActivation(user).catch((err) => {
+    console.error('[Onboarding] clinic incentive grant failed:', err.message);
+  });
 
   const savedDog = user.dogs[user.dogs.length - 1];
   return {

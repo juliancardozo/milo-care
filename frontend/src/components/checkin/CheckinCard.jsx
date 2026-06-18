@@ -78,17 +78,35 @@ export default function CheckinCard({ dog }) {
 
   const answered = today.answered;
 
+  // Estado respondido (y sin animación de recién-respondido) → strip slim: una
+  // sola línea con la confirmación, la racha y "ver seguimiento". No es un hero.
+  if (answered && !justAnswered) {
+    return (
+      <section className="checkin-card checkin-slim">
+        <div className="checkin-slim-row">
+          <span className="checkin-slim-icon" aria-hidden="true">✅</span>
+          <p className="checkin-slim-msg">{t('checkin.answeredToday', { dog: dog.name })}</p>
+          <StreakChip streak={streak} dogName={dog.name} t={t} />
+          <button
+            type="button"
+            className="checkin-trends-toggle"
+            onClick={() => setShowTrends((v) => !v)}
+          >
+            {showTrends ? t('checkin.hideTrends') : t('checkin.viewTrends')}
+          </button>
+        </div>
+        {showTrends && <CheckinTrends dog={dog} />}
+        {surprise && <SurpriseModal surprise={surprise} onClose={() => setSurprise(null)} />}
+      </section>
+    );
+  }
+
   return (
     <section className="checkin-card">
       <p className="checkin-eyebrow">{t('checkin.eyebrow')}</p>
 
       {justAnswered ? (
         <div className="checkin-thanks">{t('checkin.thanks', { dog: dog.name })}</div>
-      ) : answered ? (
-        <div className="checkin-answered">
-          <span className="checkin-answered-icon">🐾</span>
-          <p className="checkin-answered-msg">{t('checkin.answeredToday', { dog: dog.name })}</p>
-        </div>
       ) : (
         <>
           <p className="checkin-question">

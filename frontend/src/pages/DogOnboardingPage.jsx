@@ -132,9 +132,16 @@ export default function DogOnboardingPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  async function persistStep(stepKey, values) {
-    if (!onboarding.sessionId) return;
+  // Garantiza una sesión válida: si por alguna razón no hay sessionId (sesión no
+  // iniciada o pisada), crea una al vuelo. Evita llamadas a /onboarding/null/...
+  async function ensureSessionId() {
+    if (onboarding.sessionId) return onboarding.sessionId;
+    const { data } = await startOnboarding(onboarding.values.owner);
+    dispatch(setSessionId(data.sessionId));
+    return data.sessionId;
+  }
 
+  async function persistStep(stepKey, values, sessionId) {
     // Filter out incomplete vaccine/deworming records
     let finalValues = values;
     if (stepKey === 'vaccines' && Array.isArray(values)) {
@@ -153,7 +160,7 @@ export default function DogOnboardingPage() {
     };
 
     const payload = payloadByStep[stepKey] || values;
-    const { data } = await saveOnboardingStep(onboarding.sessionId, stepKey, payload);
+    const { data } = await saveOnboardingStep(sessionId, stepKey, payload);
     dispatch(setWarnings(data.warnings || []));
   }
 
@@ -161,6 +168,12 @@ export default function DogOnboardingPage() {
     setServerError('');
 
     if (currentStepKey === 'summary') {
+      if (!onboarding.sessionId) {
+        // Sin sesión no se puede confirmar: reiniciar para arrancar limpio.
+        dispatch(resetOnboarding());
+        setServerError('Tu sesión expiró. Por favor, empezá el onboarding de nuevo.');
+        return;
+      }
       try {
         dispatch(setLoading(true));
         const { data } = await confirmOnboarding(onboarding.sessionId, {
@@ -186,10 +199,11 @@ export default function DogOnboardingPage() {
 
     try {
       dispatch(setLoading(true));
-      await persistStep(currentStepKey, currentValues);
+      const sessionId = await ensureSessionId();
+      await persistStep(currentStepKey, currentValues, sessionId);
 
       if (onboarding.currentStepIndex === onboarding.steps.length - 2) {
-        const { data } = await getOnboardingSummary(onboarding.sessionId);
+        const { data } = await getOnboardingSummary(sessionId);
         dispatch(setSummary(data));
       }
 
