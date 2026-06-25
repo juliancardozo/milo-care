@@ -14,4 +14,8 @@ module.exports = {
   // Capa B2B2C "Companion" (multi-tenant / white-label / partners). Apagado por
   // defecto: gatea las rutas de partners. Lo B2C existente no depende de este flag.
   companionEnabled: process.env.COMPANION_ENABLED === 'true',
+  // Sello de verificación veterinaria sobre el Health Score (atestaciones discretas
+  // → niveles self/verified/certified). Encendido por defecto: es B2C, benigno y
+  // aditivo (no cambia el número del score, solo agrega metadata de confianza).
+  vetSealEnabled: process.env.VET_SEAL_ENABLED !== 'false',
 };

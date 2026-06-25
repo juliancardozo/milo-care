@@ -8,6 +8,10 @@ jest.mock('../../src/middleware/auth', () => (req, _res, next) => {
 });
 
 jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn() }));
+// Colaboradores del flujo de atestación (sello de verificación). Sin DB en contract.
+jest.mock('../../src/models/Clinic', () => ({ findOne: jest.fn() }));
+jest.mock('../../src/models/VetAttestation', () => ({ findOneAndUpdate: jest.fn().mockResolvedValue({}), find: jest.fn() }));
+jest.mock('../../src/services/AuditService', () => ({ record: jest.fn() }));
 
 const User = require('../../src/models/User');
 const app = require('../../src/app');

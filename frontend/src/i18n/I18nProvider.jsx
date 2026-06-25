@@ -461,6 +461,9 @@ const translations = {
       hideBreakdown: 'Ocultar desglose',
       boost: 'Para subir',
       perfect: '¡{dog} está en su mejor forma! 🏆',
+      sealVerified: 'Verificado por veterinario',
+      sealCertifiedBy: 'Certificado por {clinic}',
+      sealValidUntil: 'Vigente hasta {date}',
     },
     secondDog: {
       eyebrow: 'Tu familia está creciendo',
@@ -1271,6 +1274,9 @@ const translations = {
       hideBreakdown: 'Hide breakdown',
       boost: 'To level up',
       perfect: '{dog} is in top shape! 🏆',
+      sealVerified: 'Vet-verified',
+      sealCertifiedBy: 'Certified by {clinic}',
+      sealValidUntil: 'Valid until {date}',
     },
     secondDog: {
       eyebrow: 'Your family is growing',

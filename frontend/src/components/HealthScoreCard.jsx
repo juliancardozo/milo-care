@@ -58,7 +58,13 @@ export default function HealthScoreCard({ dogId, dogName, variant = 'card' }) {
     );
   }
 
-  const { score, grade, factors } = data;
+  const { score, grade, factors, verification } = data;
+  const seal = verification && verification.level && verification.level !== 'self' ? verification : null;
+  const sealText = seal
+    ? (seal.level === 'certified' && seal.certifiedBy
+        ? t('healthScore.sealCertifiedBy', { clinic: seal.certifiedBy })
+        : t('healthScore.sealVerified'))
+    : null;
   // Mejor próxima acción: el factor con más puntos por ganar (no perfecto).
   const nextStep = [...factors]
     .filter((f) => f.points < f.max)
@@ -71,6 +77,11 @@ export default function HealthScoreCard({ dogId, dogName, variant = 'card' }) {
         <div className="hs-summary">
           <span className="hs-eyebrow">{dogName ? t('healthScore.titleWithDog', { dog: dogName }) : t('healthScore.title')}</span>
           <strong className="hs-grade" style={{ color: grade.color }}>{grade.label}</strong>
+          {seal && (
+            <span className={`hs-seal hs-seal-${seal.level}`} title={seal.validUntil ? t('healthScore.sealValidUntil', { date: new Date(seal.validUntil).toLocaleDateString() }) : undefined}>
+              <span aria-hidden="true">✓</span> {sealText}
+            </span>
+          )}
           {nextStep ? (
             <p className="hs-next">
               <span className="hs-next-label">{t('healthScore.boost')}:</span> {nextStep.hint}

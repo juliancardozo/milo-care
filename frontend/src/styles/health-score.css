@@ -33,6 +33,14 @@
   color: var(--color-muted);
 }
 .hs-grade { display: block; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; margin: 2px 0 6px; }
+.hs-seal {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-size: .72rem; font-weight: 700; line-height: 1;
+  padding: 4px 8px; border-radius: 999px; margin: 0 0 8px;
+  border: 1px solid transparent;
+}
+.hs-seal-verified { background: #eef2ff; color: #3730a3; border-color: #c7d2fe; }
+.hs-seal-certified { background: #ecfdf5; color: #065f46; border-color: #a7f3d0; }
 .hs-next { font-size: .85rem; color: var(--color-text); line-height: 1.45; margin: 0 0 10px; }
 .hs-next-label { font-weight: 700; }
 .hs-next-perfect { color: #16a34a; font-weight: 600; }
