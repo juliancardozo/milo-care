@@ -1,17 +1,89 @@
-.pd-page { max-width: 760px; }
-.pd-title { font-size: 1.5rem; font-weight: 800; margin: 8px 0 4px; }
-.pd-sub { color: var(--color-muted); font-size: .9rem; margin: 0 0 18px; }
+.pdash {
+  --brand: #4f8ef7;
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px 16px 48px;
+}
 
-.pd-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
-.pd-stat { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 14px; text-align: center; }
-.pd-stat-num { display: block; font-size: 1.6rem; font-weight: 800; color: var(--color-primary); }
-.pd-stat-label { font-size: .76rem; color: var(--color-muted); }
+/* ── Header ── */
+.pdash-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+.pdash-brand { display: flex; align-items: center; gap: 12px; }
+.pdash-back { font-size: 1.3rem; color: var(--color-muted); text-decoration: none; padding: 4px 8px; }
+.pdash-logo { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; }
+.pdash-logo-ph { display: grid; place-items: center; background: var(--brand); color: #fff; font-weight: 800; font-size: 1.3rem; }
+.pdash-name { font-size: 1.3rem; font-weight: 800; margin: 0; line-height: 1.1; }
+.pdash-type { font-size: .76rem; color: var(--color-muted); text-transform: capitalize; }
 
-.pd-card { padding: 18px; margin-bottom: 16px; }
-.pd-card h2 { font-size: 1.05rem; font-weight: 700; margin: 0 0 12px; }
-.pd-events, .pd-billing { list-style: none; margin: 0; padding: 0; }
-.pd-events li, .pd-billing li { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--color-border); font-size: .92rem; }
-.pd-billing .pd-total { border-bottom: none; font-size: 1.05rem; font-weight: 800; padding-top: 12px; }
-.pd-note { font-size: .78rem; color: var(--color-muted); margin: 10px 0 0; }
+.pdash-monthnav { display: flex; align-items: center; gap: 6px; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 999px; padding: 4px; }
+.pdash-mbtn { border: none; background: transparent; font-size: 1.1rem; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; color: var(--color-text); }
+.pdash-mbtn:hover:not(:disabled) { background: var(--color-bg); }
+.pdash-mbtn:disabled { opacity: .3; cursor: default; }
+.pdash-month { font-weight: 700; font-size: .9rem; min-width: 120px; text-align: center; }
 
-@media (max-width: 560px) { .pd-stats { grid-template-columns: repeat(2, 1fr); } }
+/* ── Hero / North Star ── */
+.pdash-hero {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+  background: linear-gradient(135deg, var(--brand), color-mix(in srgb, var(--brand) 60%, #000 12%));
+  color: #fff; border-radius: 18px; padding: 24px 26px; margin-bottom: 16px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.12);
+}
+.pdash-hero-eyebrow { display: block; font-size: .8rem; opacity: .85; margin-bottom: 4px; }
+.pdash-hero-num { display: block; font-size: 3.2rem; font-weight: 900; line-height: 1; letter-spacing: -0.02em; }
+.pdash-hero-sub { display: block; font-size: .9rem; opacity: .9; margin-top: 4px; }
+.pdash-delta { text-align: right; background: rgba(255,255,255,.16); border-radius: 12px; padding: 10px 14px; }
+.pdash-delta-num { display: block; font-size: 1.3rem; font-weight: 800; }
+.pdash-delta-label { font-size: .72rem; opacity: .9; }
+
+/* ── KPIs ── */
+.pdash-kpis { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 16px; }
+.pdash-kpi { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 14px; padding: 16px 12px; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+.pdash-kpi-num { font-size: 1.7rem; font-weight: 800; color: var(--brand); line-height: 1; }
+.pdash-kpi-label { font-size: .72rem; color: var(--color-muted); }
+.pdash-kpi-ring { padding: 10px; }
+
+.pdash-ring { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.pdash-ring svg { transform: rotate(-90deg); }
+.pdash-ring-bg { fill: none; stroke: var(--color-border); stroke-width: 8; }
+.pdash-ring-fg { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset .6s ease; }
+.pdash-ring-num { transform: rotate(90deg); transform-origin: 40px 40px; font-size: 1rem; font-weight: 800; fill: var(--color-text); text-anchor: middle; }
+.pdash-ring-label { font-size: .72rem; color: var(--color-muted); }
+
+/* ── Cards ── */
+.pdash-card { padding: 18px; margin-bottom: 16px; }
+.pdash-card-title { font-size: 1.05rem; font-weight: 700; margin: 0 0 14px; }
+.pdash-note { font-size: .76rem; color: var(--color-muted); margin: 12px 0 0; line-height: 1.45; }
+
+/* Barras de eventos */
+.pdash-bars { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.pdash-bar-row { display: grid; grid-template-columns: 140px 1fr 32px; align-items: center; gap: 10px; font-size: .85rem; }
+.pdash-bar-track { background: var(--color-bg); border-radius: 999px; height: 10px; overflow: hidden; }
+.pdash-bar-fill { display: block; height: 100%; background: var(--brand); border-radius: 999px; min-width: 2px; transition: width .5s ease; }
+.pdash-bar-val { font-weight: 700; text-align: right; }
+
+/* Facturación */
+.pdash-billing-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+.pdash-badge { font-size: .72rem; font-weight: 700; padding: 4px 10px; border-radius: 999px; }
+.pdash-badge.paid { background: #ecfdf5; color: #065f46; }
+.pdash-badge.issued { background: #eff6ff; color: #1e40af; }
+.pdash-badge.failed { background: #fef2f2; color: #991b1b; }
+.pdash-bill-lines { list-style: none; margin: 0; padding: 0; }
+.pdash-bill-lines li { display: flex; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--color-border); font-size: .9rem; }
+.pdash-bill-total { border-bottom: none !important; font-size: 1.15rem !important; font-weight: 800; padding-top: 12px !important; }
+
+.pdash-footer { display: flex; justify-content: space-between; align-items: center; font-size: .78rem; color: var(--color-muted); margin-top: 8px; }
+.pdash-apilink { color: var(--brand); font-weight: 600; text-decoration: none; }
+
+/* Empty / skeleton */
+.pdash-empty { text-align: center; padding: 40px 20px; }
+.pdash-empty-icon { font-size: 2.4rem; }
+.pdash-empty h2 { font-size: 1.15rem; margin: 10px 0 6px; }
+.pdash-empty p { color: var(--color-muted); font-size: .9rem; }
+.pdash-sk-hero { height: 110px; border-radius: 18px; background: var(--color-border); opacity: .4; margin-bottom: 16px; animation: pdash-pulse 1.4s ease-in-out infinite; }
+.pdash-sk-grid { height: 120px; border-radius: 14px; background: var(--color-border); opacity: .4; animation: pdash-pulse 1.4s ease-in-out infinite; }
+@keyframes pdash-pulse { 0%,100% { opacity: .25; } 50% { opacity: .5; } }
+
+@media (max-width: 640px) {
+  .pdash-kpis { grid-template-columns: repeat(2, 1fr); }
+  .pdash-hero-num { font-size: 2.6rem; }
+  .pdash-bar-row { grid-template-columns: 110px 1fr 28px; }
+}

@@ -3,6 +3,7 @@
 const { describe, it, expect, beforeEach } = require('@jest/globals');
 
 jest.mock('../../src/models/User', () => ({ find: jest.fn() }));
+jest.mock('../../src/models/VetAttestation', () => ({ distinct: jest.fn().mockResolvedValue([]) }));
 const User = require('../../src/models/User');
 const { computeMetrics, prevMonthKey } = require('../../src/services/MetricsService');
 
