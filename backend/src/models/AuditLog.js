@@ -20,6 +20,8 @@ const AUDIT_ACTIONS = [
   'data_exported',
   'data_deleted',
   'policy_linked',
+  'insurance_lead_created',
+  'claim_drafted',
 ];
 
 const auditLogSchema = new Schema(

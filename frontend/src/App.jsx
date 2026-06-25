@@ -51,6 +51,7 @@ import CoTutorsPage from './pages/CoTutorsPage';
 import InviteAcceptPage from './pages/InviteAcceptPage';
 import AlbumPage from './pages/AlbumPage';
 import CardsPage from './pages/CardsPage';
+import MiSeguroPage from './pages/MiSeguroPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -117,6 +118,7 @@ export default function App() {
           <Route path="/dogs/:dogId/clinical-history" element={<ClinicalHistoryPage />} />
           <Route path="/dogs/:dogId/pdf-export" element={<PdfExportPage />} />
           <Route path="/dogs/:dogId/share" element={<VetShareLinkPage />} />
+          <Route path="/dogs/:dogId/seguro" element={<MiSeguroPage />} />
           <Route path="/dogs/:dogId/cotutores" element={<CoTutorsPage />} />
           <Route path="/settings/account" element={<AccountPage />} />
           <Route path="/settings/notifications" element={<NotificationPreferencesPage />} />

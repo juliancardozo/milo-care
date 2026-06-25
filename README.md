@@ -333,8 +333,31 @@ http://localhost:5173/?partner=acme
 La unidad de facturación y North Star: `isPetActive(pet, month)` (`services/petActivity.js`),
 función **pura y testeable**. Un perro es activo en un mes calendario (UTC) si tuvo ≥1
 evento de salud (vacuna, desparasitación, medicación, cita, síntoma, consulta) o una
-atestación cumplida en ese mes. Es el insumo del job mensual de metering / `BillingRecord`
-(pendientes). El checkout B2C con Mercado Pago también queda pendiente en esta fase.
+atestación cumplida en ese mes.
+
+- **Metering mensual** (`MeteringService` + `MeteringJob`): job diario 03:00 que, en el
+  `billingDay` de cada partner activo, upsertea `UsageRecord` por perro y genera el
+  `BillingRecord` del mes anterior = **setupFee (una vez) + activePets × pricePerActivePet**.
+- `GET /api/partners/:id/billing?month=YYYY-MM` (admin) → la factura del mes.
+- **Checkout B2C con Mercado Pago**: `POST /api/billing/checkout` (devuelve `checkoutUrl`)
+  y `POST /api/billing/webhook` (pago aprobado → otorga Premium, idempotente por payment id).
+  Sin `MERCADOPAGO_ACCESS_TOKEN`, el checkout responde 503 y el front cae al interés manual.
+
+## Companion de seguro (Fase 3)
+
+Todo detrás de `COMPANION_ENABLED`. **Guardrails**: el coverage-check y el Claims Assistant
+son **informativos, nunca vinculantes** (disclaimer siempre presente, deciden vet/aseguradora).
+
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| `POST`/`GET` | `/api/dogs/:dogId/policy` | Vincula / consulta la póliza (`coverage` estructurada) |
+| `GET` | `/api/dogs/:dogId/policy/coverage-check?event=<tipo>` | "¿Lo cubre?" orientativo + disclaimer + carencia |
+| `POST`/`GET` | `/api/dogs/:dogId/claims` | Claims Assistant v0: borrador desde el historial |
+| `GET` | `/api/claims/:id` | Detalle del reclamo (autorizado por acceso al perro) |
+| `POST` | `/api/dogs/:dogId/insurance-lead` | "¿Necesito un seguro?" → crea lead + **webhook al partner** (reintentos + registro) |
+
+Frontend: pantalla **Mi seguro** en `/dogs/:dogId/seguro` (póliza, coverage-check, borrador
+de reclamo, CTA de lead) + botón de checkout Mercado Pago en `/upgrade`.
 
 ### Certificación veterinaria desde el panel
 

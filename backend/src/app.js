@@ -40,6 +40,8 @@ const publicClinicsRoutes = require('./routes/publicClinics');
 const partnersRoutes = require('./routes/partners');
 const publicPartnersRoutes = require('./routes/publicPartners');
 const dogExportRoutes = require('./routes/dogExport');
+const insuranceRoutes = require('./routes/insurance');
+const claimsRoutes = require('./routes/claims');
 const featureFlags = require('./config/featureFlags');
 
 const app = express();
@@ -91,6 +93,8 @@ app.use('/api/public/clinics', publicClinicsRoutes); // antes de /api/public (pr
 if (featureFlags.companionEnabled) {
   app.use('/api/public/partners', publicPartnersRoutes); // antes de /api/public
   app.use('/api/partners', partnersRoutes);
+  app.use('/api/dogs/:dogId', insuranceRoutes); // póliza, coverage-check, claims, lead
+  app.use('/api/claims', claimsRoutes);
 }
 
 app.use('/api/public', publicDogsRoutes);

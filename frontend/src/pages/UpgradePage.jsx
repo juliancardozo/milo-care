@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
 import { requestPremiumInterest } from '../services/billingApi';
+import { startPremiumCheckout } from '../services/companionApi';
 
 const FEATURES = ['billing.feature1', 'billing.feature2', 'billing.feature3', 'billing.feature4'];
 
@@ -15,6 +16,17 @@ export default function UpgradePage() {
     setLoading(true);
     setError(null);
     try {
+      // Primero intentamos el checkout de Mercado Pago; si no está configurado
+      // (503) caemos al flujo de interés manual existente.
+      try {
+        const { data } = await startPremiumCheckout();
+        if (data?.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+          return;
+        }
+      } catch (mpErr) {
+        if (mpErr.response?.status !== 503) throw mpErr;
+      }
       await requestPremiumInterest();
       setSent(true);
     } catch {
