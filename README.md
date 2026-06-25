@@ -359,6 +359,22 @@ son **informativos, nunca vinculantes** (disclaimer siempre presente, deciden ve
 Frontend: pantalla **Mi seguro** en `/dogs/:dogId/seguro` (póliza, coverage-check, borrador
 de reclamo, CTA de lead) + botón de checkout Mercado Pago en `/upgrade`.
 
+## Panel del partner + API (Fase 4)
+
+Rol **`partner_admin`**: gestiona la cohorte y métricas de **su** partner (aislamiento
+estricto; otro partner → 403). El panel solo muestra **agregados** — cero PII clínica
+individual.
+
+| Método | Ruta | Acceso | Descripción |
+| --- | --- | --- | --- |
+| `GET` | `/api/partners/:id/metrics?month=YYYY-MM` | admin / partner_admin del partner | Mascotas activas, adherencia, retención, eventos por tipo (agregados) |
+| `GET` | `/api/partners/:id/billing?month=YYYY-MM` | admin / partner_admin del partner | Factura del mes |
+| `POST` | `/api/v1/events` | API key del partner | El partner empuja eventos (aislado por partner) |
+| `GET` | `/api/v1/pets/:id` | API key del partner | Vista read-only **consentida** (sin dato clínico individual) |
+
+Frontend: panel del partner en `/partner` (rol `partner_admin`). Contrato de la API v1 y
+webhooks salientes en [docs/companion-api.md](docs/companion-api.md).
+
 ### Certificación veterinaria desde el panel
 
 Además del link de expediente, el vet logueado certifica carnets de **su** cohorte:

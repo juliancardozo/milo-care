@@ -1,12 +1,13 @@
 'use strict';
 
-const crypto = require('crypto');
-const bcrypt = require('bcryptjs');
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
+const partnerScope = require('../middleware/partnerScope');
 const Partner = require('../models/Partner');
 const MeteringService = require('../services/MeteringService');
+const MetricsService = require('../services/MetricsService');
+const { generateApiKey, hashApiKey } = require('../services/apiKey');
 
 const router = express.Router();
 
@@ -38,9 +39,9 @@ router.post('/', authenticate, adminAuth, async (req, res, next) => {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'name, slug and type are required.' });
     }
 
-    // Genera API key del partner: solo se devuelve ahora; se guarda hasheada.
-    const apiKey = `mp_${crypto.randomBytes(24).toString('hex')}`;
-    const apiKeyHash = await bcrypt.hash(apiKey, 10);
+    // Genera API key del partner: solo se devuelve ahora; se guarda hasheada (SHA-256).
+    const apiKey = generateApiKey();
+    const apiKeyHash = hashApiKey(apiKey);
 
     const partner = await Partner.create({
       name: name.trim(),
@@ -70,10 +71,27 @@ router.get('/:id', authenticate, adminAuth, async (req, res, next) => {
   }
 });
 
-// GET /api/partners/:id/billing?month=YYYY-MM  (admin)
+// GET /api/partners/:id/metrics?month=YYYY-MM  (admin o partner_admin del partner)
+// Métricas AGREGADAS de la cohorte (sin PII ni dato clínico individual).
+router.get('/:id/metrics', authenticate, partnerScope, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    const month = req.query.month || MeteringService.previousMonthKey(new Date());
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'month must be YYYY-MM.' });
+    }
+    const metrics = await MetricsService.computeMetrics(partner, month, { now: new Date() });
+    return res.json(metrics);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/partners/:id/billing?month=YYYY-MM  (admin o partner_admin del partner)
 // Genera/upsertea y devuelve la factura del mes: setupFee (una vez) + activePets * price.
-// Default: mes anterior. (partner_admin scoping llega en Fase 4.)
-router.get('/:id/billing', authenticate, adminAuth, async (req, res, next) => {
+router.get('/:id/billing', authenticate, partnerScope, async (req, res, next) => {
   try {
     const partner = await Partner.findById(req.params.id);
     if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });

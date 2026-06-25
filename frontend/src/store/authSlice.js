@@ -49,3 +49,5 @@ export const selectUserRole = (state) => state.auth.user?.role ?? 'user';
 // adminVet es superconjunto de admin (todas sus funcionalidades + gestión de clínicas).
 export const selectIsAdmin = (state) => ['admin', 'adminVet'].includes(state.auth.user?.role);
 export const selectIsVet = (state) => state.auth.user?.role === 'vet';
+export const selectIsPartnerAdmin = (state) => state.auth.user?.role === 'partner_admin';
+export const selectPartnerId = (state) => state.auth.user?.partnerId ?? null;

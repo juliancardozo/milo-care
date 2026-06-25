@@ -52,6 +52,8 @@ import InviteAcceptPage from './pages/InviteAcceptPage';
 import AlbumPage from './pages/AlbumPage';
 import CardsPage from './pages/CardsPage';
 import MiSeguroPage from './pages/MiSeguroPage';
+import PartnerRoute from './components/PartnerRoute';
+import PartnerDashboardPage from './pages/partner/PartnerDashboardPage';
 import { useI18n } from './i18n/I18nProvider';
 
 export default function App() {
@@ -131,6 +133,11 @@ export default function App() {
         {/* Vet portal (rol 'vet') */}
         <Route element={<VetRoute />}>
           <Route path="/vet-portal" element={<VetPanelPage />} />
+        </Route>
+
+        {/* Panel del partner (rol 'partner_admin') */}
+        <Route element={<PartnerRoute />}>
+          <Route path="/partner" element={<PartnerDashboardPage />} />
         </Route>
 
         {/* Admin routes */}
