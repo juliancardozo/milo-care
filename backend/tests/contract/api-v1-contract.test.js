@@ -10,12 +10,16 @@ jest.mock('../../src/models/PartnerEvent', () => ({ create: jest.fn() }));
 jest.mock('../../src/models/User', () => ({ findOne: jest.fn() }));
 jest.mock('../../src/models/VetAttestation', () => ({ find: jest.fn() }));
 jest.mock('../../src/models/InsurancePolicy', () => ({ findOne: jest.fn() }));
+jest.mock('../../src/services/CertificateService', () => ({ getActive: jest.fn(), shareableView: jest.fn() }));
+jest.mock('../../src/services/ConsentService', () => ({ hasConsent: jest.fn() }));
 
 const Partner = require('../../src/models/Partner');
 const PartnerEvent = require('../../src/models/PartnerEvent');
 const User = require('../../src/models/User');
 const VetAttestation = require('../../src/models/VetAttestation');
 const InsurancePolicy = require('../../src/models/InsurancePolicy');
+const CertificateService = require('../../src/services/CertificateService');
+const ConsentService = require('../../src/services/ConsentService');
 const app = require('../../src/app');
 
 const PARTNER = { _id: 'p1', name: 'Acme', status: 'active' };
@@ -69,6 +73,31 @@ describe('Contract: API v1 (auth por API key, aislada por partner)', () => {
       User.findOne.mockReturnValue({ select: () => Promise.resolve(null) }); // $elemMatch no matchea
       const res = await request(app).get('/api/v1/pets/dog-x').set('X-API-Key', 'mp_good');
       expect(res.status).toBe(404);
+    });
+  });
+
+  describe('GET /api/v1/pets/:id/certificate', () => {
+    const dog = { _id: 'dog-1', name: 'Luna' };
+    beforeEach(() => {
+      Partner.findOne.mockResolvedValue(PARTNER);
+      User.findOne.mockReturnValue({ select: () => Promise.resolve({ dogs: { id: (i) => (i === 'dog-1' ? dog : null) } }) });
+    });
+
+    it('sin consentimiento del tutor → 403 NO_CONSENT', async () => {
+      ConsentService.hasConsent.mockResolvedValue(false);
+      const res = await request(app).get('/api/v1/pets/dog-1/certificate').set('X-API-Key', 'mp_good');
+      expect(res.status).toBe(403);
+      expect(res.body.code).toBe('NO_CONSENT');
+    });
+
+    it('con consentimiento → nivel del certificado (sin score)', async () => {
+      ConsentService.hasConsent.mockResolvedValue(true);
+      CertificateService.getActive.mockResolvedValue({ _id: 'c1' });
+      CertificateService.shareableView.mockReturnValue({ confidenceLevel: 'certified', validUntil: new Date('2027-01-01'), certifiedBy: 'Clínica Palermo', attestedCount: 2 });
+      const res = await request(app).get('/api/v1/pets/dog-1/certificate').set('X-API-Key', 'mp_good');
+      expect(res.status).toBe(200);
+      expect(res.body.confidenceLevel).toBe('certified');
+      expect(res.body).not.toHaveProperty('score');
     });
   });
 });

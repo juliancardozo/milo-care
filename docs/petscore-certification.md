@@ -36,27 +36,37 @@
 - **Frontend**: badge "Verificado por veterinario" / "Certificado por [clínica]" en
   `HealthScoreCard`.
 
-## Diseñado, NO construido (deferido) 🔒
+## Certificado + compartir con aseguradora — IMPLEMENTADO ✅
 
-Requiere decisión de negocio + revisión legal antes de tocar código.
+> ⚠️ **Requiere revisión legal antes de producción.** El código está, pero el encendido
+> (compartir niveles con una aseguradora real) es una decisión de negocio/legal.
 
-### `PetScoreCertificate` (snapshot inmutable)
-`dogId`, `scoreSnapshot` (copia, no live), `confidenceLevel`, `attestationRefs[]`,
-`issuedAt`, `validUntil`, `status`, `revocationReason`. Se **emite** cuando hay un set
-mínimo de atestaciones activas; nunca se reescribe (se emite uno nuevo). Un job recalcula
-vigencia y lo degrada/expira cuando una atestación vence o se revoca.
+### `PetScoreCertificate` (snapshot inmutable) — `CertificateService`
+`dogId`, `ownerUserId`, `scoreSnapshot`, `confidenceLevel`, `attestedItems[]`, `certifiedBy`,
+`issuedAt`, `validUntil`, `status` (active|superseded|expired|revoked). Se **emite** solo si
+hay al menos una atestación (no se certifica un perro `self`); nunca se reescribe — emitir
+uno nuevo deja el anterior `superseded`. `getActive` lo expira al vencer.
+- `POST /api/dogs/:dogId/certificate` (emite, 400 `NEEDS_VERIFICATION` si no hay atestación)
+- `GET /api/dogs/:dogId/certificate` (vista del tutor, con score)
 
-### Consentimiento granular por destino + compartir con aseguradora
-`Consent` (scope, `partnerId`, `grantedAt`, `revokedAt`, `expiresAt`), revocable, cada
-cambio escribe `AuditLog`. Recién con consentimiento explícito el partner recibe —vía la
-API v1 / webhook de Fase 4— **solo**:
+### Consentimiento granular — `Consent` + `ConsentService`
+`scope`, `partnerId`, `grantedAt`, `revokedAt`, `expiresAt`, `status`. Revocable; cada
+cambio escribe `AuditLog` (`consent_given` / `consent_revoked`).
+- `POST` / `DELETE` / `GET /api/dogs/:dogId/consent`
+
+### Compartir el NIVEL con el partner (con consentimiento)
+- `POST /api/dogs/:dogId/certificate/share` → requiere cert vigente + consentimiento activo;
+  dispara webhook `certificate.shared` y audita `certificate_shared_with_partner`.
+- `GET /api/v1/pets/:id/certificate` (API key del partner) → 403 `NO_CONSENT` sin consentimiento.
+
+La aseguradora recibe **solo** (`CertificateService.shareableView`):
 
 ```json
-{ "dogId":"…", "confidenceLevel":"certified", "validUntil":"2026-12-01",
-  "attestedItems":["vaccines_up_to_date"], "issuedByClinic":"clinica-palermo" }
+{ "confidenceLevel":"certified", "certifiedBy":"clinica-palermo",
+  "attestedCount": 2, "issuedAt":"…", "validUntil":"2026-12-01", "status":"active" }
 ```
 
-**Nunca** dato clínico individual (qué vacuna, qué condición, qué síntoma).
+**Nunca** el score numérico ni dato clínico individual (qué vacuna, condición o síntoma).
 
 ## Guardrails no negociables
 

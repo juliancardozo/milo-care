@@ -9,6 +9,15 @@ const InsurancePolicy = require('../models/InsurancePolicy');
 const { deriveVerification } = require('../services/petScoreVerification');
 const { isPetActive } = require('../services/petActivity');
 const { monthKey } = require('../services/MeteringService');
+const CertificateService = require('../services/CertificateService');
+const ConsentService = require('../services/ConsentService');
+
+// Resuelve un perro que pertenece al partner de la API key (o null).
+async function findPartnerDog(partnerId, dogId) {
+  const owner = await User.findOne({ dogs: { $elemMatch: { _id: dogId, partnerId } } }).select('dogs');
+  if (!owner) return null;
+  return owner.dogs.id(dogId) || null;
+}
 
 // API v1 para partners — autenticada por API key, aislada por partner.
 const router = express.Router();
@@ -52,6 +61,25 @@ router.get('/pets/:id', apiKeyAuth, async (req, res, next) => {
       verification: { level: verification.level, certifiedBy: verification.certifiedBy, validUntil: verification.validUntil },
       policy: policy ? { status: policy.status, productName: policy.productName } : null,
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/v1/pets/:id/certificate — nivel del certificado, SOLO si el tutor dio
+// consentimiento para este partner. Devuelve nivel + vigencia (sin dato clínico).
+router.get('/pets/:id/certificate', apiKeyAuth, async (req, res, next) => {
+  try {
+    const dog = await findPartnerDog(req.partner._id, req.params.id);
+    if (!dog) return res.status(404).json({ code: 'NOT_FOUND', message: 'Pet not found.' });
+
+    const consented = await ConsentService.hasConsent(dog._id, 'share_certificate_with_partner', req.partner._id);
+    if (!consented) return res.status(403).json({ code: 'NO_CONSENT', message: 'Owner has not consented to share the certificate with this partner.' });
+
+    const cert = await CertificateService.getActive(dog._id);
+    if (!cert) return res.status(404).json({ code: 'NO_CERTIFICATE', message: 'No active certificate.' });
+
+    return res.json(CertificateService.shareableView(cert));
   } catch (err) {
     next(err);
   }

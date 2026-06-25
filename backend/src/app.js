@@ -42,6 +42,7 @@ const publicPartnersRoutes = require('./routes/publicPartners');
 const dogExportRoutes = require('./routes/dogExport');
 const insuranceRoutes = require('./routes/insurance');
 const claimsRoutes = require('./routes/claims');
+const certificateRoutes = require('./routes/certificate');
 const apiV1Routes = require('./routes/apiV1');
 const featureFlags = require('./config/featureFlags');
 
@@ -95,6 +96,7 @@ if (featureFlags.companionEnabled) {
   app.use('/api/public/partners', publicPartnersRoutes); // antes de /api/public
   app.use('/api/partners', partnersRoutes);
   app.use('/api/dogs/:dogId', insuranceRoutes); // póliza, coverage-check, claims, lead
+  app.use('/api/dogs/:dogId', certificateRoutes); // certificado + consentimiento + compartir
   app.use('/api/claims', claimsRoutes);
   app.use('/api/v1', apiV1Routes); // API para partners (auth por API key)
 }
