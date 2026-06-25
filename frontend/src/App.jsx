@@ -35,6 +35,7 @@ import AdminUsersPage from './pages/admin/AdminUsersPage';
 import AdminUserDetailPage from './pages/admin/AdminUserDetailPage';
 import AdminLeadsPage from './pages/admin/AdminLeadsPage';
 import AdminClinicsPage from './pages/admin/AdminClinicsPage';
+import AdminPartnersPage from './pages/admin/AdminPartnersPage';
 import VetRoute from './components/VetRoute';
 import VetPanelPage from './pages/vet/VetPanelPage';
 import VetRegisterPage from './pages/vet/VetRegisterPage';
@@ -146,6 +147,7 @@ export default function App() {
           <Route path="/admin/users" element={<AdminUsersPage />} />
           <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
           <Route path="/admin/clinics" element={<AdminClinicsPage />} />
+          <Route path="/admin/partners" element={<AdminPartnersPage />} />
           <Route path="/admin/leads" element={<AdminLeadsPage />} />
         </Route>
 

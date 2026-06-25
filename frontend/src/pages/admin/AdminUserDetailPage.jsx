@@ -1,25 +1,28 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { getAdminUser, updateAdminUser, deleteAdminUser } from '../../services/api';
+import { getAdminUser, updateAdminUser, deleteAdminUser, getAdminPartners } from '../../services/api';
 
 export default function AdminUserDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState('');
-  const [form, setForm] = useState({ name: '', tier: 'free', role: 'user' });
+  const [form, setForm] = useState({ name: '', tier: 'free', role: 'user', partnerId: '' });
 
   useEffect(() => {
     getAdminUser(id)
       .then(({ data }) => {
         setUser(data);
-        setForm({ name: data.name, tier: data.tier, role: data.role });
+        setForm({ name: data.name, tier: data.tier, role: data.role, partnerId: data.partnerId || '' });
       })
       .catch(() => setError('No se pudo cargar el usuario.'))
       .finally(() => setLoading(false));
+    // Lista de partners para el dropdown de partner_admin.
+    getAdminPartners().then(({ data }) => setPartners(data.partners || [])).catch(() => {});
   }, [id]);
 
   async function handleSave(e) {
@@ -28,8 +31,11 @@ export default function AdminUserDetailPage() {
     setError('');
     setSuccess('');
     try {
-      const { data } = await updateAdminUser(id, form);
+      // partnerId solo aplica a partner_admin; en otros roles lo limpiamos.
+      const payload = { ...form, partnerId: form.role === 'partner_admin' ? form.partnerId : '' };
+      const { data } = await updateAdminUser(id, payload);
       setUser((prev) => ({ ...prev, ...data }));
+      setForm((f) => ({ ...f, partnerId: data.partnerId || '' }));
       setSuccess('Cambios guardados.');
     } catch (err) {
       setError(err.response?.data?.message || 'No se pudo guardar.');
@@ -87,8 +93,21 @@ export default function AdminUserDetailPage() {
           <select id="adm-role" value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
             <option value="user">Usuario</option>
             <option value="admin">Administrador</option>
+            <option value="partner_admin">Admin de partner</option>
           </select>
         </div>
+        {form.role === 'partner_admin' && (
+          <div className="field">
+            <label htmlFor="adm-partner">Partner</label>
+            <select id="adm-partner" value={form.partnerId} onChange={(e) => setForm({ ...form, partnerId: e.target.value })}>
+              <option value="">— Elegí un partner —</option>
+              {partners.map((p) => <option key={p.id} value={p.id}>{p.name} ({p.slug})</option>)}
+            </select>
+            <p style={{ fontSize: '0.78rem', color: 'var(--color-muted)', marginTop: '4px' }}>
+              El admin de partner solo verá las métricas y facturación de este partner.
+            </p>
+          </div>
+        )}
         <div style={{ fontSize: '0.8rem', color: 'var(--color-muted)', marginTop: '4px' }}>
           Registrado: {new Date(user.createdAt).toLocaleDateString('es-AR')}
         </div>

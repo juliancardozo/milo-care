@@ -39,6 +39,12 @@ export const getAdminLeads = (params) => api.get('/admin/leads', { params });
 export const previewAdminEmail = (type) => `/api/admin/email/preview/${type}`;
 export const sendAdminTestEmail = (type) => api.post('/admin/email/test', { type });
 
+// ── Partners (admin) ──────────────────────────────────────────────────────────
+export const getAdminPartners = () => api.get('/partners');
+export const createAdminPartner = (data) => api.post('/partners', data);
+export const updateAdminPartner = (id, data) => api.patch(`/partners/${id}`, data);
+export const rotatePartnerApiKey = (id) => api.post(`/partners/${id}/api-key/rotate`);
+
 // ── Vaccine catalog ───────────────────────────────────────────────────────────
 
 export const getVaccineCatalog = (country = 'AR') => api.get('/vaccines/catalog', { params: { country } });

@@ -79,6 +79,7 @@ export default function AdminDashboardPage() {
             <ul style={{ listStyle: 'none', display: 'flex', flexDirection: 'column', gap: '10px', marginTop: '12px' }}>
               <li><Link to="/admin/users">👥 Gestionar usuarios →</Link></li>
               <li><Link to="/admin/clinics">🏥 Gestionar clínicas (Kit Vet) →</Link></li>
+              <li><Link to="/admin/partners">🤝 Gestionar partners (B2B2C) →</Link></li>
               <li><Link to="/admin/leads">📋 Ver leads de la landing →</Link></li>
             </ul>
           </nav>
