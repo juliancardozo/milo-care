@@ -171,6 +171,17 @@ export default function AdminPartnersPage() {
                   <p style={{ fontSize: '.8rem', color: 'var(--color-muted)' }}>
                     {p.status} · {p.contract?.pricePerActivePet || 0} {p.contract?.currency}/activa · {p.billing?.autoCharge ? 'auto-cobro' : 'manual'} · {p.hasApiKey ? 'API key ✓' : 'sin key'}
                   </p>
+                  {p.admins && p.admins.length > 0 ? (
+                    <div style={{ marginTop: '4px', display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                      {p.admins.map((a) => (
+                        <span key={a.email} style={{ fontSize: '.74rem', padding: '2px 8px', borderRadius: '999px', background: a.pending ? '#fffbeb' : '#ecfdf5', color: a.pending ? '#92400e' : '#065f46', border: `1px solid ${a.pending ? '#fde68a' : '#a7f3d0'}` }}>
+                          {a.email} · {a.pending ? '⏳ invitación pendiente' : `✓ activo${a.lastLoginAt ? ` · ${new Date(a.lastLoginAt).toLocaleDateString('es-UY')}` : ''}`}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: '.74rem', color: 'var(--color-muted)', marginTop: '4px' }}>Sin partner_admin asignado.</p>
+                  )}
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <button type="button" className="btn-secondary btn-sm" onClick={() => startEdit(p)}>Editar</button>

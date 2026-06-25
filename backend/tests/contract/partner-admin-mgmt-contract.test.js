@@ -7,7 +7,7 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
 jest.mock('../../src/middleware/auth', () => (req, _res, next) => { req.user = { id: 'admin-1', role: 'admin' }; next(); });
 jest.mock('../../src/models/Partner', () => ({ find: jest.fn(), findById: jest.fn(), create: jest.fn() }));
-jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn(), create: jest.fn() }));
+jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn(), find: jest.fn(), create: jest.fn() }));
 jest.mock('../../src/models/MagicLoginToken', () => ({ deleteMany: jest.fn().mockResolvedValue({}), create: jest.fn().mockResolvedValue({}) }));
 jest.mock('../../src/services/EmailService', () => ({ sendPartnerAdminInvite: jest.fn().mockResolvedValue() }));
 jest.mock('../../src/services/referralService', () => ({ generateUniqueCode: jest.fn().mockResolvedValue('DEMO-XYZ') }));
@@ -32,13 +32,18 @@ function mkUser(over = {}) {
 describe('Contract: gestión de partners (admin) + asignar partner_admin', () => {
   beforeEach(() => jest.clearAllMocks());
 
-  it('GET /api/partners lista los partners (sin hash de key)', async () => {
+  it('GET /api/partners lista los partners con sus admins y estado pendiente', async () => {
     Partner.find.mockReturnValue({ sort: () => Promise.resolve([mkPartner()]) });
+    User.find.mockReturnValue({ select: () => ({ lean: () => Promise.resolve([
+      { name: 'Ana', email: 'ana@aseg.com', partnerId: 'p1', lastLoginAt: null },
+    ]) }) });
+
     const res = await request(app).get('/api/partners');
     expect(res.status).toBe(200);
     expect(res.body.partners).toHaveLength(1);
     expect(res.body.partners[0]).not.toHaveProperty('apiKeyHash');
     expect(res.body.partners[0].hasApiKey).toBe(true);
+    expect(res.body.partners[0].admins[0]).toMatchObject({ email: 'ana@aseg.com', pending: true });
   });
 
   it('PATCH /api/partners/:id edita campos', async () => {

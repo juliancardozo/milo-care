@@ -286,6 +286,9 @@ const userSchema = new Schema(
     // Partner (capa B2B2C) al que pertenece el usuario, si entró por un canal
     // white-label. Nullable: un usuario sin partner funciona igual que hoy.
     partnerId: { type: Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
+    // Último ingreso efectivo (login o magic-login). null = nunca entró → sirve para
+    // marcar "invitación pendiente" de un partner_admin recién invitado.
+    lastLoginAt: { type: Date, default: null },
     // Atribución de origen del Kit de Activación Veterinaria. Si el usuario entró por
     // el QR/link de una clínica (`/c/:slug`) dentro de la ventana de 7 días, queda
     // vinculado acá. Sin código de clínica → sin atribución.

@@ -164,6 +164,9 @@ router.post('/login', async (req, res, next) => {
       return res.status(401).json({ code: 'INVALID_CREDENTIALS', message: 'Invalid email or password.' });
     }
 
+    user.lastLoginAt = new Date();
+    await user.save();
+
     const token = signToken(user);
     return res.json({ user: userResponse(user), token });
   } catch (err) {
@@ -295,6 +298,9 @@ router.post('/magic-login', async (req, res, next) => {
 
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
+
+    user.lastLoginAt = new Date();
+    await user.save();
 
     const authToken = signToken(user);
     return res.json({ user: userResponse(user), token: authToken });

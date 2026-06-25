@@ -71,11 +71,29 @@ router.post('/', authenticate, adminAuth, async (req, res, next) => {
   }
 });
 
-// GET /api/partners  (admin) — listado de partners.
+// GET /api/partners  (admin) — listado de partners, con sus partner_admins y el
+// estado de la invitación (pending = nunca ingresó).
 router.get('/', authenticate, adminAuth, async (req, res, next) => {
   try {
     const partners = await Partner.find().sort({ createdAt: -1 });
-    return res.json({ partners: partners.map(partnerResponse) });
+    const ids = partners.map((p) => p._id);
+    const admins = await User.find({ role: 'partner_admin', partnerId: { $in: ids } })
+      .select('name email partnerId lastLoginAt')
+      .lean();
+
+    const byPartner = new Map();
+    for (const a of admins) {
+      const key = String(a.partnerId);
+      if (!byPartner.has(key)) byPartner.set(key, []);
+      byPartner.get(key).push({
+        name: a.name, email: a.email, lastLoginAt: a.lastLoginAt || null,
+        pending: !a.lastLoginAt, // invitado pero nunca ingresó
+      });
+    }
+
+    return res.json({
+      partners: partners.map((p) => ({ ...partnerResponse(p), admins: byPartner.get(String(p._id)) || [] })),
+    });
   } catch (err) {
     next(err);
   }
