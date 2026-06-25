@@ -13,6 +13,7 @@ jest.mock('../../src/models/Partner', () => ({ findById: jest.fn() }));
 jest.mock('../../src/services/MetricsService', () => ({ computeMetrics: jest.fn() }));
 jest.mock('../../src/services/MeteringService', () => ({
   previousMonthKey: () => '2026-05',
+  monthKey: () => '2026-06',
   generateBillingRecord: jest.fn(),
 }));
 

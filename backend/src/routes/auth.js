@@ -43,6 +43,7 @@ function userResponse(user) {
     effectiveTier: typeof user.effectiveTier === 'function' ? user.effectiveTier() : user.tier,
     premiumUntil: user.premiumUntil || null,
     role: user.role || 'user',
+    partnerId: user.partnerId || null,
     location: user.location || null,
     locationConsentAt: user.locationConsentAt || null,
   };

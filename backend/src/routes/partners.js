@@ -79,7 +79,9 @@ router.get('/:id/metrics', authenticate, partnerScope, async (req, res, next) =>
     const partner = await Partner.findById(req.params.id);
     if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
 
-    const month = req.query.month || MeteringService.previousMonthKey(new Date());
+    // Métricas: por defecto el mes EN CURSO (cohorte viva). La facturación, en
+    // cambio, usa el mes anterior (cerrado).
+    const month = req.query.month || MeteringService.monthKey(new Date());
     if (!/^\d{4}-\d{2}$/.test(month)) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'month must be YYYY-MM.' });
     }
