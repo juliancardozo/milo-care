@@ -10,6 +10,7 @@ const partnerScope = require('../middleware/partnerScope');
 const Partner = require('../models/Partner');
 const User = require('../models/User');
 const MagicLoginToken = require('../models/MagicLoginToken');
+const InsuranceLead = require('../models/InsuranceLead');
 const MeteringService = require('../services/MeteringService');
 const MetricsService = require('../services/MetricsService');
 const ChargeService = require('../services/ChargeService');
@@ -246,11 +247,37 @@ router.get('/:id/billing', authenticate, partnerScope, async (req, res, next) =>
       setupFeeApplied: record.setupFeeApplied,
       activePets: record.activePets,
       pricePerActivePet: record.pricePerActivePet,
+      qualifiedLeads: record.qualifiedLeads,
+      convertedPolicies: record.convertedPolicies,
+      leadRevenue: record.leadRevenue,
       total: record.total,
       currency: record.currency,
       status: record.status,
       chargedAt: record.chargedAt,
       chargeRef: record.chargeRef,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/partners/:id/leads?status=  (admin o partner_admin del partner)
+// Reporte de leads de seguro del partner (los que el tutor consintió compartir).
+router.get('/:id/leads', authenticate, partnerScope, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id).select('_id');
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    const q = { partnerId: partner._id };
+    if (req.query.status) q.status = req.query.status;
+    const leads = await InsuranceLead.find(q).sort({ createdAt: -1 }).limit(200).lean();
+
+    return res.json({
+      leads: leads.map((l) => ({
+        id: l._id, status: l.status, contact: l.contact || {},
+        createdAt: l.createdAt, webhookDeliveredAt: l.webhookDeliveredAt || null,
+        convertedAt: l.convertedAt || null, externalPolicyRef: l.externalPolicyRef || null,
+      })),
     });
   } catch (err) {
     next(err);

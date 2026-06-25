@@ -5,10 +5,12 @@ const { describe, it, expect, beforeEach } = require('@jest/globals');
 jest.mock('../../src/models/User', () => ({ find: jest.fn() }));
 jest.mock('../../src/models/UsageRecord', () => ({ updateOne: jest.fn().mockResolvedValue({}) }));
 jest.mock('../../src/models/BillingRecord', () => ({ findOne: jest.fn(), findOneAndUpdate: jest.fn() }));
+jest.mock('../../src/models/InsuranceLead', () => ({ countDocuments: jest.fn() }));
 
 const User = require('../../src/models/User');
 const UsageRecord = require('../../src/models/UsageRecord');
 const BillingRecord = require('../../src/models/BillingRecord');
+const InsuranceLead = require('../../src/models/InsuranceLead');
 const MeteringService = require('../../src/services/MeteringService');
 
 const PARTNER = { _id: 'p1', contract: { setupFee: 100, pricePerActivePet: 5, currency: 'UYU', billingDay: 1 } };
@@ -31,6 +33,7 @@ describe('MeteringService', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     UsageRecord.updateOne.mockResolvedValue({});
+    InsuranceLead.countDocuments.mockResolvedValue(0);
     BillingRecord.findOneAndUpdate.mockImplementation((q, update) => Promise.resolve({ month: q.month, ...update.$set }));
   });
 
@@ -58,6 +61,19 @@ describe('MeteringService', () => {
     const rec = await MeteringService.generateBillingRecord(PARTNER, '2026-06');
     expect(rec.setupFeeApplied).toBe(0);
     expect(rec.total).toBe(2 * 5); // 10
+  });
+
+  it('suma lead-gen: qualifiedLeads*CPL + convertedPolicies*CPA al total', async () => {
+    mockUsers();
+    BillingRecord.findOne.mockReturnValue({ select: () => ({ lean: () => Promise.resolve({ _id: 'prev' }) }) }); // setupFee no aplica
+    InsuranceLead.countDocuments.mockResolvedValueOnce(4).mockResolvedValueOnce(1); // 4 leads, 1 conversión
+    const partner = { _id: 'p1', contract: { pricePerActivePet: 5, pricePerLead: 10, pricePerConversion: 40, currency: 'UYU' } };
+
+    const rec = await MeteringService.generateBillingRecord(partner, '2026-06');
+    expect(rec.qualifiedLeads).toBe(4);
+    expect(rec.convertedPolicies).toBe(1);
+    expect(rec.leadRevenue).toBe(4 * 10 + 1 * 40); // 80
+    expect(rec.total).toBe(2 * 5 + 80); // 90 (2 activas x 5 + lead-gen)
   });
 
   it('previousMonthKey devuelve el mes anterior en UTC', () => {

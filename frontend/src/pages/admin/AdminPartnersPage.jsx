@@ -5,7 +5,7 @@ import { getAdminPartners, createAdminPartner, updateAdminPartner, rotatePartner
 const EMPTY = {
   name: '', slug: '', type: 'insurer', status: 'active', webhookUrl: '',
   branding: { appName: '', primaryColor: '#4f8ef7', secondaryColor: '', logoUrl: '' },
-  contract: { setupFee: 0, pricePerActivePet: 0, currency: 'UYU', billingDay: 1 },
+  contract: { setupFee: 0, pricePerActivePet: 0, pricePerLead: 0, pricePerConversion: 0, currency: 'UYU', billingDay: 1 },
   billing: { autoCharge: false, paymentToken: '', payerEmail: '' },
 };
 
@@ -41,7 +41,7 @@ export default function AdminPartnersPage() {
     setForm({
       name: p.name, slug: p.slug, type: p.type, status: p.status, webhookUrl: p.webhookUrl || '',
       branding: { appName: '', primaryColor: '#4f8ef7', secondaryColor: '', logoUrl: '', ...(p.branding || {}) },
-      contract: { setupFee: 0, pricePerActivePet: 0, currency: 'UYU', billingDay: 1, ...(p.contract || {}) },
+      contract: { setupFee: 0, pricePerActivePet: 0, pricePerLead: 0, pricePerConversion: 0, currency: 'UYU', billingDay: 1, ...(p.contract || {}) },
       billing: { autoCharge: false, paymentToken: '', payerEmail: '', ...(p.billing || {}) },
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -133,6 +133,8 @@ export default function AdminPartnersPage() {
         <h3 style={{ marginTop: '10px' }}>Contrato</h3>
         <div className="field"><label>Setup fee</label><input type="number" value={form.contract.setupFee} onChange={nested('contract', 'setupFee', true)} /></div>
         <div className="field"><label>Precio por mascota activa</label><input type="number" value={form.contract.pricePerActivePet} onChange={nested('contract', 'pricePerActivePet', true)} /></div>
+        <div className="field"><label>Precio por lead (CPL)</label><input type="number" value={form.contract.pricePerLead} onChange={nested('contract', 'pricePerLead', true)} /></div>
+        <div className="field"><label>Precio por póliza convertida (CPA)</label><input type="number" value={form.contract.pricePerConversion} onChange={nested('contract', 'pricePerConversion', true)} /></div>
         <div className="field">
           <label>Moneda</label>
           <select value={form.contract.currency} onChange={nested('contract', 'currency')}><option>UYU</option><option>ARS</option><option>USD</option></select>

@@ -86,14 +86,17 @@ describe('Contract: billing checkout + webhook + partner billing', () => {
     it('devuelve setupFee + activePets * price', async () => {
       Partner.findById.mockResolvedValue({ _id: 'p1', contract: { setupFee: 100, pricePerActivePet: 5 } });
       MeteringService.generateBillingRecord.mockResolvedValue({
-        month: '2026-05', setupFeeApplied: 100, activePets: 2, pricePerActivePet: 5, total: 110, currency: 'UYU', status: 'issued',
+        month: '2026-05', setupFeeApplied: 100, activePets: 2, pricePerActivePet: 5,
+        qualifiedLeads: 3, convertedPolicies: 1, leadRevenue: 70, total: 180, currency: 'UYU', status: 'issued',
       });
 
       const res = await request(app).get('/api/partners/p1/billing?month=2026-05');
       expect(res.status).toBe(200);
-      expect(res.body.total).toBe(110);
+      expect(res.body.total).toBe(180);
       expect(res.body.activePets).toBe(2);
       expect(res.body.setupFeeApplied).toBe(100);
+      expect(res.body.leadRevenue).toBe(70);
+      expect(res.body.convertedPolicies).toBe(1);
     });
   });
 

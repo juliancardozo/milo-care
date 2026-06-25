@@ -6,6 +6,7 @@ const PartnerEvent = require('../models/PartnerEvent');
 const User = require('../models/User');
 const VetAttestation = require('../models/VetAttestation');
 const InsurancePolicy = require('../models/InsurancePolicy');
+const InsuranceLead = require('../models/InsuranceLead');
 const { deriveVerification } = require('../services/petScoreVerification');
 const { isPetActive } = require('../services/petActivity');
 const { monthKey } = require('../services/MeteringService');
@@ -21,6 +22,25 @@ async function findPartnerDog(partnerId, dogId) {
 
 // API v1 para partners — autenticada por API key, aislada por partner.
 const router = express.Router();
+
+// POST /api/v1/leads/:id/convert — el partner reporta que un lead se convirtió en
+// póliza (CPA). Aislado: el lead debe ser del partner de la API key. Idempotente.
+router.post('/leads/:id/convert', apiKeyAuth, async (req, res, next) => {
+  try {
+    const lead = await InsuranceLead.findOne({ _id: req.params.id, partnerId: req.partner._id });
+    if (!lead) return res.status(404).json({ code: 'NOT_FOUND', message: 'Lead not found.' });
+
+    if (lead.status !== 'converted') {
+      lead.status = 'converted';
+      lead.convertedAt = new Date();
+      if (req.body?.policyRef) lead.externalPolicyRef = String(req.body.policyRef);
+      await lead.save();
+    }
+    return res.json({ id: lead._id, status: lead.status, convertedAt: lead.convertedAt });
+  } catch (err) {
+    next(err);
+  }
+});
 
 // POST /api/v1/events — el partner empuja un evento. Scoped a su partner.
 router.post('/events', apiKeyAuth, async (req, res, next) => {

@@ -3,7 +3,8 @@
 const User = require('../models/User');
 const UsageRecord = require('../models/UsageRecord');
 const BillingRecord = require('../models/BillingRecord');
-const { isPetActive } = require('./petActivity');
+const InsuranceLead = require('../models/InsuranceLead');
+const { isPetActive, monthRange } = require('./petActivity');
 
 // 'YYYY-MM' (UTC) de una fecha.
 function monthKey(date = new Date()) {
@@ -50,11 +51,27 @@ async function computePartnerUsage(partner, month) {
 }
 
 /**
+ * Lead-gen del mes: leads calificados creados (CPL) y pólizas convertidas (CPA).
+ * @returns {Promise<{ qualifiedLeads: number, convertedPolicies: number }>}
+ */
+async function computePartnerLeadGen(partner, month) {
+  const { start, end } = monthRange(month);
+  const qualifiedLeads = await InsuranceLead.countDocuments({
+    partnerId: partner._id, createdAt: { $gte: new Date(start), $lt: new Date(end) },
+  });
+  const convertedPolicies = await InsuranceLead.countDocuments({
+    partnerId: partner._id, status: 'converted', convertedAt: { $gte: new Date(start), $lt: new Date(end) },
+  });
+  return { qualifiedLeads, convertedPolicies };
+}
+
+/**
  * Genera (upsert idempotente) el BillingRecord del partner para el mes.
- * total = setupFee (solo en la PRIMERA factura del partner) + activePets * price.
+ * total = setupFee (una vez) + activePets*price + leads*CPL + conversiones*CPA.
  */
 async function generateBillingRecord(partner, month) {
   const { activePets } = await computePartnerUsage(partner, month);
+  const { qualifiedLeads, convertedPolicies } = await computePartnerLeadGen(partner, month);
   const contract = partner.contract || {};
   const pricePerActivePet = contract.pricePerActivePet || 0;
   const currency = contract.currency || 'USD';
@@ -62,11 +79,13 @@ async function generateBillingRecord(partner, month) {
   // setupFee una sola vez: se aplica si no hay ninguna factura previa (de OTRO mes).
   const prior = await BillingRecord.findOne({ partnerId: partner._id, month: { $ne: month } }).select('_id').lean();
   const setupFeeApplied = prior ? 0 : (contract.setupFee || 0);
-  const total = setupFeeApplied + activePets * pricePerActivePet;
+
+  const leadRevenue = qualifiedLeads * (contract.pricePerLead || 0) + convertedPolicies * (contract.pricePerConversion || 0);
+  const total = setupFeeApplied + activePets * pricePerActivePet + leadRevenue;
 
   return BillingRecord.findOneAndUpdate(
     { partnerId: partner._id, month },
-    { $set: { setupFeeApplied, activePets, pricePerActivePet, total, currency, status: 'issued' } },
+    { $set: { setupFeeApplied, activePets, pricePerActivePet, qualifiedLeads, convertedPolicies, leadRevenue, total, currency, status: 'issued' } },
     { upsert: true, new: true, setDefaultsOnInsert: true },
   );
 }

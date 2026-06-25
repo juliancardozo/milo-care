@@ -165,6 +165,9 @@ export default function PartnerDashboardPage() {
               <ul className="pdash-bill-lines">
                 <li><span>Setup fee {billing.setupFeeApplied ? '' : '(ya aplicado)'}</span><strong>{money(billing.setupFeeApplied, billing.currency)}</strong></li>
                 <li><span>{billing.activePets} activas × {money(billing.pricePerActivePet, billing.currency)}</span><strong>{money(billing.activePets * billing.pricePerActivePet, billing.currency)}</strong></li>
+                {(billing.qualifiedLeads > 0 || billing.convertedPolicies > 0) && (
+                  <li><span>Lead-gen ({billing.qualifiedLeads} leads · {billing.convertedPolicies} pólizas)</span><strong>{money(billing.leadRevenue, billing.currency)}</strong></li>
+                )}
                 <li className="pdash-bill-total"><span>Total</span><strong>{money(billing.total, billing.currency)}</strong></li>
               </ul>
               {billing.chargedAt && <p className="pdash-note">Cobrada el {new Date(billing.chargedAt).toLocaleDateString('es-UY')}{billing.chargeRef ? ` · ref ${billing.chargeRef}` : ''}.</p>}

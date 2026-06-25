@@ -32,6 +32,9 @@ const contractSchema = new Schema(
   {
     setupFee: { type: Number, default: 0, min: 0 },
     pricePerActivePet: { type: Number, default: 0, min: 0 },
+    // Lead-gen: CPL (por lead calificado) y CPA (por póliza convertida).
+    pricePerLead: { type: Number, default: 0, min: 0 },
+    pricePerConversion: { type: Number, default: 0, min: 0 },
     currency: { type: String, enum: ['ARS', 'UYU', 'USD'], default: 'USD' },
     billingDay: { type: Number, default: 1, min: 1, max: 28 },
   },

@@ -14,9 +14,12 @@ const insuranceLeadSchema = new Schema(
     partnerId: { type: Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
     intent: { type: String, enum: ['wants_quote'], default: 'wants_quote' },
     contact: { type: Schema.Types.Mixed, default: {} }, // email/teléfono que el tutor consintió compartir
-    status: { type: String, enum: ['new', 'delivered', 'failed'], default: 'new' },
+    status: { type: String, enum: ['new', 'delivered', 'failed', 'converted'], default: 'new' },
     webhookDeliveredAt: { type: Date, default: null },
     webhookAttempts: { type: Number, default: 0 },
+    // Conversión a póliza (CPA): la reporta el partner por la API v1.
+    convertedAt: { type: Date, default: null, index: true },
+    externalPolicyRef: { type: String, default: null },
   },
   { timestamps: true }
 );

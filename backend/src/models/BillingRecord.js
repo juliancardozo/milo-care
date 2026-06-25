@@ -15,6 +15,10 @@ const billingRecordSchema = new Schema(
     setupFeeApplied: { type: Number, default: 0 },
     activePets: { type: Number, default: 0 },
     pricePerActivePet: { type: Number, default: 0 },
+    // Lead-gen del mes (CPL/CPA).
+    qualifiedLeads: { type: Number, default: 0 },
+    convertedPolicies: { type: Number, default: 0 },
+    leadRevenue: { type: Number, default: 0 },
     total: { type: Number, default: 0 },
     currency: { type: String, enum: ['ARS', 'UYU', 'USD'], default: 'USD' },
     status: { type: String, enum: ['draft', 'issued', 'paid', 'failed'], default: 'issued' },

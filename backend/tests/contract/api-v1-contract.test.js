@@ -12,6 +12,7 @@ jest.mock('../../src/models/VetAttestation', () => ({ find: jest.fn() }));
 jest.mock('../../src/models/InsurancePolicy', () => ({ findOne: jest.fn() }));
 jest.mock('../../src/services/CertificateService', () => ({ getActive: jest.fn(), shareableView: jest.fn() }));
 jest.mock('../../src/services/ConsentService', () => ({ hasConsent: jest.fn() }));
+jest.mock('../../src/models/InsuranceLead', () => ({ findOne: jest.fn() }));
 
 const Partner = require('../../src/models/Partner');
 const PartnerEvent = require('../../src/models/PartnerEvent');
@@ -20,6 +21,7 @@ const VetAttestation = require('../../src/models/VetAttestation');
 const InsurancePolicy = require('../../src/models/InsurancePolicy');
 const CertificateService = require('../../src/services/CertificateService');
 const ConsentService = require('../../src/services/ConsentService');
+const InsuranceLead = require('../../src/models/InsuranceLead');
 const app = require('../../src/app');
 
 const PARTNER = { _id: 'p1', name: 'Acme', status: 'active' };
@@ -72,6 +74,27 @@ describe('Contract: API v1 (auth por API key, aislada por partner)', () => {
       Partner.findOne.mockResolvedValue(PARTNER);
       User.findOne.mockReturnValue({ select: () => Promise.resolve(null) }); // $elemMatch no matchea
       const res = await request(app).get('/api/v1/pets/dog-x').set('X-API-Key', 'mp_good');
+      expect(res.status).toBe(404);
+    });
+  });
+
+  describe('POST /api/v1/leads/:id/convert', () => {
+    it('marca el lead del partner como convertido (CPA)', async () => {
+      Partner.findOne.mockResolvedValue(PARTNER);
+      const lead = { _id: 'lead-1', partnerId: 'p1', status: 'delivered', save: jest.fn().mockResolvedValue(true) };
+      InsuranceLead.findOne.mockResolvedValue(lead);
+
+      const res = await request(app).post('/api/v1/leads/lead-1/convert').set('X-API-Key', 'mp_good').send({ policyRef: 'POL-9' });
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('converted');
+      expect(lead.convertedAt).toBeTruthy();
+      expect(lead.externalPolicyRef).toBe('POL-9');
+    });
+
+    it('lead de otro partner → 404 (aislamiento)', async () => {
+      Partner.findOne.mockResolvedValue(PARTNER);
+      InsuranceLead.findOne.mockResolvedValue(null); // findOne con partnerId no matchea
+      const res = await request(app).post('/api/v1/leads/lead-x/convert').set('X-API-Key', 'mp_good');
       expect(res.status).toBe(404);
     });
   });
