@@ -82,7 +82,7 @@ function checkCoverage(policy, eventType, now = new Date()) {
   } else if (inCarencia) {
     message = `"${match.item}" estaría cubierto, pero todavía estás dentro del período de carencia (${match.carenciaDays} días desde el alta). Verificá la fecha con tu aseguradora.`;
   } else {
-    message = `"${match.item}" probablemente esté cubierto${match.limit ? ` hasta ${match.limit} ${match.currency || ''}`.trim() : ''}. Confirmá el detalle y el reintegro con tu aseguradora antes de avanzar.`;
+    message = `"${match.item}" probablemente esté cubierto${match.limit ? ` hasta ${match.limit} ${match.currency || ''}`.trimEnd() : ''}. Confirmá el detalle y el reintegro con tu aseguradora antes de avanzar.`;
   }
 
   return {
