@@ -373,7 +373,24 @@ individual.
 | `GET` | `/api/v1/pets/:id` | API key del partner | Vista read-only **consentida** (sin dato clínico individual) |
 
 Frontend: panel del partner en `/partner` (rol `partner_admin`). Contrato de la API v1 y
-webhooks salientes en [docs/companion-api.md](docs/companion-api.md).
+webhooks salientes en [docs/companion-api.md](docs/companion-api.md). Spec formal en
+[backend/openapi.yaml](backend/openapi.yaml).
+
+### Cobro automático al partner
+
+Si `Partner.billing.autoCharge` está activo (con `paymentToken` de Mercado Pago), el job
+mensual **cobra** el `BillingRecord` (`ChargeService` → `MercadoPagoService.chargePartner`,
+idempotente por `partner+mes`): `status` pasa a `paid`/`failed` con `chargedAt`/`chargeRef`.
+Sin método de pago, la factura queda **manual** (`issued`). Disparo/retry manual:
+`POST /api/partners/:id/billing/charge?month=YYYY-MM` (admin).
+
+### Pet Score certificado + compartir con aseguradora (consentimiento)
+
+`PetScoreCertificate` (snapshot inmutable del Health Score + nivel) + `Consent` granular.
+El tutor emite el certificado, da consentimiento por partner, y comparte **solo el nivel +
+vigencia** (nunca el score ni dato clínico) vía `POST /api/dogs/:dogId/certificate/share`
+(webhook `certificate.shared`) o `GET /api/v1/pets/:id/certificate` (403 `NO_CONSENT` sin
+consentimiento). Detalle y guardrails en [docs/petscore-certification.md](docs/petscore-certification.md).
 
 ### Certificación veterinaria desde el panel
 

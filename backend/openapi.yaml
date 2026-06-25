@@ -1,0 +1,316 @@
+openapi: 3.0.3
+info:
+  title: Milo Care — Companion API (B2B2C)
+  version: 1.0.0
+  description: >
+    Endpoints de la capa Companion (multi-tenant / white-label / seguro /
+    monetización / certificación). Todo está detrás del flag `COMPANION_ENABLED`,
+    salvo el checkout/webhook B2C y el export/share (premium B2C).
+
+    Guardrails: el coverage-check y el Claims Assistant son INFORMATIVOS, nunca
+    vinculantes. El partner ve solo agregados y datos consentidos — nunca dato
+    clínico individual.
+servers:
+  - url: /api
+    description: Backend Milo Care
+
+tags:
+  - name: Partners
+  - name: White-label
+  - name: Export & Share
+  - name: Insurance
+  - name: Certificate & Consent
+  - name: Billing (B2C)
+  - name: Partner billing
+  - name: API v1 (partner key)
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT del usuario (tutor / admin / partner_admin).
+    apiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: "API key del partner (también aceptada como Authorization: Bearer)."
+  schemas:
+    Error:
+      type: object
+      properties:
+        code: { type: string }
+        message: { type: string }
+    Theme:
+      type: object
+      properties:
+        slug: { type: string }
+        type: { type: string, enum: [insurer, fintech, bank, vet] }
+        branding:
+          type: object
+          properties:
+            appName: { type: string }
+            logoUrl: { type: string, nullable: true }
+            primaryColor: { type: string, nullable: true }
+            secondaryColor: { type: string, nullable: true }
+    CoverageCheck:
+      type: object
+      properties:
+        event: { type: string }
+        likelyCovered: { type: boolean, description: "Orientativo, no vinculante" }
+        confidence: { type: string, enum: [unknown, low, medium] }
+        item: { type: string, nullable: true }
+        limit: { type: number, nullable: true }
+        carenciaDays: { type: integer }
+        inCarencia: { type: boolean }
+        message: { type: string }
+        disclaimer: { type: string }
+    BillingRecord:
+      type: object
+      properties:
+        month: { type: string, example: "2026-05" }
+        setupFeeApplied: { type: number }
+        activePets: { type: integer }
+        pricePerActivePet: { type: number }
+        total: { type: number }
+        currency: { type: string }
+        status: { type: string, enum: [draft, issued, paid, failed] }
+        chargedAt: { type: string, format: date-time, nullable: true }
+        chargeRef: { type: string, nullable: true }
+    Metrics:
+      type: object
+      description: Solo agregados, sin PII clínica individual.
+      properties:
+        month: { type: string }
+        totalPets: { type: integer }
+        activePets: { type: integer }
+        adherenceRate: { type: number }
+        retentionRate: { type: number }
+        eventsByType: { type: object, additionalProperties: { type: integer } }
+    CertificateShareable:
+      type: object
+      description: Vista que recibe la aseguradora — nivel + vigencia, sin score ni clínica.
+      properties:
+        confidenceLevel: { type: string, enum: [self, verified, certified] }
+        certifiedBy: { type: string, nullable: true }
+        attestedCount: { type: integer }
+        issuedAt: { type: string, format: date-time }
+        validUntil: { type: string, format: date-time, nullable: true }
+        status: { type: string }
+
+paths:
+  /public/partners/by-slug/{slug}/theme:
+    get:
+      tags: [White-label]
+      summary: Branding white-label por slug (público).
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Theme" } } } }
+        "404": { description: No encontrado / pausado }
+
+  /partners:
+    post:
+      tags: [Partners]
+      summary: Crea un partner (admin). Devuelve la API key una sola vez.
+      security: [{ bearerAuth: [] }]
+      responses: { "201": { description: Creado } }
+
+  /partners/{id}/metrics:
+    get:
+      tags: [Partner billing]
+      summary: Métricas agregadas de la cohorte (admin o partner_admin del partner).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: month, in: query, schema: { type: string, example: "2026-05" } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Metrics" } } } }
+        "403": { description: Cross-access — partner ajeno }
+
+  /partners/{id}/billing:
+    get:
+      tags: [Partner billing]
+      summary: Factura del mes (admin o partner_admin del partner).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: month, in: query, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BillingRecord" } } } }
+
+  /partners/{id}/billing/charge:
+    post:
+      tags: [Partner billing]
+      summary: Genera y COBRA la factura del mes al partner (admin). Idempotente.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: month, in: query, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BillingRecord" } } } }
+
+  /billing/checkout:
+    post:
+      tags: [Billing (B2C)]
+      summary: Inicia checkout de Premium (Mercado Pago).
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: "{ checkoutUrl }" }
+        "503": { description: Mercado Pago no configurado }
+  /billing/webhook:
+    post:
+      tags: [Billing (B2C)]
+      summary: Webhook de Mercado Pago. Pago aprobado → Premium (idempotente).
+      responses: { "200": { description: OK } }
+
+  /dogs/{dogId}/export.pdf:
+    get:
+      tags: [Export & Share]
+      summary: Carnet PDF del perro (gated por premium o patrocinio).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: PDF, content: { application/pdf: {} } }
+        "403": { description: UPGRADE_REQUIRED }
+
+  /dogs/{dogId}/policy:
+    get:
+      tags: [Insurance]
+      summary: Póliza del perro.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: NO_POLICY } }
+    post:
+      tags: [Insurance]
+      summary: Crea / reemplaza la póliza.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "201": { description: Creada } }
+
+  /dogs/{dogId}/policy/coverage-check:
+    get:
+      tags: [Insurance]
+      summary: ¿Lo cubre mi póliza? (informativo, no vinculante).
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: dogId, in: path, required: true, schema: { type: string } }
+        - { name: event, in: query, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CoverageCheck" } } } }
+
+  /dogs/{dogId}/claims:
+    post:
+      tags: [Insurance]
+      summary: Claims Assistant v0 — borrador desde el historial.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "201": { description: Borrador } }
+
+  /dogs/{dogId}/insurance-lead:
+    post:
+      tags: [Insurance]
+      summary: '"¿Necesito un seguro?" → crea lead + webhook al partner.'
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "201": { description: Lead creado } }
+
+  /dogs/{dogId}/certificate:
+    post:
+      tags: [Certificate & Consent]
+      summary: Emite el PetScoreCertificate (requiere verificación veterinaria).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "201": { description: Emitido }
+        "400": { description: NEEDS_VERIFICATION }
+    get:
+      tags: [Certificate & Consent]
+      summary: Certificado vigente (vista del tutor, con score).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: NO_CERTIFICATE } }
+
+  /dogs/{dogId}/consent:
+    post:
+      tags: [Certificate & Consent]
+      summary: Otorga consentimiento granular (ej. compartir con partner).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "201": { description: Otorgado } }
+    delete:
+      tags: [Certificate & Consent]
+      summary: Revoca el consentimiento.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: Revocado } }
+
+  /dogs/{dogId}/certificate/share:
+    post:
+      tags: [Certificate & Consent]
+      summary: Comparte el NIVEL del certificado con un partner (requiere consentimiento).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: Compartido }
+        "403": { description: NO_CONSENT }
+        "404": { description: NO_CERTIFICATE }
+
+  /v1/events:
+    post:
+      tags: [API v1 (partner key)]
+      summary: El partner empuja un evento (aislado por partner).
+      security: [{ apiKeyAuth: [] }]
+      responses: { "201": { description: Recibido }, "401": { description: API key inválida } }
+
+  /v1/pets/{id}:
+    get:
+      tags: [API v1 (partner key)]
+      summary: Vista read-only consentida del perro (sin dato clínico individual).
+      security: [{ apiKeyAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: No encontrado / ajeno } }
+
+  /v1/pets/{id}/certificate:
+    get:
+      tags: [API v1 (partner key)]
+      summary: Nivel del certificado (solo con consentimiento del tutor para este partner).
+      security: [{ apiKeyAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CertificateShareable" } } } }
+        "403": { description: NO_CONSENT }
+        "404": { description: NO_CERTIFICATE }
+
+webhooks:
+  insuranceLeadCreated:
+    post:
+      summary: insurance_lead.created — enviado a Partner.webhookUrl al crear un lead.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                event: { type: string, example: insurance_lead.created }
+                leadId: { type: string }
+                dogId: { type: string }
+                dogName: { type: string }
+                intent: { type: string }
+                contact: { type: object }
+      responses: { "200": { description: Recibido por el partner } }
+  certificateShared:
+    post:
+      summary: certificate.shared — enviado al compartir el nivel del certificado.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              allOf:
+                - type: object
+                  properties:
+                    event: { type: string, example: certificate.shared }
+                    dogId: { type: string }
+                - $ref: "#/components/schemas/CertificateShareable"
+      responses: { "200": { description: Recibido por el partner } }
