@@ -15,6 +15,7 @@ servers:
     description: Backend Milo Care
 
 tags:
+  - name: Auth
   - name: Partners
   - name: White-label
   - name: Export & Share
@@ -30,7 +31,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: JWT del usuario (tutor / admin / partner_admin).
+      description: "JWT del usuario (tutor / admin / partner_admin). Se obtiene con POST /auth/login (o /auth/register, /auth/magic-login) y se envía como Authorization: Bearer <token>."
     apiKeyAuth:
       type: apiKey
       in: header
@@ -42,6 +43,19 @@ components:
       properties:
         code: { type: string }
         message: { type: string }
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string, description: "JWT — enviar como Authorization: Bearer <token>" }
+        user:
+          type: object
+          properties:
+            id: { type: string }
+            email: { type: string }
+            name: { type: string }
+            role: { type: string, enum: [user, admin, adminVet, vet, partner_admin] }
+            tier: { type: string, enum: [free, premium] }
+            partnerId: { type: string, nullable: true }
     Theme:
       type: object
       properties:
@@ -100,6 +114,76 @@ components:
         status: { type: string }
 
 paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Crea una cuenta y devuelve un JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name: { type: string }
+                email: { type: string, format: email }
+                password: { type: string, minLength: 8 }
+      responses:
+        "201": { description: Creado, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
+        "409": { description: El email ya está registrado }
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login con email y contraseña. Devuelve un JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string, format: email }
+                password: { type: string }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
+        "401": { description: Credenciales inválidas }
+
+  /auth/magic-link:
+    post:
+      tags: [Auth]
+      summary: Pide un link de ingreso sin contraseña al email (anti-enumeración → 200 siempre).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties: { email: { type: string, format: email } }
+      responses:
+        "200": { description: Si la cuenta existe, se envió el link de ingreso }
+
+  /auth/magic-login:
+    post:
+      tags: [Auth]
+      summary: Canjea el token del magic link e inicia sesión (devuelve JWT).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [token, userId]
+              properties:
+                token: { type: string }
+                userId: { type: string }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
+        "400": { description: Link inválido o expirado }
+
   /public/partners/by-slug/{slug}/theme:
     get:
       tags: [White-label]
