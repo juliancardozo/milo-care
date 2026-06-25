@@ -2,12 +2,23 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getAdminPartners, createAdminPartner, updateAdminPartner, rotatePartnerApiKey, invitePartnerAdmin } from '../../services/api';
 
-const EMPTY = {
-  name: '', slug: '', type: 'insurer', status: 'active', webhookUrl: '',
-  branding: { appName: '', primaryColor: '#4f8ef7', secondaryColor: '', logoUrl: '' },
-  contract: { setupFee: 0, pricePerActivePet: 0, pricePerLead: 0, pricePerConversion: 0, currency: 'UYU', billingDay: 1 },
-  billing: { autoCharge: false, paymentToken: '', payerEmail: '' },
+// Plantillas de contrato por tipo, ancladas al pricing one-pager (USD).
+// Sirven como punto de partida realista al crear: el admin ajusta lo que necesite.
+const CONTRACT_PRESETS = {
+  insurer: { setupFee: 3500, pricePerActivePet: 0.9, pricePerLead: 10, pricePerConversion: 40, currency: 'USD', billingDay: 1 },
+  fintech: { setupFee: 1500, pricePerActivePet: 0.9, pricePerLead: 10, pricePerConversion: 40, currency: 'USD', billingDay: 1 },
+  bank: { setupFee: 5000, pricePerActivePet: 0.9, pricePerLead: 10, pricePerConversion: 40, currency: 'USD', billingDay: 1 },
+  vet: { setupFee: 0, pricePerActivePet: 0, pricePerLead: 0, pricePerConversion: 0, currency: 'USD', billingDay: 1 },
 };
+
+const emptyFor = (type) => ({
+  name: '', slug: '', type, status: 'active', webhookUrl: '',
+  branding: { appName: '', primaryColor: '#4f8ef7', secondaryColor: '#3370d4', logoUrl: '' },
+  contract: { ...CONTRACT_PRESETS[type] },
+  billing: { autoCharge: false, paymentToken: '', payerEmail: '' },
+});
+
+const EMPTY = emptyFor('insurer');
 
 const TYPES = [['insurer', 'Aseguradora'], ['fintech', 'Fintech'], ['bank', 'Banco'], ['vet', 'Veterinaria']];
 
@@ -25,6 +36,13 @@ export default function AdminPartnersPage() {
 
   const top = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const nested = (g, k, isNum) => (e) => setForm((f) => ({ ...f, [g]: { ...f[g], [k]: isNum ? Number(e.target.value) : e.target.value } }));
+
+  // Al crear: cambiar el tipo recarga la plantilla de contrato sugerida para ese tipo.
+  // Al editar: solo cambia el tipo, sin tocar los valores ya pactados.
+  const changeType = (e) => {
+    const type = e.target.value;
+    setForm((f) => (editingId ? { ...f, type } : { ...f, type, contract: { ...CONTRACT_PRESETS[type] } }));
+  };
 
   function load() {
     setLoading(true);
@@ -121,7 +139,8 @@ export default function AdminPartnersPage() {
         <div className="field"><label>Slug (white-label)</label><input value={form.slug} onChange={top('slug')} placeholder="acme" required={!editingId} /></div>
         <div className="field">
           <label>Tipo</label>
-          <select value={form.type} onChange={top('type')}>{TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+          <select value={form.type} onChange={changeType}>{TYPES.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+          {!editingId && <small style={{ color: 'var(--color-muted)' }}>Precarga una plantilla de contrato sugerida (ajustable).</small>}
         </div>
 
         <h3 style={{ marginTop: '10px' }}>Branding</h3>
