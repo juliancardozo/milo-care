@@ -296,6 +296,8 @@ const userSchema = new Schema(
     // Último pedido de interés en Premium (se notifica al admin por email).
     // Agnóstico al proveedor de pago: usado para deduplicar pedidos dentro de 24h.
     premiumInterestAt: { type: Date, default: null },
+    // Idempotencia del webhook de pago (Mercado Pago): último payment id procesado.
+    premiumPaymentRef: { type: String, default: null },
     // Premium con vencimiento (Fase 4 — recompensa de referidos). Premium efectivo =
     // tier === 'premium' (manual/permanente) O premiumUntil en el futuro.
     premiumUntil: { type: Date, default: null },

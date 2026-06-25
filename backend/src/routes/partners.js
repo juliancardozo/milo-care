@@ -6,6 +6,7 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 const Partner = require('../models/Partner');
+const MeteringService = require('../services/MeteringService');
 
 const router = express.Router();
 
@@ -64,6 +65,35 @@ router.get('/:id', authenticate, adminAuth, async (req, res, next) => {
     const partner = await Partner.findById(req.params.id);
     if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
     return res.json(partnerResponse(partner));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/partners/:id/billing?month=YYYY-MM  (admin)
+// Genera/upsertea y devuelve la factura del mes: setupFee (una vez) + activePets * price.
+// Default: mes anterior. (partner_admin scoping llega en Fase 4.)
+router.get('/:id/billing', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    const month = req.query.month || MeteringService.previousMonthKey(new Date());
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'month must be YYYY-MM.' });
+    }
+
+    const record = await MeteringService.generateBillingRecord(partner, month);
+    return res.json({
+      partnerId: String(partner._id),
+      month: record.month,
+      setupFeeApplied: record.setupFeeApplied,
+      activePets: record.activePets,
+      pricePerActivePet: record.pricePerActivePet,
+      total: record.total,
+      currency: record.currency,
+      status: record.status,
+    });
   } catch (err) {
     next(err);
   }
