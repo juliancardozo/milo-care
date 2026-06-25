@@ -11,4 +11,7 @@ module.exports = {
   // Notificaciones push (Web Push / VAPID). Requiere VAPID_PUBLIC_KEY y
   // VAPID_PRIVATE_KEY; si faltan, el servicio queda inactivo aunque el flag esté on.
   pushEnabled: process.env.PUSH_ENABLED === 'true',
+  // Capa B2B2C "Companion" (multi-tenant / white-label / partners). Apagado por
+  // defecto: gatea las rutas de partners. Lo B2C existente no depende de este flag.
+  companionEnabled: process.env.COMPANION_ENABLED === 'true',
 };

@@ -159,6 +159,11 @@ const dogSchema = new Schema(
     breed: { type: String, required: true, trim: true, maxlength: 100 },
     dateOfBirth: { type: Date, required: true },
     photoUrl: { type: String, trim: true, default: null },
+    // Atribución y patrocinio B2B2C (Companion). Ambos nullable: un perro sin
+    // partner/patrocinio funciona igual que hoy. `sponsorshipStatus: 'sponsored'`
+    // desbloquea features premium para este perro vía EntitlementService.
+    partnerId: { type: Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
+    sponsorshipStatus: { type: String, enum: ['none', 'sponsored'], default: 'none' },
     countryProfile: { type: String, enum: ['AR', 'UY'], default: 'AR' },
     city: { type: String, trim: true, default: '' },
     timezone: { type: String, trim: true, default: '' },
@@ -276,7 +281,11 @@ const userSchema = new Schema(
     name: { type: String, required: true, trim: true, maxlength: 100 },
     tier: { type: String, enum: ['free', 'premium'], default: 'free' },
     // 'vet': dueño de una clínica (accede a su panel). 'adminVet': admin + gestión de clínicas.
-    role: { type: String, enum: ['user', 'admin', 'vet', 'adminVet'], default: 'user' },
+    // 'partner_admin': gestiona la cohorte y métricas de SU partner (capa B2B2C, Fase 4).
+    role: { type: String, enum: ['user', 'admin', 'vet', 'adminVet', 'partner_admin'], default: 'user' },
+    // Partner (capa B2B2C) al que pertenece el usuario, si entró por un canal
+    // white-label. Nullable: un usuario sin partner funciona igual que hoy.
+    partnerId: { type: Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
     // Atribución de origen del Kit de Activación Veterinaria. Si el usuario entró por
     // el QR/link de una clínica (`/c/:slug`) dentro de la ventana de 7 días, queda
     // vinculado acá. Sin código de clínica → sin atribución.

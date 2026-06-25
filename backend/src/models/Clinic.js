@@ -26,6 +26,10 @@ const clinicSchema = new mongoose.Schema(
     // Vet dueño que accede al panel (rol 'vet'). Opcional hasta que se asigne.
     ownerVetUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null, index: true },
 
+    // Partner (capa B2B2C) al que pertenece esta clínica, si está vinculada.
+    // Opcional y nullable: una clínica sin partner funciona igual que hoy.
+    partnerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
+
     country: { type: String, enum: ['AR', 'UY'], default: 'AR' },
     city: { type: String, default: '', trim: true },
     whatsapp: { type: String, default: '', trim: true },
