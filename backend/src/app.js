@@ -37,6 +37,10 @@ const { manageRouter: cotutoresManageRouter, acceptRouter: cotutoresAcceptRouter
 const clinicsAdminRoutes = require('./routes/clinics');
 const vetPortalRoutes = require('./routes/vetPortal');
 const publicClinicsRoutes = require('./routes/publicClinics');
+const partnersRoutes = require('./routes/partners');
+const publicPartnersRoutes = require('./routes/publicPartners');
+const dogExportRoutes = require('./routes/dogExport');
+const featureFlags = require('./config/featureFlags');
 
 const app = express();
 
@@ -62,6 +66,8 @@ app.use('/api/dogs/:dogId/wallet-pass', walletPassesRoutes);
 app.use('/api/dogs/:dogId/health-score', healthScoreRoutes);
 app.use('/api/dogs/:dogId/vet-share', vetShareRouter);
 app.use('/api/dogs/:dogId/cotutores', cotutoresManageRouter);
+// Export PDF / compartir WhatsApp del historial (premium B2C o patrocinio del partner).
+app.use('/api/dogs/:dogId', dogExportRoutes);
 app.use('/api/vet', publicVetRouter);
 app.use('/api/cotutores', cotutoresAcceptRouter);
 app.use('/api/dashboard/reminders', remindersRoutes);
@@ -79,6 +85,14 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/referrals', referralsRoutes);
 app.use('/api/checkins', publicCheckinsRouter);
 app.use('/api/public/clinics', publicClinicsRoutes); // antes de /api/public (prefijo más específico)
+
+// ── Companion (B2B2C) — detrás del flag companionEnabled ──────────────────────
+// Las rutas de partners quedan invisibles (404) hasta habilitar COMPANION_ENABLED.
+if (featureFlags.companionEnabled) {
+  app.use('/api/public/partners', publicPartnersRoutes); // antes de /api/public
+  app.use('/api/partners', partnersRoutes);
+}
+
 app.use('/api/public', publicDogsRoutes);
 app.use('/api', landingRoutes);
 
