@@ -49,6 +49,11 @@ const featureFlags = require('./config/featureFlags');
 
 const app = express();
 
+// Detrás de UN reverse proxy (Render/Amplify): confiar solo en el primer hop para
+// que `req.ip` sea el cliente real (necesario para el rate limit por IP del registro)
+// sin habilitar spoofing de X-Forwarded-For.
+app.set('trust proxy', 1);
+
 // ── Middleware ──────────────────────────────────────────────────────────────
 app.use(cors({ origin: process.env.APP_URL || 'http://localhost:5173', credentials: true }));
 // Las fotos de perros se guardan como data-URL (base64) dentro del documento,

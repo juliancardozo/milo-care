@@ -74,9 +74,31 @@ const magicLimiter = rateLimit({
   skip: (req) => !req.body.email,
 });
 
+// Login: anti brute-force. Por cuenta (email) para no castigar IPs compartidas (NAT);
+// si falta el email, cae a la IP. 10 intentos / 15 min.
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  keyGenerator: (req) => (req.body.email || '').toLowerCase() || req.ip,
+  handler: (_req, res) =>
+    res.status(429).json({ code: 'RATE_LIMIT_EXCEEDED', message: 'Too many login attempts. Try again in a few minutes.' }),
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Registro: anti creación masiva de cuentas. Por IP (requiere `trust proxy`), 10 / hora.
+const registerLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 10,
+  handler: (_req, res) =>
+    res.status(429).json({ code: 'RATE_LIMIT_EXCEEDED', message: 'Too many sign-up attempts. Try again later.' }),
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
 // ── POST /api/auth/register ───────────────────────────────────────────────────
 
-router.post('/register', async (req, res, next) => {
+router.post('/register', registerLimiter, async (req, res, next) => {
   try {
     const { name, email, password, referralCode, inviteToken, clinicSlug, clinicCapturedAt, clinicSrc } = req.body;
 
@@ -149,7 +171,7 @@ router.post('/register', async (req, res, next) => {
 
 // ── POST /api/auth/login ──────────────────────────────────────────────────────
 
-router.post('/login', async (req, res, next) => {
+router.post('/login', loginLimiter, async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
