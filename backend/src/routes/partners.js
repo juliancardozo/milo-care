@@ -61,6 +61,52 @@ router.post('/', authenticate, adminAuth, async (req, res, next) => {
   }
 });
 
+// GET /api/partners  (admin) — listado de partners.
+router.get('/', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const partners = await Partner.find().sort({ createdAt: -1 });
+    return res.json({ partners: partners.map(partnerResponse) });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// Campos editables de un partner (nunca toca apiKeyHash directamente).
+const EDITABLE = ['name', 'slug', 'type', 'branding', 'contract', 'billing', 'features', 'webhookUrl', 'status'];
+
+// PATCH /api/partners/:id  (admin) — edita el partner.
+router.patch('/:id', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    for (const key of EDITABLE) {
+      if (req.body[key] === undefined) continue;
+      if (key === 'slug') partner.slug = String(req.body.slug).toLowerCase().trim();
+      else partner[key] = req.body[key];
+    }
+    await partner.save();
+    return res.json(partnerResponse(partner));
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/partners/:id/api-key/rotate  (admin) — regenera la API key (la muestra una vez).
+router.post('/:id/api-key/rotate', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    const apiKey = generateApiKey();
+    partner.apiKeyHash = hashApiKey(apiKey);
+    await partner.save();
+    return res.json({ ...partnerResponse(partner), apiKey });
+  } catch (err) {
+    next(err);
+  }
+});
+
 // GET /api/partners/:id  (admin) — detalle del partner.
 router.get('/:id', authenticate, adminAuth, async (req, res, next) => {
   try {

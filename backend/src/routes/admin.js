@@ -6,6 +6,7 @@ const adminAuth = require('../middleware/adminAuth');
 const User = require('../models/User');
 const Lead = require('../models/Lead');
 const Event = require('../models/Event');
+const Partner = require('../models/Partner');
 const { deleteUserEvents } = require('../core/events/eventBus');
 const EmailService = require('../services/EmailService');
 
@@ -134,6 +135,7 @@ router.get('/users/:id', async (req, res, next) => {
       email: user.email,
       tier: user.tier,
       role: user.role || 'user',
+      partnerId: user.partnerId || null,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
       notificationPreferences: user.notificationPreferences,
@@ -148,21 +150,37 @@ router.get('/users/:id', async (req, res, next) => {
 
 router.patch('/users/:id', async (req, res, next) => {
   try {
-    const { name, tier, role } = req.body;
+    const { name, tier, role, partnerId } = req.body;
 
     if (tier !== undefined && !['free', 'premium'].includes(tier)) {
       return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'tier must be free or premium.' });
     }
-    if (role !== undefined && !['user', 'admin'].includes(role)) {
-      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'role must be user or admin.' });
+    if (role !== undefined && !['user', 'admin', 'partner_admin'].includes(role)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'role must be user, admin or partner_admin.' });
     }
 
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
+    // Vínculo a un partner (para partner_admin). null/'' lo desvincula.
+    if (partnerId !== undefined) {
+      if (partnerId === null || partnerId === '') {
+        user.partnerId = null;
+      } else {
+        const partner = await Partner.findById(partnerId).select('_id');
+        if (!partner) return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'partnerId does not exist.' });
+        user.partnerId = partner._id;
+      }
+    }
+
     if (name !== undefined) user.name = String(name).trim();
     if (tier !== undefined) user.tier = tier;
     if (role !== undefined) user.role = role;
+
+    // Un partner_admin necesita un partner vinculado.
+    if (user.role === 'partner_admin' && !user.partnerId) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'partner_admin requires a partnerId.' });
+    }
 
     await user.save();
 
@@ -172,6 +190,7 @@ router.patch('/users/:id', async (req, res, next) => {
       email: user.email,
       tier: user.tier,
       role: user.role,
+      partnerId: user.partnerId || null,
     });
   } catch (err) {
     next(err);
