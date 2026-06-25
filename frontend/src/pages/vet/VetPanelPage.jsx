@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { getVetPanel } from '../../services/clinicApi';
 import WeeklyBars from '../../components/WeeklyBars';
 import ClinicQRCard from '../../components/ClinicQRCard';
+import VetCertifyPanel from '../../components/VetCertifyPanel';
 import { useI18n } from '../../i18n/I18nProvider';
 import '../../styles/vet-panel.css';
 
@@ -110,6 +111,9 @@ export default function VetPanelPage() {
               </ul>
             )}
           </section>
+
+          {/* Certificar carnets de pacientes (atestaciones → sello de la clínica) */}
+          <VetCertifyPanel />
         </div>
 
         {/* Columna lateral: QR + compartir */}

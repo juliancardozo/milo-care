@@ -224,3 +224,19 @@
   .qrc-card { width: 300px; }
   .qrc-mini { flex-direction: column; text-align: center; align-items: center; }
 }
+
+/* ── Certificar carnets (atestaciones del vet) ─────────────────────────────── */
+.vp-certify-sub { font-size: .85rem; color: var(--color-muted); margin: 0 0 12px; line-height: 1.45; }
+.vp-certify-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 14px; }
+.vp-certify-dog-head { margin-bottom: 6px; }
+.vp-certify-items { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.vp-certify-item { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.vp-certify-name { font-size: .88rem; color: var(--color-text); }
+.vp-certify-done { font-size: .74rem; font-weight: 700; color: #065f46; white-space: nowrap; }
+.vp-certify-btn {
+  font-size: .76rem; font-weight: 700; border: 1px solid var(--color-primary);
+  color: var(--color-primary); background: var(--color-surface);
+  border-radius: 999px; padding: 5px 12px; cursor: pointer; white-space: nowrap;
+}
+.vp-certify-btn:hover:not(:disabled) { background: var(--color-primary); color: #fff; }
+.vp-certify-btn:disabled { opacity: .55; cursor: default; }

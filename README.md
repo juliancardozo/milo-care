@@ -328,6 +328,25 @@ branding Milo Care default.
 http://localhost:5173/?partner=acme
 ```
 
+## Monetización B2B2C — "mascota activa" (Fase 2, en curso)
+
+La unidad de facturación y North Star: `isPetActive(pet, month)` (`services/petActivity.js`),
+función **pura y testeable**. Un perro es activo en un mes calendario (UTC) si tuvo ≥1
+evento de salud (vacuna, desparasitación, medicación, cita, síntoma, consulta) o una
+atestación cumplida en ese mes. Es el insumo del job mensual de metering / `BillingRecord`
+(pendientes). El checkout B2C con Mercado Pago también queda pendiente en esta fase.
+
+### Certificación veterinaria desde el panel
+
+Además del link de expediente, el vet logueado certifica carnets de **su** cohorte:
+
+| Método | Ruta | Acceso | Descripción |
+| --- | --- | --- | --- |
+| `GET` | `/api/vet-portal/patients` | vet | Pacientes de la clínica con ítems atestables |
+| `POST` | `/api/vet-portal/dogs/:dogId/attest` | vet | Certifica una vacuna/desparasitación (aislado por cohorte; otra clínica → 403) |
+
+Ver [docs/petscore-certification.md](docs/petscore-certification.md) para el diseño del sello.
+
 ## Estado del proyecto
 
 - MVP funcional implementado

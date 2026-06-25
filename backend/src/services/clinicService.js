@@ -279,6 +279,39 @@ async function computePanel(clinic, { now = new Date() } = {}) {
   };
 }
 
+/**
+ * Pacientes de la clínica con sus ítems atestables (vacunas/desparasitación
+ * aplicadas) y el estado de validación. Aislamiento por cohorte: solo perros de
+ * usuarios atribuidos a ESTA clínica. Solo agregados/ítems del expediente — no
+ * expone datos sensibles del tutor más allá del nombre de pila.
+ */
+async function listAttestablePatients(clinic) {
+  const users = await User.find({ acquisitionClinicId: clinic._id })
+    .select('name dogs')
+    .lean();
+
+  const patients = [];
+  users.forEach((u) => {
+    const ownerFirstName = (u.name || '').trim().split(/\s+/)[0] || '';
+    (u.dogs || []).forEach((dog) => {
+      const mapItem = (r, kind) => ({
+        kind,
+        itemId: String(r._id),
+        name: r.vaccineName || r.productName,
+        dateAdministered: r.dateAdministered || null,
+        vetValidatedAt: r.vetValidatedAt || null,
+      });
+      const vaccinations = (dog.vaccinations || []).filter((v) => v.dateAdministered).map((v) => mapItem(v, 'vaccination'));
+      const deworming = (dog.dewormingHistory || []).filter((d) => d.dateAdministered).map((d) => mapItem(d, 'deworming'));
+      if (vaccinations.length || deworming.length) {
+        patients.push({ dogId: String(dog._id), dogName: dog.name, ownerFirstName, vaccinations, deworming });
+      }
+    });
+  });
+
+  return patients;
+}
+
 module.exports = {
   ATTRIBUTION_WINDOW_DAYS,
   MIN_SAVED_PER_ACTIVE,
@@ -292,4 +325,5 @@ module.exports = {
   attributeSignup,
   grantClinicIncentiveOnActivation,
   computePanel,
+  listAttestablePatients,
 };

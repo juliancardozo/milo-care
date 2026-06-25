@@ -45,6 +45,9 @@ export const getPublicClinic = (slug) => api.get(`/public/clinics/${slug}`);
 // Vet (autoservicio, secundario) + panel
 export const vetPortalRegister = (payload) => api.post('/vet-portal/register', payload);
 export const getVetPanel = () => api.get('/vet-portal/panel');
+// Certificación de carnets: pacientes de la clínica + atestar un ítem.
+export const getVetPatients = () => api.get('/vet-portal/patients');
+export const attestVetItem = (dogId, payload) => api.post(`/vet-portal/dogs/${dogId}/attest`, payload);
 
 // Admin/adminVet — gestión de clínicas
 export const adminListClinics = () => api.get('/admin/clinics');

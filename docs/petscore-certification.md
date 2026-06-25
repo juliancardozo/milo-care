@@ -22,9 +22,14 @@
   consentimiento y atestaciones (base legal Ley 25.326 AR / 18.331 UY, GDPR).
 - **`VetAttestation`** (`models/VetAttestation.js`) — atestación discreta por (perro, ítem),
   con identidad opcional de vet/clínica y vigencia (`expiresAt`, atada al refuerzo del ítem).
-- **Flujo de atestación** sobre el `vetShare` existente (`POST /api/vet/:token/validate`):
-  - `optionalAuth`: vet logueado → `certified`; anónimo → `verified`.
-  - setea `vetValidatedAt` real en el subdoc + crea/refresca `VetAttestation` + `AuditLog`.
+- **Flujo de atestación** (núcleo compartido en `services/AttestationService`):
+  - **Por link** (`POST /api/vet/:token/validate`, `optionalAuth`): vet logueado →
+    `certified`; anónimo → `verified`.
+  - **Desde el panel autenticado** (`POST /api/vet-portal/dogs/:dogId/attest`,
+    `requireVet`): el vet certifica pacientes de **su** cohorte (aislamiento por
+    `acquisitionClinicId`; perro de otra clínica → 403). `GET /api/vet-portal/patients`
+    lista los carnets atestables. UI: sección "Certificar carnets" en el panel del vet.
+  - Ambos caminos setean `vetValidatedAt`, crean/refrescan `VetAttestation` + `AuditLog`.
   - generar/revocar el link de expediente registra `consent_given` / `consent_revoked`.
 - **Sello en el Health Score** (`GET /api/dogs/:dogId/health-score`) detrás de
   `featureFlags.vetSealEnabled` (default on): agrega `verification` sin tocar `score`.
