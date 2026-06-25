@@ -17,7 +17,12 @@ const billingRecordSchema = new Schema(
     pricePerActivePet: { type: Number, default: 0 },
     total: { type: Number, default: 0 },
     currency: { type: String, enum: ['ARS', 'UYU', 'USD'], default: 'USD' },
-    status: { type: String, enum: ['draft', 'issued', 'paid'], default: 'issued' },
+    status: { type: String, enum: ['draft', 'issued', 'paid', 'failed'], default: 'issued' },
+    // Cobro automático al partner.
+    chargedAt: { type: Date, default: null },
+    chargeRef: { type: String, default: null }, // id del pago en el proveedor
+    chargeError: { type: String, default: null },
+    chargeAttempts: { type: Number, default: 0 },
   },
   { timestamps: true }
 );

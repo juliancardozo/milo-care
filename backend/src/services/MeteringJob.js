@@ -4,6 +4,7 @@ const cron = require('node-cron');
 const Partner = require('../models/Partner');
 const featureFlags = require('../config/featureFlags');
 const MeteringService = require('./MeteringService');
+const ChargeService = require('./ChargeService');
 
 /**
  * Job mensual de metering/facturación B2B2C. Corre a diario 03:00 y procesa cada
@@ -21,6 +22,11 @@ async function runMetering(now = new Date()) {
     try {
       // eslint-disable-next-line no-await-in-loop
       const record = await MeteringService.generateBillingRecord(partner, month);
+      // Cobro automático si el partner lo tiene habilitado (si no, queda manual).
+      if (partner.billing?.autoCharge) {
+        // eslint-disable-next-line no-await-in-loop
+        await ChargeService.chargeBillingRecord(record, partner);
+      }
       results.push(record);
     } catch (err) {
       console.error('[Metering] partner', String(partner._id), 'failed:', err.message);

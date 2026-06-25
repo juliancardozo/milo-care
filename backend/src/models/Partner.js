@@ -38,6 +38,19 @@ const contractSchema = new Schema(
   { _id: false }
 );
 
+// Método de cobro al partner. `autoCharge` habilita el cobro automático del
+// BillingRecord; sin método de pago configurado, la factura queda manual.
+const billingSchema = new Schema(
+  {
+    autoCharge: { type: Boolean, default: false },
+    provider: { type: String, enum: ['mercadopago', 'manual'], default: 'manual' },
+    // Token de pago / tarjeta guardada del partner (no se expone en respuestas).
+    paymentToken: { type: String, default: null },
+    payerEmail: { type: String, default: null, lowercase: true, trim: true },
+  },
+  { _id: false }
+);
+
 const partnerSchema = new Schema(
   {
     name: { type: String, required: true, trim: true, maxlength: 120 },
@@ -46,6 +59,7 @@ const partnerSchema = new Schema(
     type: { type: String, enum: ['insurer', 'fintech', 'bank', 'vet'], required: true },
     branding: { type: brandingSchema, default: () => ({}) },
     contract: { type: contractSchema, default: () => ({}) },
+    billing: { type: billingSchema, default: () => ({}) },
     // Feature flags habilitadas para la cohorte de este partner (gating por partner).
     features: { type: [String], default: [] },
     // Hash de la API key del partner (la key en claro solo se muestra al crearla).

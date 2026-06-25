@@ -7,6 +7,7 @@ const partnerScope = require('../middleware/partnerScope');
 const Partner = require('../models/Partner');
 const MeteringService = require('../services/MeteringService');
 const MetricsService = require('../services/MetricsService');
+const ChargeService = require('../services/ChargeService');
 const { generateApiKey, hashApiKey } = require('../services/apiKey');
 
 const router = express.Router();
@@ -111,6 +112,37 @@ router.get('/:id/billing', authenticate, partnerScope, async (req, res, next) =>
       total: record.total,
       currency: record.currency,
       status: record.status,
+      chargedAt: record.chargedAt,
+      chargeRef: record.chargeRef,
+    });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/partners/:id/billing/charge?month=YYYY-MM  (admin)
+// Genera la factura del mes y cobra al partner (cobro automático). Idempotente.
+router.post('/:id/billing/charge', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    const month = req.query.month || MeteringService.previousMonthKey(new Date());
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'month must be YYYY-MM.' });
+    }
+
+    const record = await MeteringService.generateBillingRecord(partner, month);
+    const result = await ChargeService.chargeBillingRecord(record, partner);
+    return res.json({
+      month: record.month,
+      total: record.total,
+      currency: record.currency,
+      status: record.status,
+      chargedAt: record.chargedAt,
+      chargeRef: record.chargeRef,
+      chargeError: record.chargeError,
+      result,
     });
   } catch (err) {
     next(err);

@@ -21,11 +21,13 @@ jest.mock('../../src/services/MeteringService', () => ({
   previousMonthKey: () => '2026-05',
   generateBillingRecord: jest.fn(),
 }));
+jest.mock('../../src/services/ChargeService', () => ({ chargeBillingRecord: jest.fn() }));
 
 const User = require('../../src/models/User');
 const Partner = require('../../src/models/Partner');
 const MercadoPagoService = require('../../src/services/MercadoPagoService');
 const MeteringService = require('../../src/services/MeteringService');
+const ChargeService = require('../../src/services/ChargeService');
 const app = require('../../src/app');
 
 describe('Contract: billing checkout + webhook + partner billing', () => {
@@ -92,6 +94,20 @@ describe('Contract: billing checkout + webhook + partner billing', () => {
       expect(res.body.total).toBe(110);
       expect(res.body.activePets).toBe(2);
       expect(res.body.setupFeeApplied).toBe(100);
+    });
+  });
+
+  describe('POST /api/partners/:id/billing/charge', () => {
+    it('genera la factura y cobra al partner', async () => {
+      Partner.findById.mockResolvedValue({ _id: 'p1', billing: { autoCharge: true } });
+      MeteringService.generateBillingRecord.mockResolvedValue({ month: '2026-05', total: 110, currency: 'UYU', status: 'paid', chargedAt: new Date(), chargeRef: 'pay-1' });
+      ChargeService.chargeBillingRecord.mockResolvedValue({ charged: true, status: 'paid' });
+
+      const res = await request(app).post('/api/partners/p1/billing/charge?month=2026-05');
+      expect(res.status).toBe(200);
+      expect(res.body.status).toBe('paid');
+      expect(res.body.chargeRef).toBe('pay-1');
+      expect(ChargeService.chargeBillingRecord).toHaveBeenCalled();
     });
   });
 });
