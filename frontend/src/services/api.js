@@ -44,6 +44,7 @@ export const getAdminPartners = () => api.get('/partners');
 export const createAdminPartner = (data) => api.post('/partners', data);
 export const updateAdminPartner = (id, data) => api.patch(`/partners/${id}`, data);
 export const rotatePartnerApiKey = (id) => api.post(`/partners/${id}/api-key/rotate`);
+export const invitePartnerAdmin = (id, data) => api.post(`/partners/${id}/invite`, data);
 
 // ── Vaccine catalog ───────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAdminPartners, createAdminPartner, updateAdminPartner, rotatePartnerApiKey } from '../../services/api';
+import { getAdminPartners, createAdminPartner, updateAdminPartner, rotatePartnerApiKey, invitePartnerAdmin } from '../../services/api';
 
 const EMPTY = {
   name: '', slug: '', type: 'insurer', status: 'active', webhookUrl: '',
@@ -19,6 +19,9 @@ export default function AdminPartnersPage() {
   const [editingId, setEditingId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [apiKey, setApiKey] = useState(''); // se muestra una sola vez
+  const [inviting, setInviting] = useState(null); // partnerId con el form de invitación abierto
+  const [invite, setInvite] = useState({ email: '', name: '' });
+  const [inviteResult, setInviteResult] = useState(null);
 
   const top = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const nested = (g, k, isNum) => (e) => setForm((f) => ({ ...f, [g]: { ...f[g], [k]: isNum ? Number(e.target.value) : e.target.value } }));
@@ -63,6 +66,25 @@ export default function AdminPartnersPage() {
       setError(err.response?.data?.message || 'No se pudo guardar el partner.');
     } finally {
       setSaving(false);
+    }
+  }
+
+  function openInvite(p) {
+    setInviting(inviting === p.id ? null : p.id);
+    setInvite({ email: '', name: '' });
+    setInviteResult(null);
+  }
+
+  async function sendInvite(p, e) {
+    e.preventDefault();
+    setError('');
+    setInviteResult(null);
+    try {
+      const { data } = await invitePartnerAdmin(p.id, invite);
+      setInviteResult({ partnerId: p.id, ...data });
+      setInvite({ email: '', name: '' });
+    } catch (err) {
+      setError(err.response?.data?.message || 'No se pudo invitar.');
     }
   }
 
@@ -152,8 +174,35 @@ export default function AdminPartnersPage() {
                 </div>
                 <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                   <button type="button" className="btn-secondary btn-sm" onClick={() => startEdit(p)}>Editar</button>
+                  <button type="button" className="btn-secondary btn-sm" onClick={() => openInvite(p)}>Invitar admin</button>
                   <button type="button" className="btn-secondary btn-sm" onClick={() => rotate(p)}>Rotar key</button>
                 </div>
+
+                {inviting === p.id && (
+                  <form onSubmit={(e) => sendInvite(p, e)} style={{ flexBasis: '100%', marginTop: '10px', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                    <div className="field" style={{ margin: 0, flex: '1 1 200px' }}>
+                      <label>Email del partner_admin</label>
+                      <input type="email" value={invite.email} onChange={(e) => setInvite({ ...invite, email: e.target.value })} placeholder="admin@aseguradora.com" required />
+                    </div>
+                    <div className="field" style={{ margin: 0, flex: '1 1 140px' }}>
+                      <label>Nombre (opcional)</label>
+                      <input value={invite.name} onChange={(e) => setInvite({ ...invite, name: e.target.value })} />
+                    </div>
+                    <button type="submit" className="btn-sm">Enviar invitación</button>
+                  </form>
+                )}
+                {inviteResult?.partnerId === p.id && (
+                  <div style={{ flexBasis: '100%', marginTop: '8px', fontSize: '.82rem' }}>
+                    {inviteResult.emailed
+                      ? <p className="success-message">Invitación enviada a {inviteResult.email} ✓</p>
+                      : (
+                        <div className="card" style={{ borderLeft: '4px solid #f59e0b', padding: '10px' }}>
+                          <strong>Email no configurado — pasale este link de acceso (vence en 15 min):</strong>
+                          <code style={{ display: 'block', marginTop: '6px', wordBreak: 'break-all' }}>{inviteResult.magicUrl}</code>
+                        </div>
+                      )}
+                  </div>
+                )}
               </li>
             ))}
           </ul>

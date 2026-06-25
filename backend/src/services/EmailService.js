@@ -269,6 +269,25 @@ function tplMagicLink({ userName, magicUrl }) {
   });
 }
 
+function tplPartnerInvite({ userName, partnerName, magicUrl }) {
+  return layout({
+    title: `Acceso al panel de ${partnerName} — Milo Care`,
+    preheader: `Te invitaron a administrar el panel de ${partnerName}. El enlace vence en 15 minutos.`,
+    body: `
+      <h2 style="margin:0 0 16px;font-size:22px;">Tu acceso al panel de ${partnerName} 🤝</h2>
+      <p>Hola ${userName || ''},</p>
+      <p>Te invitaron a administrar el panel de <strong>${partnerName}</strong> en Milo Care. Vas a ver las métricas agregadas y la facturación de tu cohorte (sin datos clínicos individuales de las mascotas).</p>
+      <p>Tocá el botón para ingresar. El enlace es válido por <strong>15 minutos</strong> y se usa una sola vez.</p>
+      <p style="color:#6b7280;font-size:13px;margin-top:20px;">
+        Si el botón no funciona, copiá y pegá este enlace en tu navegador:<br/>
+        <a href="${magicUrl}" style="word-break:break-all;">${magicUrl}</a>
+      </p>
+    `,
+    ctaUrl: magicUrl,
+    ctaLabel: 'Entrar al panel',
+  });
+}
+
 function tplPremiumInterest({ userName, userEmail, userId, dogsCount, requestedAt }) {
   const dateStr = fmtDateTime(requestedAt || new Date());
   return layout({
@@ -507,6 +526,15 @@ const EmailService = {
       to,
       subject: 'Tu link de ingreso a Milo Care 🐾',
       html: tplMagicLink({ userName, magicUrl }),
+    });
+  },
+
+  async sendPartnerAdminInvite({ to, userName, partnerName, magicUrl }) {
+    await sendWithRetry({
+      from: FROM,
+      to,
+      subject: `Te invitaron al panel de ${partnerName} 🤝`,
+      html: tplPartnerInvite({ userName, partnerName, magicUrl }),
     });
   },
 

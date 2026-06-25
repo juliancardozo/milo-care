@@ -7,10 +7,14 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || 'test-secret';
 
 jest.mock('../../src/middleware/auth', () => (req, _res, next) => { req.user = { id: 'admin-1', role: 'admin' }; next(); });
 jest.mock('../../src/models/Partner', () => ({ find: jest.fn(), findById: jest.fn(), create: jest.fn() }));
-jest.mock('../../src/models/User', () => ({ findById: jest.fn() }));
+jest.mock('../../src/models/User', () => ({ findById: jest.fn(), findOne: jest.fn(), create: jest.fn() }));
+jest.mock('../../src/models/MagicLoginToken', () => ({ deleteMany: jest.fn().mockResolvedValue({}), create: jest.fn().mockResolvedValue({}) }));
+jest.mock('../../src/services/EmailService', () => ({ sendPartnerAdminInvite: jest.fn().mockResolvedValue() }));
+jest.mock('../../src/services/referralService', () => ({ generateUniqueCode: jest.fn().mockResolvedValue('DEMO-XYZ') }));
 
 const Partner = require('../../src/models/Partner');
 const User = require('../../src/models/User');
+const EmailService = require('../../src/services/EmailService');
 const app = require('../../src/app');
 
 function mkPartner(over = {}) {
@@ -73,6 +77,54 @@ describe('Contract: gestión de partners (admin) + asignar partner_admin', () =>
       Partner.findById.mockReturnValue({ select: () => Promise.resolve(null) });
       const res = await request(app).patch('/api/admin/users/u1').send({ partnerId: 'nope' });
       expect(res.status).toBe(400);
+    });
+  });
+
+  describe('POST /api/partners/:id/invite — invitar partner_admin por email', () => {
+    it('email nuevo → crea usuario partner_admin + manda magic link', async () => {
+      Partner.findById.mockResolvedValue(mkPartner());
+      User.findOne.mockResolvedValue(null);
+      User.create.mockResolvedValue({ _id: 'newu', email: 'nuevo@aseg.com', name: 'nuevo', role: 'partner_admin' });
+
+      const res = await request(app).post('/api/partners/p1/invite').send({ email: 'nuevo@aseg.com' });
+      expect(res.status).toBe(201);
+      expect(res.body.role).toBe('partner_admin');
+      expect(res.body.emailed).toBe(true);
+      expect(EmailService.sendPartnerAdminInvite).toHaveBeenCalled();
+      expect(res.body).not.toHaveProperty('magicUrl'); // no se filtra el token si el email salió
+    });
+
+    it('usuario existente → lo vincula como partner_admin', async () => {
+      Partner.findById.mockResolvedValue(mkPartner());
+      User.findOne.mockResolvedValue(mkUser({ role: 'user' }));
+      const res = await request(app).post('/api/partners/p1/invite').send({ email: 'a@b.com' });
+      expect(res.status).toBe(201);
+      expect(res.body.role).toBe('partner_admin');
+      expect(String(res.body.partnerId)).toBe('p1');
+    });
+
+    it('email inválido → 400', async () => {
+      const res = await request(app).post('/api/partners/p1/invite').send({ email: 'no-es-email' });
+      expect(res.status).toBe(400);
+    });
+
+    it('partner inexistente → 404', async () => {
+      Partner.findById.mockResolvedValue(null);
+      const res = await request(app).post('/api/partners/zzz/invite').send({ email: 'x@y.com' });
+      expect(res.status).toBe(404);
+    });
+
+    it('si el email falla, devuelve el magicUrl para entrega manual', async () => {
+      Partner.findById.mockResolvedValue(mkPartner());
+      User.findOne.mockResolvedValue(null);
+      User.create.mockResolvedValue({ _id: 'newu', email: 'x@y.com', name: 'x', role: 'partner_admin' });
+      EmailService.sendPartnerAdminInvite.mockRejectedValueOnce(new Error('no resend'));
+
+      const res = await request(app).post('/api/partners/p1/invite').send({ email: 'x@y.com' });
+      expect(res.status).toBe(201);
+      expect(res.body.emailed).toBe(false);
+      expect(res.body.magicUrl).toContain('/magic-login?token=');
+      expect(res.body.magicUrl).toContain('next=/partner');
     });
   });
 });

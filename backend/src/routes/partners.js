@@ -1,14 +1,24 @@
 'use strict';
 
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
+const validator = require('validator');
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const adminAuth = require('../middleware/adminAuth');
 const partnerScope = require('../middleware/partnerScope');
 const Partner = require('../models/Partner');
+const User = require('../models/User');
+const MagicLoginToken = require('../models/MagicLoginToken');
 const MeteringService = require('../services/MeteringService');
 const MetricsService = require('../services/MetricsService');
 const ChargeService = require('../services/ChargeService');
+const EmailService = require('../services/EmailService');
+const referralService = require('../services/referralService');
 const { generateApiKey, hashApiKey } = require('../services/apiKey');
+
+const MAGIC_TOKEN_TTL_MS = 15 * 60 * 1000;
+const SALT_ROUNDS = 12;
 
 const router = express.Router();
 
@@ -102,6 +112,67 @@ router.post('/:id/api-key/rotate', authenticate, adminAuth, async (req, res, nex
     partner.apiKeyHash = hashApiKey(apiKey);
     await partner.save();
     return res.json({ ...partnerResponse(partner), apiKey });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/partners/:id/invite  (admin)
+// Invita a un partner_admin por email: crea (o vincula) el usuario con rol
+// partner_admin + partnerId y le manda un magic link que cae directo en /partner.
+router.post('/:id/invite', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const { email, name } = req.body || {};
+    if (!email || !validator.isEmail(email)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'A valid email is required.' });
+    }
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    let user = await User.findOne({ email: String(email).toLowerCase() });
+    if (user) {
+      // No degradar a un admin de plataforma; cualquier otro pasa a partner_admin.
+      if (!['admin', 'adminVet'].includes(user.role)) user.role = 'partner_admin';
+      user.partnerId = partner._id;
+      await user.save();
+    } else {
+      const randomPass = crypto.randomBytes(24).toString('hex');
+      user = await User.create({
+        name: (name && String(name).trim()) || String(email).split('@')[0],
+        email: String(email).toLowerCase(),
+        passwordHash: await bcrypt.hash(randomPass, SALT_ROUNDS),
+        role: 'partner_admin',
+        partnerId: partner._id,
+        referralCode: await referralService.generateUniqueCode(),
+      });
+    }
+
+    // Magic link de un solo uso (15 min) que aterriza en el panel del partner.
+    await MagicLoginToken.deleteMany({ userId: user._id });
+    const plainToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = await bcrypt.hash(plainToken, SALT_ROUNDS);
+    await MagicLoginToken.create({ userId: user._id, tokenHash, expiresAt: new Date(Date.now() + MAGIC_TOKEN_TTL_MS) });
+    const base = process.env.APP_URL || 'http://localhost:5173';
+    const magicUrl = `${base}/magic-login?token=${plainToken}&userId=${user._id}&next=/partner`;
+
+    let emailed = true;
+    try {
+      await EmailService.sendPartnerAdminInvite({ to: user.email, userName: user.name, partnerName: partner.name, magicUrl });
+    } catch (err) {
+      emailed = false;
+      console.error('[partner invite] email failed:', err.message);
+    }
+
+    return res.status(201).json({
+      userId: user._id,
+      email: user.email,
+      role: user.role,
+      partnerId: String(partner._id),
+      emailed,
+      // Si el email no salió (p. ej. sin RESEND configurado), devolvemos el link
+      // para que el admin lo entregue manualmente.
+      ...(emailed ? {} : { magicUrl }),
+    });
   } catch (err) {
     next(err);
   }
