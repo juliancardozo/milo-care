@@ -265,6 +265,69 @@ docker exec milocura-mongo mongosh milocura \
 5. Revisar historial completo
 6. Recibir recordatorios por correo segun configuracion
 
+## Companion (B2B2C) — Fase 1
+
+Capa **white-label / multi-tenant** que monta Milo Care sobre la marca de un partner
+(aseguradora, fintech, banco, veterinaria). **Es aditiva**: todo usuario o perro sin
+`partnerId` funciona exactamente igual que el producto B2C actual.
+
+### Feature flag
+
+```bash
+# backend/.env
+COMPANION_ENABLED=true   # default false: oculta (404) las rutas de partners
+```
+
+Las rutas de export PDF / compartir WhatsApp **no** dependen del flag (son premium B2C).
+
+### Modelo de datos (aditivo, nullable)
+
+- **`Partner`** — `name`, `slug` (white-label), `type` (`insurer|fintech|bank|vet`),
+  `branding` (`logoUrl`, `primaryColor`, `secondaryColor`, `appName`), `contract`
+  (`setupFee`, `pricePerActivePet`, `currency`, `billingDay`), `features[]`,
+  `apiKeyHash`, `webhookUrl`, `status`.
+- **`User`** (+): `partnerId` (nullable), rol `partner_admin`.
+- **`User.dogs[]`** (+): `partnerId` (nullable), `sponsorshipStatus` (`none|sponsored`).
+- **`Clinic`** (+): `partnerId` (nullable) — la clínica del Kit Veterinario opcionalmente
+  se vincula a un Partner; sigue funcionando igual.
+
+Migración idempotente (backfill de defaults nullable, no toca otros datos):
+
+```bash
+cd backend && node scripts/migrations/001-partner-fields.js
+```
+
+### EntitlementService
+
+Única fuente de verdad de qué features están habilitadas para un `(user, dog)`. Una
+feature se desbloquea por **premium personal** (`User.isPremiumActive()`) **O** por
+**patrocinio del partner** (`dog.sponsorshipStatus === 'sponsored'`). Las features de
+alcance usuario (ej. `unlimitedDogs`) solo las habilita el premium.
+
+### Endpoints nuevos
+
+| Método | Ruta | Acceso | Descripción |
+| --- | --- | --- | --- |
+| `POST` | `/api/partners` | admin | Crea partner; devuelve la API key en claro **una vez** |
+| `GET` | `/api/partners/:id` | admin | Detalle del partner (sin hash de API key) |
+| `GET` | `/api/public/partners/by-slug/:slug/theme` | público | Branding white-label por slug |
+| `GET` | `/api/dogs/:dogId/export.pdf` | tutor/co-tutor | Carnet PDF (gated: premium o patrocinio) |
+| `POST` | `/api/dogs/:dogId/share/whatsapp` | tutor/co-tutor | `{ text, link }` para compartir (gated) |
+
+Sin entitlement, las rutas de export/share responden `403 UPGRADE_REQUIRED`.
+
+### White-label en el frontend
+
+`ThemeProvider` resuelve el partner por **subdominio** (`acme.milocare.online`) o por
+**`?partner=<slug>`** (dev/QA), pide el branding a `/public/partners/by-slug/:slug/theme`
+y aplica las CSS variables (`--color-primary`, etc.) + nombre de app. Sin partner →
+branding Milo Care default.
+
+```bash
+# probar theming en dev sin DNS:
+http://localhost:5173/?partner=acme
+```
+
 ## Estado del proyecto
 
 - MVP funcional implementado
