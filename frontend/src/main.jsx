@@ -6,15 +6,18 @@ import { Provider } from 'react-redux';
 import { store } from './store/index.js';
 import App from './App.jsx';
 import { I18nProvider } from './i18n/I18nProvider.jsx';
+import ThemeProvider from './theme/ThemeProvider.jsx';
 import './utils/pwaInstall'; // captura beforeinstallprompt lo antes posible
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <I18nProvider>
       <Provider store={store}>
-        <BrowserRouter>
-          <App />
-        </BrowserRouter>
+        <ThemeProvider>
+          <BrowserRouter>
+            <App />
+          </BrowserRouter>
+        </ThemeProvider>
       </Provider>
     </I18nProvider>
   </React.StrictMode>

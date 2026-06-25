@@ -22,6 +22,7 @@ import {
 } from '../store/clinicalHistorySlice';
 import { selectSymptoms, selectConsultations, selectVaccinations, selectMedications, selectAppointments } from '../store/clinicalHistorySlice';
 import { getCheckinHistory } from '../services/checkinApi';
+import { shareDogWhatsapp } from '../services/partnerApi';
 import PdfTemplate from '../components/pdf/PdfTemplate';
 import '../styles/pdf-export.css';
 
@@ -154,6 +155,20 @@ export default function PdfExportPage() {
     }
   }
 
+  async function handleShareWhatsapp() {
+    try {
+      const recordUrl = `${window.location.origin}/dogs/${dogId}`;
+      const { data } = await shareDogWhatsapp(dogId, { recordUrl });
+      window.open(data.link, '_blank', 'noopener');
+    } catch (err) {
+      if (err.response?.data?.code === 'UPGRADE_REQUIRED') {
+        setError(t('pdf.upgradeRequired') || 'Compartir por WhatsApp requiere Premium.');
+      } else {
+        setError(err.response?.data?.message || err.message || 'Error sharing');
+      }
+    }
+  }
+
   const activeMeds = medications.filter((m) => m.status === 'active').length;
   const summaryItems = [
     { icon: '📋', label: t('pdf.includes.profile'), count: dog ? 1 : 0, always: true },
@@ -182,6 +197,9 @@ export default function PdfExportPage() {
           <Link to={`/dogs/${dogId}/share`} className="pdfx-btn-ghost">
             🏥 {t('explore.vetShare.title')}
           </Link>
+          <button className="pdfx-btn-ghost" onClick={handleShareWhatsapp}>
+            💬 {t('pdf.shareWhatsapp') || 'WhatsApp'}
+          </button>
           <button className="pdfx-btn" onClick={handleGeneratePdf} disabled={loading}>
             {downloadLabel}
           </button>
@@ -258,6 +276,7 @@ export default function PdfExportPage() {
       {/* Barra de acción fija (mobile): el CTA siempre a mano */}
       <div className="pdfx-actionbar-mobile">
         <Link to={`/dogs/${dogId}/share`} className="pdfx-btn-ghost">🏥</Link>
+        <button className="pdfx-btn-ghost" onClick={handleShareWhatsapp}>💬</button>
         <button className="pdfx-btn" onClick={handleGeneratePdf} disabled={loading}>
           {downloadLabel}
         </button>
