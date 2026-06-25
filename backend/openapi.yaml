@@ -1,29 +1,43 @@
 openapi: 3.0.3
 info:
-  title: Milo Care — Companion API (B2B2C)
+  title: Milo Care — API
   version: 1.0.0
   description: >
-    Endpoints de la capa Companion (multi-tenant / white-label / seguro /
-    monetización / certificación). Todo está detrás del flag `COMPANION_ENABLED`,
-    salvo el checkout/webhook B2C y el export/share (premium B2C).
+    API de Milo Care, organizada por **grupo de interés / audiencia**:
 
-    Guardrails: el coverage-check y el Claims Assistant son INFORMATIVOS, nunca
-    vinculantes. El partner ve solo agregados y datos consentidos — nunca dato
-    clínico individual.
+
+    - **Tutores** (B2C): el dueño gestiona la salud de su mascota.
+
+    - **Veterinarias**: portal de la clínica + atestaciones que sellan el Pet Score.
+
+    - **Aseguradoras**: lectura consentida de nivel de certificado y conversión de pólizas (API key).
+
+    - **Partners**: integración white-label genérica (branding, eventos, métricas).
+
+    - **Admin Milo Care**: alta y gestión de partners.
+
+
+    La capa Companion (partners / seguro / certificación) está detrás del flag
+    `COMPANION_ENABLED`. Guardrails: el coverage-check y el Claims Assistant son
+    INFORMATIVOS, nunca vinculantes. El partner ve solo agregados y datos
+    consentidos — nunca dato clínico individual.
 servers:
   - url: /api
     description: Backend Milo Care
 
 tags:
-  - name: Auth
-  - name: Partners
-  - name: White-label
-  - name: Export & Share
-  - name: Insurance
-  - name: Certificate & Consent
-  - name: Billing (B2C)
-  - name: Partner billing
-  - name: API v1 (partner key)
+  - name: Autenticación
+    description: Login y alta de cuenta. Común a todas las audiencias.
+  - name: API para Tutores
+    description: El dueño gestiona sus mascotas, su salud y su seguro (JWT de usuario).
+  - name: API para Veterinarias
+    description: Portal de la clínica y atestaciones clínicas que sellan el Pet Score.
+  - name: API para Aseguradoras
+    description: Lectura consentida (nivel de certificado) y conversión de pólizas. Auth por API key.
+  - name: API para Partners
+    description: Integración white-label genérica — branding, eventos, métricas agregadas.
+  - name: API para Admin Milo Care
+    description: Alta y gestión de partners (solo equipo Milo Care).
 
 components:
   securitySchemes:
@@ -31,12 +45,12 @@ components:
       type: http
       scheme: bearer
       bearerFormat: JWT
-      description: "JWT del usuario (tutor / admin / partner_admin). Se obtiene con POST /auth/login (o /auth/register, /auth/magic-login) y se envía como Authorization: Bearer <token>."
+      description: "JWT del usuario (tutor / vet / admin / partner_admin). Se obtiene con POST /auth/login (o /auth/register, /auth/magic-login) y se envía como Authorization: Bearer <token>."
     apiKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
-      description: "API key del partner (también aceptada como Authorization: Bearer)."
+      description: "API key del partner/aseguradora (también aceptada como Authorization: Bearer)."
   schemas:
     Error:
       type: object
@@ -56,18 +70,32 @@ components:
             role: { type: string, enum: [user, admin, adminVet, vet, partner_admin] }
             tier: { type: string, enum: [free, premium] }
             partnerId: { type: string, nullable: true }
-    Theme:
+    Dog:
       type: object
       properties:
-        slug: { type: string }
-        type: { type: string, enum: [insurer, fintech, bank, vet] }
-        branding:
-          type: object
-          properties:
-            appName: { type: string }
-            logoUrl: { type: string, nullable: true }
-            primaryColor: { type: string, nullable: true }
-            secondaryColor: { type: string, nullable: true }
+        id: { type: string }
+        name: { type: string, example: "Milo" }
+        breed: { type: string, example: "Border Collie" }
+        dateOfBirth: { type: string, format: date, example: "2022-04-15" }
+        photoUrl: { type: string, nullable: true }
+    DogInput:
+      type: object
+      required: [name, breed, dateOfBirth]
+      properties:
+        name: { type: string, example: "Milo" }
+        breed: { type: string, example: "Border Collie" }
+        dateOfBirth: { type: string, format: date, description: "En el pasado, máx. 30 años.", example: "2022-04-15" }
+        photoUrl: { type: string, nullable: true }
+    VaccinationInput:
+      type: object
+      required: [vaccineName, dateAdministered]
+      properties:
+        vaccineName: { type: string, example: "Rabia" }
+        dateAdministered: { type: string, format: date, example: "2026-03-01" }
+        nextDueDate: { type: string, format: date, nullable: true, description: "Si se omite, se sugiere desde el catálogo clínico (país + etapa de vida).", example: "2027-03-01" }
+        veterinarian: { type: string, nullable: true, example: "Dra. Gómez" }
+        lotNumber: { type: string, nullable: true, example: "RB-2026-014" }
+        notes: { type: string, nullable: true }
     CoverageCheck:
       type: object
       properties:
@@ -80,18 +108,18 @@ components:
         inCarencia: { type: boolean }
         message: { type: string }
         disclaimer: { type: string }
-    BillingRecord:
+    Theme:
       type: object
       properties:
-        month: { type: string, example: "2026-05" }
-        setupFeeApplied: { type: number }
-        activePets: { type: integer }
-        pricePerActivePet: { type: number }
-        total: { type: number }
-        currency: { type: string }
-        status: { type: string, enum: [draft, issued, paid, failed] }
-        chargedAt: { type: string, format: date-time, nullable: true }
-        chargeRef: { type: string, nullable: true }
+        slug: { type: string }
+        type: { type: string, enum: [insurer, fintech, bank, vet] }
+        branding:
+          type: object
+          properties:
+            appName: { type: string }
+            logoUrl: { type: string, nullable: true }
+            primaryColor: { type: string, nullable: true }
+            secondaryColor: { type: string, nullable: true }
     Metrics:
       type: object
       description: Solo agregados, sin PII clínica individual.
@@ -112,11 +140,67 @@ components:
         issuedAt: { type: string, format: date-time }
         validUntil: { type: string, format: date-time, nullable: true }
         status: { type: string }
+    PartnerInput:
+      type: object
+      required: [name, slug, type]
+      description: >
+        Alta de un partner. Los precios del contrato son una plantilla sugerida
+        (anclada al pricing one-pager, en USD) — ajustables por contrato.
+      properties:
+        name: { type: string, example: "Aseguradora Demo" }
+        slug: { type: string, description: "Identificador white-label (slug/subdominio), único y en minúsculas.", example: "aseguradora-demo" }
+        type: { type: string, enum: [insurer, fintech, bank, vet], example: insurer }
+        status: { type: string, enum: [active, paused], default: active }
+        webhookUrl: { type: string, nullable: true, example: "https://partner.example.com/webhooks/milo" }
+        branding:
+          type: object
+          properties:
+            appName: { type: string, example: "PetSeguro" }
+            primaryColor: { type: string, example: "#4f8ef7" }
+            secondaryColor: { type: string, example: "#3370d4" }
+            logoUrl: { type: string, nullable: true, example: "https://partner.example.com/logo.png" }
+        contract:
+          type: object
+          properties:
+            setupFee: { type: number, example: 3500 }
+            pricePerActivePet: { type: number, example: 0.9 }
+            pricePerLead: { type: number, description: "CPL — por lead calificado.", example: 10 }
+            pricePerConversion: { type: number, description: "CPA — por póliza convertida.", example: 40 }
+            currency: { type: string, enum: [ARS, UYU, USD], example: USD }
+            billingDay: { type: integer, minimum: 1, maximum: 28, example: 1 }
+        billing:
+          type: object
+          properties:
+            autoCharge: { type: boolean, example: false }
+            payerEmail: { type: string, nullable: true, example: "finanzas@partner.example.com" }
+    PartnerCreated:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        slug: { type: string }
+        type: { type: string }
+        apiKey: { type: string, description: "API key en claro — se muestra UNA sola vez al crear." }
+    BillingRecord:
+      type: object
+      properties:
+        month: { type: string, example: "2026-05" }
+        setupFeeApplied: { type: number }
+        activePets: { type: integer }
+        pricePerActivePet: { type: number }
+        total: { type: number }
+        currency: { type: string }
+        status: { type: string, enum: [draft, issued, paid, failed] }
+        chargedAt: { type: string, format: date-time, nullable: true }
+        chargeRef: { type: string, nullable: true }
 
 paths:
+  # ─────────────────────────────────────────────────────────────────────────
+  # Autenticación
+  # ─────────────────────────────────────────────────────────────────────────
   /auth/register:
     post:
-      tags: [Auth]
+      tags: [Autenticación]
       summary: Crea una cuenta y devuelve un JWT.
       requestBody:
         required: true
@@ -129,13 +213,14 @@ paths:
                 name: { type: string }
                 email: { type: string, format: email }
                 password: { type: string, minLength: 8 }
+            example: { name: "Ana Pérez", email: "ana@example.com", password: "unaClaveSegura" }
       responses:
         "201": { description: Creado, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
         "409": { description: El email ya está registrado }
 
   /auth/login:
     post:
-      tags: [Auth]
+      tags: [Autenticación]
       summary: Login con email y contraseña. Devuelve un JWT.
       requestBody:
         required: true
@@ -147,13 +232,14 @@ paths:
               properties:
                 email: { type: string, format: email }
                 password: { type: string }
+            example: { email: "ana@example.com", password: "unaClaveSegura" }
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
         "401": { description: Credenciales inválidas }
 
   /auth/magic-link:
     post:
-      tags: [Auth]
+      tags: [Autenticación]
       summary: Pide un link de ingreso sin contraseña al email (anti-enumeración → 200 siempre).
       requestBody:
         required: true
@@ -168,7 +254,7 @@ paths:
 
   /auth/magic-login:
     post:
-      tags: [Auth]
+      tags: [Autenticación]
       summary: Canjea el token del magic link e inicia sesión (devuelve JWT).
       requestBody:
         required: true
@@ -184,75 +270,93 @@ paths:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/AuthResponse" } } } }
         "400": { description: Link inválido o expirado }
 
-  /public/partners/by-slug/{slug}/theme:
+  # ─────────────────────────────────────────────────────────────────────────
+  # API para Tutores
+  # ─────────────────────────────────────────────────────────────────────────
+  /dogs:
     get:
-      tags: [White-label]
-      summary: Branding white-label por slug (público).
-      parameters:
-        - { name: slug, in: path, required: true, schema: { type: string } }
-      responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Theme" } } } }
-        "404": { description: No encontrado / pausado }
-
-  /partners:
-    post:
-      tags: [Partners]
-      summary: Crea un partner (admin). Devuelve la API key una sola vez.
+      tags: [API para Tutores]
+      summary: Lista las mascotas del tutor.
       security: [{ bearerAuth: [] }]
-      responses: { "201": { description: Creado } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { type: array, items: { $ref: "#/components/schemas/Dog" } } } } }
+    post:
+      tags: [API para Tutores]
+      summary: Crea una mascota. Free tier = 1 mascota; Premium = ilimitadas.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/DogInput" }
+            example: { name: "Milo", breed: "Border Collie", dateOfBirth: "2022-04-15", photoUrl: null }
+      responses:
+        "201": { description: Creada, content: { application/json: { schema: { $ref: "#/components/schemas/Dog" } } } }
+        "400": { description: VALIDATION_ERROR }
+        "403": { description: TIER_LIMIT — el free tier ya tiene una mascota }
 
-  /partners/{id}/metrics:
+  /dogs/{dogId}:
     get:
-      tags: [Partner billing]
-      summary: Métricas agregadas de la cohorte (admin o partner_admin del partner).
+      tags: [API para Tutores]
+      summary: Detalle de una mascota.
       security: [{ bearerAuth: [] }]
-      parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
-        - { name: month, in: query, schema: { type: string, example: "2026-05" } }
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Metrics" } } } }
-        "403": { description: Cross-access — partner ajeno }
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Dog" } } } }
+        "404": { description: No encontrada }
 
-  /partners/{id}/billing:
+  /dogs/{dogId}/calendar:
     get:
-      tags: [Partner billing]
-      summary: Factura del mes (admin o partner_admin del partner).
+      tags: [API para Tutores]
+      summary: Calendario de salud (vacunas/desparasitación sugeridas por país y etapa de vida).
+      description: Advisory — todo evento generado lleva `requiresVetValidation`.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK } }
+
+  /dogs/{dogId}/vaccinations:
+    get:
+      tags: [API para Tutores]
+      summary: Lista las vacunas registradas de la mascota.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [API para Tutores]
+      summary: Registra una vacuna. Si falta `nextDueDate`, se sugiere desde el catálogo clínico.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/VaccinationInput" }
+            example: { vaccineName: "Rabia", dateAdministered: "2026-03-01", nextDueDate: "2027-03-01", veterinarian: "Dra. Gómez", lotNumber: "RB-2026-014" }
+      responses:
+        "201": { description: Creada }
+        "409": { description: DUPLICATE_VACCINATION }
+
+  /dashboard/reminders/full:
+    get:
+      tags: [API para Tutores]
+      summary: Lista completa de próximos recordatorios (todas las mascotas), ordenada por vencimiento.
       security: [{ bearerAuth: [] }]
       parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
-        - { name: month, in: query, schema: { type: string } }
-      responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BillingRecord" } } } }
+        - { name: windowDays, in: query, schema: { type: integer }, description: "Override temporal de la ventana (default 7 días)." }
+      responses: { "200": { description: OK } }
 
-  /partners/{id}/billing/charge:
-    post:
-      tags: [Partner billing]
-      summary: Genera y COBRA la factura del mes al partner (admin). Idempotente.
+  /dogs/{dogId}/health-score:
+    get:
+      tags: [API para Tutores]
+      summary: Pet Score de la mascota (con nivel de confianza self/verified/certified).
       security: [{ bearerAuth: [] }]
-      parameters:
-        - { name: id, in: path, required: true, schema: { type: string } }
-        - { name: month, in: query, schema: { type: string } }
-      responses:
-        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BillingRecord" } } } }
-
-  /billing/checkout:
-    post:
-      tags: [Billing (B2C)]
-      summary: Inicia checkout de Premium (Mercado Pago).
-      security: [{ bearerAuth: [] }]
-      responses:
-        "200": { description: "{ checkoutUrl }" }
-        "503": { description: Mercado Pago no configurado }
-  /billing/webhook:
-    post:
-      tags: [Billing (B2C)]
-      summary: Webhook de Mercado Pago. Pago aprobado → Premium (idempotente).
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses: { "200": { description: OK } }
 
   /dogs/{dogId}/export.pdf:
     get:
-      tags: [Export & Share]
-      summary: Carnet PDF del perro (gated por premium o patrocinio).
+      tags: [API para Tutores]
+      summary: Carnet PDF de la mascota (gated por Premium o patrocinio del partner).
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses:
@@ -261,22 +365,22 @@ paths:
 
   /dogs/{dogId}/policy:
     get:
-      tags: [Insurance]
-      summary: Póliza del perro.
+      tags: [API para Tutores]
+      summary: Póliza de seguro de la mascota.
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses: { "200": { description: OK }, "404": { description: NO_POLICY } }
     post:
-      tags: [Insurance]
-      summary: Crea / reemplaza la póliza.
+      tags: [API para Tutores]
+      summary: Crea / reemplaza la póliza de la mascota.
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses: { "201": { description: Creada } }
 
   /dogs/{dogId}/policy/coverage-check:
     get:
-      tags: [Insurance]
-      summary: ¿Lo cubre mi póliza? (informativo, no vinculante).
+      tags: [API para Tutores]
+      summary: ¿Lo cubre mi póliza? (INFORMATIVO, no vinculante).
       security: [{ bearerAuth: [] }]
       parameters:
         - { name: dogId, in: path, required: true, schema: { type: string } }
@@ -286,23 +390,23 @@ paths:
 
   /dogs/{dogId}/claims:
     post:
-      tags: [Insurance]
-      summary: Claims Assistant v0 — borrador desde el historial.
+      tags: [API para Tutores]
+      summary: Claims Assistant — borrador de reclamo desde el historial (informativo).
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses: { "201": { description: Borrador } }
 
   /dogs/{dogId}/insurance-lead:
     post:
-      tags: [Insurance]
-      summary: '"¿Necesito un seguro?" → crea lead + webhook al partner.'
+      tags: [API para Tutores]
+      summary: '"¿Necesito un seguro?" → crea lead y dispara webhook al partner.'
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses: { "201": { description: Lead creado } }
 
   /dogs/{dogId}/certificate:
     post:
-      tags: [Certificate & Consent]
+      tags: [API para Tutores]
       summary: Emite el PetScoreCertificate (requiere verificación veterinaria).
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
@@ -310,7 +414,7 @@ paths:
         "201": { description: Emitido }
         "400": { description: NEEDS_VERIFICATION }
     get:
-      tags: [Certificate & Consent]
+      tags: [API para Tutores]
       summary: Certificado vigente (vista del tutor, con score).
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
@@ -318,13 +422,13 @@ paths:
 
   /dogs/{dogId}/consent:
     post:
-      tags: [Certificate & Consent]
-      summary: Otorga consentimiento granular (ej. compartir con partner).
+      tags: [API para Tutores]
+      summary: Otorga consentimiento granular (ej. compartir el nivel con una aseguradora).
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
       responses: { "201": { description: Otorgado } }
     delete:
-      tags: [Certificate & Consent]
+      tags: [API para Tutores]
       summary: Revoca el consentimiento.
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
@@ -332,7 +436,7 @@ paths:
 
   /dogs/{dogId}/certificate/share:
     post:
-      tags: [Certificate & Consent]
+      tags: [API para Tutores]
       summary: Comparte el NIVEL del certificado con un partner (requiere consentimiento).
       security: [{ bearerAuth: [] }]
       parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
@@ -341,31 +445,319 @@ paths:
         "403": { description: NO_CONSENT }
         "404": { description: NO_CERTIFICATE }
 
-  /v1/events:
+  # ─────────────────────────────────────────────────────────────────────────
+  # API para Veterinarias
+  # ─────────────────────────────────────────────────────────────────────────
+  /vet-portal/register:
     post:
-      tags: [API v1 (partner key)]
-      summary: El partner empuja un evento (aislado por partner).
-      security: [{ apiKeyAuth: [] }]
-      responses: { "201": { description: Recibido }, "401": { description: API key inválida } }
+      tags: [API para Veterinarias]
+      summary: Alta de cuenta de veterinaria + clínica vinculada.
+      responses: { "201": { description: Creada } }
 
-  /v1/pets/{id}:
+  /vet-portal/panel:
     get:
-      tags: [API v1 (partner key)]
-      summary: Vista read-only consentida del perro (sin dato clínico individual).
-      security: [{ apiKeyAuth: [] }]
-      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
-      responses: { "200": { description: OK }, "404": { description: No encontrado / ajeno } }
+      tags: [API para Veterinarias]
+      summary: Panel de la clínica (cohorte, atribución, funnel).
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: OK } }
 
+  /vet-portal/patients:
+    get:
+      tags: [API para Veterinarias]
+      summary: Pacientes de la cohorte de la clínica (mascotas atribuidas).
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /vet-portal/dogs/{dogId}/attest:
+    post:
+      tags: [API para Veterinarias]
+      summary: Atesta un ítem clínico (sella el Pet Score). Solo mascotas de la cohorte de la clínica.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: dogId, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [kind, itemId]
+              properties:
+                kind: { type: string, enum: [vaccination, deworming] }
+                itemId: { type: string }
+            example: { kind: "vaccination", itemId: "665f1b2c9a4e2f0012ab34cd" }
+      responses:
+        "200": { description: Atestado }
+        "403": { description: FORBIDDEN — fuera de la cohorte de la clínica }
+
+  /vet/{token}:
+    get:
+      tags: [API para Veterinarias]
+      summary: Expediente compartido por el tutor vía link temporal (público, sin login).
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: Link inválido o expirado } }
+
+  /vet/{token}/validate:
+    post:
+      tags: [API para Veterinarias]
+      summary: La vet valida un registro desde el expediente compartido (público vía token).
+      parameters: [{ name: token, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: Validado } }
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # API para Aseguradoras (API key)
+  # ─────────────────────────────────────────────────────────────────────────
   /v1/pets/{id}/certificate:
     get:
-      tags: [API v1 (partner key)]
-      summary: Nivel del certificado (solo con consentimiento del tutor para este partner).
+      tags: [API para Aseguradoras]
+      summary: Nivel del certificado de la mascota (solo con consentimiento del tutor para esta aseguradora).
       security: [{ apiKeyAuth: [] }]
       parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
       responses:
         "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/CertificateShareable" } } } }
         "403": { description: NO_CONSENT }
         "404": { description: NO_CERTIFICATE }
+
+  /v1/leads/{id}/convert:
+    post:
+      tags: [API para Aseguradoras]
+      summary: Marca un lead como póliza convertida (CPA). Idempotente, aislado por partner.
+      security: [{ apiKeyAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses:
+        "200": { description: Convertido }
+        "404": { description: Lead no encontrado / ajeno }
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # API para Partners (white-label / integración genérica)
+  # ─────────────────────────────────────────────────────────────────────────
+  /public/partners/by-slug/{slug}/theme:
+    get:
+      tags: [API para Partners]
+      summary: Branding white-label por slug (público).
+      parameters:
+        - { name: slug, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Theme" } } } }
+        "404": { description: No encontrado / pausado }
+
+  /v1/events:
+    post:
+      tags: [API para Partners]
+      summary: El partner empuja un evento (aislado por partner).
+      security: [{ apiKeyAuth: [] }]
+      responses: { "201": { description: Recibido }, "401": { description: API key inválida } }
+
+  /v1/pets/{id}:
+    get:
+      tags: [API para Partners]
+      summary: Vista read-only consentida de la mascota (sin dato clínico individual).
+      security: [{ apiKeyAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: No encontrado / ajeno } }
+
+  /partners/{id}/metrics:
+    get:
+      tags: [API para Partners]
+      summary: Métricas agregadas de la cohorte (admin o partner_admin del partner). Sin PII.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: month, in: query, schema: { type: string, example: "2026-05" } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/Metrics" } } } }
+        "403": { description: Cross-access — partner ajeno }
+
+  /partners/{id}/leads:
+    get:
+      tags: [API para Partners]
+      summary: Leads de seguro generados por la cohorte (admin o partner_admin del partner).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK } }
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # API para Admin Milo Care
+  # ─────────────────────────────────────────────────────────────────────────
+  /admin/stats:
+    get:
+      tags: [API para Admin Milo Care]
+      summary: Totales de la plataforma — usuarios (por tier/rol), perros y leads.
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /admin/users:
+    get:
+      tags: [API para Admin Milo Care]
+      summary: Lista de usuarios (paginada, con búsqueda). Incluye dogCount por usuario.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+        - { name: search, in: query, schema: { type: string }, description: "Filtra por nombre o email." }
+      responses: { "200": { description: "{ users, total, page, pages }" } }
+
+  /admin/users/{id}:
+    get:
+      tags: [API para Admin Milo Care]
+      summary: Detalle de un usuario y sus perros (con conteos de vacunas/turnos/medicación).
+      description: Los perros son subdocumentos embebidos — se ven acá, no hay lista global de perros.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: No encontrado } }
+    patch:
+      tags: [API para Admin Milo Care]
+      summary: Edita un usuario (tier, rol, partner asignado).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: Actualizado } }
+    delete:
+      tags: [API para Admin Milo Care]
+      summary: Elimina un usuario.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: Eliminado } }
+
+  /admin/clinics:
+    get:
+      tags: [API para Admin Milo Care]
+      summary: Lista de veterinarias/clínicas (con cantidad de referidos por clínica).
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+    post:
+      tags: [API para Admin Milo Care]
+      summary: Crea una clínica (y opcionalmente su vet dueño). Devuelve link y copy de WhatsApp.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string }
+                ownerVetEmail: { type: string, format: email, nullable: true }
+            example: { name: "Veterinaria San Roque", ownerVetEmail: "vet@sanroque.com" }
+      responses: { "201": { description: Creada }, "409": { description: Slug ya existe } }
+
+  /admin/clinics/{id}/panel:
+    get:
+      tags: [API para Admin Milo Care]
+      summary: Panel de cualquier clínica (el admin puede ver el de todas).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: OK }, "404": { description: No encontrada } }
+
+  /partners:
+    post:
+      tags: [API para Admin Milo Care]
+      summary: Crea un partner. Devuelve la API key una sola vez.
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PartnerInput" }
+            example:
+              name: "Aseguradora Demo"
+              slug: "aseguradora-demo"
+              type: insurer
+              status: active
+              webhookUrl: "https://partner.example.com/webhooks/milo"
+              branding:
+                appName: "PetSeguro"
+                primaryColor: "#4f8ef7"
+                secondaryColor: "#3370d4"
+                logoUrl: "https://partner.example.com/logo.png"
+              contract:
+                setupFee: 3500
+                pricePerActivePet: 0.9
+                pricePerLead: 10
+                pricePerConversion: 40
+                currency: USD
+                billingDay: 1
+              billing:
+                autoCharge: false
+                payerEmail: "finanzas@partner.example.com"
+      responses:
+        "201": { description: Creado, content: { application/json: { schema: { $ref: "#/components/schemas/PartnerCreated" } } } }
+    get:
+      tags: [API para Admin Milo Care]
+      summary: Lista los partners (con admins y estado de invitación).
+      security: [{ bearerAuth: [] }]
+      responses: { "200": { description: OK } }
+
+  /partners/{id}:
+    patch:
+      tags: [API para Admin Milo Care]
+      summary: Actualiza un partner (contrato, branding, webhook, estado).
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: Actualizado } }
+
+  /partners/{id}/invite:
+    post:
+      tags: [API para Admin Milo Care]
+      summary: Invita por email a un partner_admin (magic link). Devuelve magicUrl si el email falla.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email: { type: string, format: email }
+                name: { type: string }
+            example: { email: "admin@aseguradora.com", name: "Equipo Aseguradora" }
+      responses: { "200": { description: Invitado } }
+
+  /partners/{id}/api-key/rotate:
+    post:
+      tags: [API para Admin Milo Care]
+      summary: Rota la API key del partner. La key anterior deja de funcionar.
+      security: [{ bearerAuth: [] }]
+      parameters: [{ name: id, in: path, required: true, schema: { type: string } }]
+      responses: { "200": { description: "{ apiKey } — se muestra una sola vez" } }
+
+  # ─────────────────────────────────────────────────────────────────────────
+  # Billing — oculto por ahora (x-internal). No se muestra en la doc pública.
+  # ─────────────────────────────────────────────────────────────────────────
+  /billing/checkout:
+    post:
+      x-internal: true
+      summary: Inicia checkout de Premium (Mercado Pago).
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: "{ checkoutUrl }" }
+        "503": { description: Mercado Pago no configurado }
+  /billing/webhook:
+    post:
+      x-internal: true
+      summary: Webhook de Mercado Pago. Pago aprobado → Premium (idempotente).
+      responses: { "200": { description: OK } }
+  /partners/{id}/billing:
+    get:
+      x-internal: true
+      summary: Factura del mes del partner.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: month, in: query, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BillingRecord" } } } }
+  /partners/{id}/billing/charge:
+    post:
+      x-internal: true
+      summary: Genera y COBRA la factura del mes al partner. Idempotente.
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: month, in: query, schema: { type: string } }
+      responses:
+        "200": { description: OK, content: { application/json: { schema: { $ref: "#/components/schemas/BillingRecord" } } } }
 
 webhooks:
   insuranceLeadCreated:
