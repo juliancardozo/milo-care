@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, Link } from 'react-router-dom';
 import { useLocation } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { useSelector } from 'react-redux';
 import { captureRefFromUrl } from './services/referralApi';
 import { captureClinicFromUrl } from './services/clinicApi';
@@ -57,6 +57,9 @@ import PartnerRoute from './components/PartnerRoute';
 import PartnerDashboardPage from './pages/partner/PartnerDashboardPage';
 import { useI18n } from './i18n/I18nProvider';
 
+// Scalar es pesado (~4MB): se carga solo al entrar a /developers (code-split).
+const DevelopersPage = lazy(() => import('./pages/DevelopersPage'));
+
 export default function App() {
   const location = useLocation();
   const { t } = useI18n();
@@ -69,10 +72,11 @@ export default function App() {
   const isVetRecord = location.pathname.startsWith('/vet/');
   const isClinicLanding = location.pathname.startsWith('/c/');
   const isVetPortal = location.pathname.startsWith('/vet-portal');
-  // Hide the global app header on dashboard, landing, and the public/vet/clinic pages
-  // (each has its own chrome / is meant for logged-out visitors).
+  const isDevelopers = location.pathname.startsWith('/developers');
+  // Hide the global app header on dashboard, landing, and the public/vet/clinic/docs
+  // pages (each has its own chrome / is meant for logged-out visitors).
   const showGlobalHeader = !isLanding && location.pathname !== '/dashboard'
-    && !isPublicPet && !isVetRecord && !isClinicLanding && !isVetPortal;
+    && !isPublicPet && !isVetRecord && !isClinicLanding && !isVetPortal && !isDevelopers;
 
   return (
     <>
@@ -102,6 +106,7 @@ export default function App() {
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/c/:slug" element={<ClinicLandingPage />} />
         <Route path="/vet-portal/register" element={<VetRegisterPage />} />
+        <Route path="/developers" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage /></Suspense>} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>

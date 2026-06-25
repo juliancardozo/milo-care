@@ -4,7 +4,10 @@
   "description": "Milo Care MVP — React SPA",
   "type": "module",
   "scripts": {
+    "sync:openapi": "node scripts/copy-openapi.mjs",
+    "predev": "node scripts/copy-openapi.mjs",
     "dev": "vite",
+    "prebuild": "node scripts/copy-openapi.mjs",
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
@@ -13,6 +16,7 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.2.5",
+    "@scalar/api-reference-react": "^0.9.48",
     "axios": "^1.7.2",
     "html2canvas": "^1.4.1",
     "jspdf": "^2.5.1",

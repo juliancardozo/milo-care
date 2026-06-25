@@ -176,7 +176,7 @@ export default function PartnerDashboardPage() {
 
           <footer className="pdash-footer">
             {user?.name ? <span>Sesión: {user.name}</span> : <span />}
-            <a href="/docs/companion-api.md" className="pdash-apilink">Integración / API v1 →</a>
+            <a href="/developers" className="pdash-apilink">Integración / API v1 →</a>
           </footer>
         </>
       ) : null}

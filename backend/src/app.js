@@ -2,6 +2,7 @@
 
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { errorHandler } = require('./middleware/errorHandler');
@@ -53,6 +54,11 @@ app.use(cors({ origin: process.env.APP_URL || 'http://localhost:5173', credentia
 // Las fotos de perros se guardan como data-URL (base64) dentro del documento,
 // por lo que el body legítimamente puede superar el default de 100kb de Express.
 app.use(express.json({ limit: '10mb' }));
+
+// ── OpenAPI spec (público, para devs externos / la página /developers) ────────
+app.get('/api/openapi.yaml', (_req, res) => {
+  res.type('text/yaml').sendFile(path.join(__dirname, '../openapi.yaml'));
+});
 
 // ── Routes ──────────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
