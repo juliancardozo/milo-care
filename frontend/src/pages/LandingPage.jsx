@@ -707,6 +707,62 @@ function FAQ({ variant }) {
   );
 }
 
+// ── Platform / API-first (para empresas) ──────────────────────────────────────
+
+const PLATFORM_CARDS = [
+  {
+    icon: '🧩',
+    title: 'API REST + Webhooks',
+    body: 'Integrá la salud, el calendario de cuidado y el Pet Score de las mascotas con tu producto. Documentación abierta y eventos en tiempo real.',
+  },
+  {
+    icon: '🏷️',
+    title: 'White-label',
+    body: 'Entregá Milo Care con tu marca a tus clientes — branding por slug, sin desarrollar nada desde cero.',
+  },
+  {
+    icon: '🔒',
+    title: 'Datos consentidos, nunca clínicos',
+    body: 'Solo métricas agregadas y certificados de confianza con consentimiento explícito del tutor. Nunca historia clínica individual.',
+  },
+];
+
+function Platform() {
+  return (
+    <section className="landing-section landing-section-alt" aria-labelledby="platform-title">
+      <div className="landing-container">
+        <span className="landing-eyebrow">Para empresas · API-first</span>
+        <h2 id="platform-title" className="landing-section-title">
+          Milo Care también es una capa tecnológica para integrar.
+        </h2>
+        <p className="landing-section-sub">
+          Aseguradoras, fintechs, bancos y veterinarias conectan Milo Care como su capa de
+          salud e identidad de mascotas: el Pet Score, el carnet y el calendario de cuidado,
+          listos para enchufar a tu producto vía API y webhooks.
+        </p>
+        <div className="landing-benefits-grid">
+          {PLATFORM_CARDS.map((c) => (
+            <div key={c.title} className="landing-benefit-card">
+              <div className="landing-feature-icon" aria-hidden="true">{c.icon}</div>
+              <h3>{c.title}</h3>
+              <p>{c.body}</p>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: '28px', textAlign: 'center' }}>
+          <Link to="/developers" className="landing-btn-primary landing-btn-lg">
+            Ver la documentación de la API →
+          </Link>
+          <p style={{ marginTop: '12px', fontSize: '0.875rem', color: 'var(--color-muted, #64748b)' }}>
+            ¿Querés integrar? Escribinos a{' '}
+            <a href="mailto:hola@milocare.org?subject=Integración%20API%20Milo%20Care" style={{ fontWeight: 600 }}>hola@milocare.org</a>
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ── Final CTA ─────────────────────────────────────────────────────────────────
 
 function FinalCTA({ onCtaClick }) {
@@ -723,7 +779,7 @@ function FinalCTA({ onCtaClick }) {
           Crear el perfil de mi perro →
         </Link>
         <p style={{ marginTop: '14px', fontSize: '0.875rem', color: '#bfdbfe' }}>
-          <a href="mailto:hola@milocare.online" style={{ color: '#fff', fontWeight: 600 }}>
+          <a href="mailto:hola@milocare.org" style={{ color: '#fff', fontWeight: 600 }}>
             ¿Sos veterinario? Tenemos un programa para clínicas.
           </a>
         </p>
@@ -750,9 +806,10 @@ function LandingFooter() {
         </div>
         <p className="landing-footer-copy">© 2026 Milocura. Hecho en Buenos Aires y Montevideo.</p>
         <div className="landing-footer-links">
+          <Link to="/developers">Developers</Link>
           <a href="/terminos.pdf">Términos</a>
           <a href="/privacidad.pdf">Privacidad</a>
-          <a href="mailto:hola@milocare.online">Contacto</a>
+          <a href="mailto:hola@milocare.org">Contacto</a>
         </div>
       </div>
     </footer>
@@ -789,6 +846,7 @@ export default function LandingPage() {
         <UseCases />
         <Emotional />
         <BetaSection variant={variant} formRef={signupFormRef} />
+        <Platform />
         <FAQ variant={variant} />
         <FinalCTA onCtaClick={handleCtaClick} />
       </main>

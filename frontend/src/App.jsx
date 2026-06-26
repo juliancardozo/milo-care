@@ -107,6 +107,7 @@ export default function App() {
         <Route path="/c/:slug" element={<ClinicLandingPage />} />
         <Route path="/vet-portal/register" element={<VetRegisterPage />} />
         <Route path="/developers" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage /></Suspense>} />
+        <Route path="/developers/internal" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage internal /></Suspense>} />
 
         {/* Protected routes */}
         <Route element={<ProtectedRoute />}>

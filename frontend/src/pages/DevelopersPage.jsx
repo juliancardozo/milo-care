@@ -3,20 +3,24 @@ import '@scalar/api-reference-react/style.css';
 
 /**
  * Referencia de API para desarrolladores (estilo Pomelo/Stripe), renderizada con
- * Scalar a partir de nuestro openapi.yaml (single source of truth en el backend,
+ * Scalar a partir de nuestro openapi (single source of truth en el backend,
  * sincronizado a /public por el script copy-openapi).
+ *
+ * - Pública (`/developers`): spec recortado para integradores externos
+ *   (openapi.partners.yaml) — Auth + Aseguradoras + Partners + webhooks.
+ * - Interna (`/developers/internal`): spec completo (todas las audiencias).
  */
-export default function DevelopersPage() {
+export default function DevelopersPage({ internal = false }) {
+  const url = internal ? '/openapi.yaml' : '/openapi.partners.yaml';
   return (
     <ApiReferenceReact
       configuration={{
-        url: '/openapi.yaml',
+        url,
         theme: 'default',
         hideDownloadButton: false,
-        metaData: {
-          title: 'Milo Care — API Reference',
-          description: 'API de la capa Companion (B2B2C) de Milo Care.',
-        },
+        metaData: internal
+          ? { title: 'Milo Care — API Reference (interno)', description: 'Spec completo de la API de Milo Care.' }
+          : { title: 'Milo Care — API para Partners', description: 'API-first: integrá la salud y el Pet Score de las mascotas con tu producto.' },
       }}
     />
   );

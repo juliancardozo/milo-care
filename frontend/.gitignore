@@ -7,3 +7,4 @@ coverage/
 
 # OpenAPI spec sincronizado del backend (lo genera prebuild/predev)
 public/openapi.yaml
+public/openapi.partners.yaml
