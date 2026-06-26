@@ -16,7 +16,7 @@ const { GoogleAuth } = require('google-auth-library');
 const { getClassId } = require('../src/services/GoogleWalletService');
 
 const BASE = 'https://walletobjects.googleapis.com/walletobjects/v1';
-const SITE = 'https://milocare.online';
+const SITE = 'https://milocare.org';
 // Banner opcional: solo se incluye si hay una imagen pública accesible (Google la valida).
 const LOGO = process.env.WALLET_LOGO_URL || '';
 
@@ -51,7 +51,7 @@ function buildGenericClass(classId) {
       },
     ],
     linksModuleData: {
-      uris: [{ id: 'official_site', uri: SITE, description: 'milocare.online' }],
+      uris: [{ id: 'official_site', uri: SITE, description: 'milocare.org' }],
     },
   };
 

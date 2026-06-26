@@ -23,7 +23,7 @@ const SALT_ROUNDS = 12;
 const MIN_SAVED_PER_ACTIVE = 5;
 
 function appUrl() {
-  return (process.env.APP_URL || 'https://milocare.online').replace(/\/+$/, '');
+  return (process.env.APP_URL || 'https://milocare.org').replace(/\/+$/, '');
 }
 
 function slugify(name) {

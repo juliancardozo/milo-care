@@ -44,7 +44,7 @@ router.get('/', async (_req, res, next) => {
     return res.json({
       clinics: clinics.map((c) => ({
         ...c,
-        link: `${(process.env.APP_URL || 'https://milocare.online').replace(/\/+$/, '')}/c/${c.slug}`,
+        link: `${(process.env.APP_URL || 'https://milocare.org').replace(/\/+$/, '')}/c/${c.slug}`,
         referidos: byId[String(c._id)] || 0,
       })),
     });

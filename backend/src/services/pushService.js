@@ -13,7 +13,7 @@ const PushSubscription = require('../models/PushSubscription');
 
 const PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY || '';
 const PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY || '';
-const SUBJECT = process.env.VAPID_SUBJECT || 'mailto:hola@milocare.online';
+const SUBJECT = process.env.VAPID_SUBJECT || 'mailto:hola@milocare.org';
 
 let configured = false;
 if (PUBLIC_KEY && PRIVATE_KEY) {

@@ -285,7 +285,7 @@ const PdfTemplate = React.forwardRef(
         {/* Footer */}
         <div className="pdf-footer">
           <p>Milo Care — Gestión de Salud de Mascotas</p>
-          <p>www.milocare.online</p>
+          <p>www.milocare.org</p>
         </div>
       </div>
     );

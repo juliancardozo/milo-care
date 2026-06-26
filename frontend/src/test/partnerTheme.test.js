@@ -6,21 +6,21 @@ const loc = (hostname, search = '') => ({ hostname, search });
 
 describe('resolvePartnerSlug', () => {
   it('toma el slug del query param ?partner', () => {
-    expect(resolvePartnerSlug(loc('app.milocare.online', '?partner=acme'))).toBe('acme');
+    expect(resolvePartnerSlug(loc('app.milocare.org', '?partner=acme'))).toBe('acme');
   });
 
   it('toma el slug del subdominio', () => {
-    expect(resolvePartnerSlug(loc('acme.milocare.online'))).toBe('acme');
+    expect(resolvePartnerSlug(loc('acme.milocare.org'))).toBe('acme');
   });
 
   it('sin partner: apex / www / localhost → null (branding default)', () => {
-    expect(resolvePartnerSlug(loc('milocare.online'))).toBeNull();
-    expect(resolvePartnerSlug(loc('www.milocare.online'))).toBeNull();
-    expect(resolvePartnerSlug(loc('app.milocare.online'))).toBeNull();
+    expect(resolvePartnerSlug(loc('milocare.org'))).toBeNull();
+    expect(resolvePartnerSlug(loc('www.milocare.org'))).toBeNull();
+    expect(resolvePartnerSlug(loc('app.milocare.org'))).toBeNull();
     expect(resolvePartnerSlug(loc('localhost'))).toBeNull();
   });
 
   it('el query param tiene prioridad sobre el subdominio', () => {
-    expect(resolvePartnerSlug(loc('acme.milocare.online', '?partner=globalbank'))).toBe('globalbank');
+    expect(resolvePartnerSlug(loc('acme.milocare.org', '?partner=globalbank'))).toBe('globalbank');
   });
 });

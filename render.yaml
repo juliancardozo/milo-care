@@ -22,9 +22,9 @@ services:
       - key: RESEND_FROM_EMAIL
         sync: false
       - key: APP_URL
-        sync: false          # URL del frontend en Amplify, ej: https://main.XXXX.amplifyapp.com
+        value: https://milocare.org
       - key: VET_SHARE_PUBLIC_BASE_URL
-        value: https://develop.d2d3bj1p216a32.amplifyapp.com
+        value: https://milocare.org
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com   # recibe los avisos de interés en Premium
       - key: API_URL
@@ -41,7 +41,7 @@ services:
       - key: GOOGLE_WALLET_SA_KEY_B64
         sync: false
       - key: WALLET_PUBLIC_BASE_URL
-        sync: false          # URL pública del frontend para el QR del pase
+        value: https://milocare.org       # URL pública del frontend para el QR del pase
       - key: SURPRISE_PROBABILITY
         value: '0.15'
       # ── Notificaciones push (Web Push / VAPID) ──
@@ -52,4 +52,6 @@ services:
       - key: VAPID_PRIVATE_KEY
         sync: false
       - key: VAPID_SUBJECT
-        value: mailto:hola@milocare.online
+        value: mailto:hola@milocare.org
+      - key: RESEND_FROM_EMAIL
+        value: noreply@milocare.org

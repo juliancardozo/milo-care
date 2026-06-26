@@ -9,7 +9,7 @@ const RESERVED_HOSTS = ['www', 'app', 'localhost', 'milocare', 'milocura', '127'
 /**
  * Resuelve el slug del partner desde:
  *   1) ?partner=<slug>   (override de desarrollo / QA)
- *   2) subdominio         (acme.milocare.online → "acme")
+ *   2) subdominio         (acme.milocare.org → "acme")
  * Sin slug → branding Milo Care default.
  */
 export function resolvePartnerSlug(loc = window.location) {

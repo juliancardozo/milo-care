@@ -12,7 +12,7 @@ function appUrl() {
   return (
     process.env.VET_SHARE_PUBLIC_BASE_URL
     || process.env.APP_URL
-    || 'https://milocare.online'
+    || 'https://milocare.org'
   ).replace(/\/+$/, '');
 }
 

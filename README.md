@@ -318,7 +318,7 @@ Sin entitlement, las rutas de export/share responden `403 UPGRADE_REQUIRED`.
 
 ### White-label en el frontend
 
-`ThemeProvider` resuelve el partner por **subdominio** (`acme.milocare.online`) o por
+`ThemeProvider` resuelve el partner por **subdominio** (`acme.milocare.org`) o por
 **`?partner=<slug>`** (dev/QA), pide el branding a `/public/partners/by-slug/:slug/theme`
 y aplica las CSS variables (`--color-primary`, etc.) + nombre de app. Sin partner →
 branding Milo Care default.

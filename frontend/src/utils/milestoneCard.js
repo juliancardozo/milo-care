@@ -181,12 +181,12 @@ export async function renderCard({ photoUrl, emoji = '🐾', title = '', subtitl
     ctx.fillText(label, pad + Math.round(w * 0.0375), y + pillH / 2 + 1);
   }
 
-  // 6) milocare.online abajo a la derecha, discreto.
+  // 6) milocare.org abajo a la derecha, discreto.
   ctx.textAlign = 'right';
   ctx.textBaseline = 'alphabetic';
   ctx.fillStyle = 'rgba(255,255,255,0.7)';
   ctx.font = `600 ${Math.round(w * 0.028)}px ${FONT}`;
-  ctx.fillText('milocare.online', w - pad, h - Math.round(h * 0.038));
+  ctx.fillText('milocare.org', w - pad, h - Math.round(h * 0.038));
 
   return canvas;
 }

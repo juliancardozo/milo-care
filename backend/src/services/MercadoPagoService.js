@@ -19,7 +19,7 @@ function isConfigured() {
 }
 
 function appUrl() {
-  return (process.env.APP_URL || 'https://milocare.online').replace(/\/+$/, '');
+  return (process.env.APP_URL || 'https://milocare.org').replace(/\/+$/, '');
 }
 
 function apiBaseUrl() {
