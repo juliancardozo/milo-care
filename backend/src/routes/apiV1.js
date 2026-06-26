@@ -12,6 +12,7 @@ const { isPetActive } = require('../services/petActivity');
 const { monthKey } = require('../services/MeteringService');
 const CertificateService = require('../services/CertificateService');
 const ConsentService = require('../services/ConsentService');
+const AuditService = require('../services/AuditService');
 
 // Resuelve un perro que pertenece al partner de la API key (o null).
 async function findPartnerDog(partnerId, dogId) {
@@ -35,6 +36,19 @@ router.post('/leads/:id/convert', apiKeyAuth, async (req, res, next) => {
       lead.convertedAt = new Date();
       if (req.body?.policyRef) lead.externalPolicyRef = String(req.body.policyRef);
       await lead.save();
+
+      // Rastro de auditoría: la conversión la auto-reporta el partner y dispara CPA,
+      // así que dejamos registro de quién/qué/cuándo (para conciliar después).
+      AuditService.record({
+        userId: lead.userId,
+        action: 'lead_converted',
+        meta: {
+          leadId: String(lead._id),
+          partnerId: String(req.partner._id),
+          policyRef: lead.externalPolicyRef || null,
+          convertedAt: lead.convertedAt,
+        },
+      });
     }
     return res.json({ id: lead._id, status: lead.status, convertedAt: lead.convertedAt });
   } catch (err) {

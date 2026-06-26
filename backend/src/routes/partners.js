@@ -14,6 +14,7 @@ const InsuranceLead = require('../models/InsuranceLead');
 const MeteringService = require('../services/MeteringService');
 const MetricsService = require('../services/MetricsService');
 const ChargeService = require('../services/ChargeService');
+const ReconciliationService = require('../services/ReconciliationService');
 const EmailService = require('../services/EmailService');
 const referralService = require('../services/referralService');
 const { generateApiKey, hashApiKey } = require('../services/apiKey');
@@ -279,6 +280,30 @@ router.get('/:id/leads', authenticate, partnerScope, async (req, res, next) => {
         convertedAt: l.convertedAt || null, externalPolicyRef: l.externalPolicyRef || null,
       })),
     });
+  } catch (err) {
+    next(err);
+  }
+});
+
+// POST /api/partners/:id/leads/reconcile — concilia las conversiones que Milo registró
+// (auto-reportadas por el partner) contra la exportación mensual de pólizas del partner.
+// Herramienta de settlement: solo admin. No cobra; informa diferencias para el cierre.
+router.post('/:id/leads/reconcile', authenticate, adminAuth, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+
+    const month = req.body?.month || MeteringService.previousMonthKey(new Date());
+    if (!/^\d{4}-\d{2}$/.test(month)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'month must be YYYY-MM.' });
+    }
+    const policyRefs = req.body?.policyRefs;
+    if (!Array.isArray(policyRefs)) {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'policyRefs must be an array of the partner\'s converted policy references.' });
+    }
+
+    const report = await ReconciliationService.reconcile(partner, month, policyRefs);
+    return res.json(report);
   } catch (err) {
     next(err);
   }
