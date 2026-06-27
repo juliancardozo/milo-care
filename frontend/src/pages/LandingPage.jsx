@@ -140,7 +140,7 @@ function Hero({ variant, onCtaClick }) {
 
 const TRUST_ITEMS = [
   'Guías WSAVA 2022',
-  'SENASA (AR) + MGAP (UY)',
+  'Adaptado a Argentina y Uruguay',
   'Recordatorios automáticos',
   'Datos cifrados (Ley 25.326 / 18.331)',
   'Vos controlás tu dato',
@@ -232,7 +232,7 @@ function Ecosystem() {
 
 const FEATURES = [
   { icon: '🧭', title: 'Onboarding inteligente', desc: 'Cargás edad, raza, país y estado sanitario; te armamos el plan y el calendario en 90 segundos.', tag: 'NUEVO' },
-  { icon: '💉', title: 'Calendario vacunal personalizado', desc: 'Adaptado a edad, raza y país. Separa lo aplicado de lo sugerido (WSAVA / SENASA / MGAP).' },
+  { icon: '💉', title: 'Calendario vacunal personalizado', desc: 'Adaptado a edad, raza y país. Separa lo aplicado de lo sugerido, según guías WSAVA.' },
   { icon: '🔔', title: 'Recordatorios automáticos', desc: 'Te avisamos por email antes de cada vacuna, dosis o cita. Sin configurar nada.' },
   { icon: '💊', title: 'Control de medicamentos', desc: 'Dosis, frecuencia, fin del tratamiento y estado activo o completado.' },
   { icon: '🩺', title: 'Historial de consultas', desc: 'Visitas organizadas con tipo, checklist clínico WSAVA y notas.' },
@@ -345,7 +345,7 @@ function ForWhom() {
 
 const WHY = [
   ['🎯', 'Para el dueño primerizo, no para el experto.', 'Te guía sin asumir que sabés de medicina veterinaria.'],
-  ['🌎', 'Rioplatense de verdad.', 'Calendarios según SENASA y MGAP, no un genérico traducido.'],
+  ['🌎', 'Rioplatense de verdad.', 'Calendarios pensados para Argentina y Uruguay, no un genérico traducido.'],
   ['🤝', 'El veterinario es aliado, no competencia.', 'Lo potenciamos con mejor información; no lo reemplazamos.'],
   ['🧩', 'Plataforma, no app de nicho.', 'API-first: infraestructura de salud e identidad de mascotas para todo el ecosistema.'],
   ['💛', 'Emocional, no clínica.', 'Se siente como abrir el álbum de tu perro, no como llenar una ficha.'],
@@ -697,7 +697,7 @@ function NoVet() {
 const FAQ_ITEMS = [
   { id: 'reemplaza-vet', q: '¿Milo Care reemplaza al veterinario?', a: 'No. Milo Care organiza información, recordatorios e historial, y potencia al veterinario. Para diagnósticos, tratamientos o urgencias, siempre consultá con un profesional.' },
   { id: 'plataforma', q: '¿Es una app o una plataforma?', a: 'Las dos cosas. Para el tutor es una app simple; por debajo es una plataforma API-first que conecta veterinarias, pet shops, seguros y más, siempre con el consentimiento del dueño.' },
-  { id: 'paises', q: '¿Funciona en Argentina y Uruguay?', a: 'Sí. Los calendarios siguen SENASA (AR) y MGAP (UY), además de las guías WSAVA. Nacimos en el Río de la Plata y desde ahí expandimos.' },
+  { id: 'paises', q: '¿Funciona en Argentina y Uruguay?', a: 'Sí. Los calendarios están adaptados a cada país y siguen las guías WSAVA. Nacimos en el Río de la Plata y desde ahí expandimos.' },
   { id: 'datos', q: '¿Quién ve los datos de mi perro?', a: 'Vos. El dato fluye hacia otros actores solo con tu consentimiento explícito (Ley 25.326 AR / 18.331 UY), y siempre podés revocarlo.' },
   { id: 'no-se-fecha', q: '¿Qué pasa si no sé cuándo fue la última vacuna?', a: 'Cargás lo que tengas y completás el historial de a poco. Milo Care está pensado para ayudarte a ordenar, no para exigirte tener todo perfecto desde el día uno.' },
 ];
@@ -774,7 +774,7 @@ function LandingFooter() {
           </svg>
           <span>Milo Care</span>
         </div>
-        <p className="landing-footer-copy">© 2026 Milocura · WSAVA 2022 · SENASA (AR) · MGAP (UY) · Hecho en Buenos Aires y Montevideo.</p>
+        <p className="landing-footer-copy">© 2026 Milocura · Guías WSAVA 2022 · Hecho en Buenos Aires y Montevideo.</p>
         <div className="landing-footer-links">
           <a href="#funcionalidades">Producto</a>
           <a href="#para-quien">Para clínicas y partners</a>
