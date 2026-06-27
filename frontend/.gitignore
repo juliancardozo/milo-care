@@ -5,6 +5,6 @@ dist/
 coverage/
 .DS_Store
 
-# OpenAPI spec sincronizado del backend (lo genera prebuild/predev)
-public/openapi.yaml
-public/openapi.partners.yaml
+# Specs OpenAPI: se versionan para que estén en el build de Amplify (el monorepo
+# no expone backend/ en el appRoot del frontend). El prebuild/predev los regenera
+# desde backend/openapi.yaml — al editar el spec, re-buildeá y commiteá el cambio.
