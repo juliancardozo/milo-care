@@ -15,6 +15,11 @@ const here = dirname(fileURLToPath(import.meta.url));
 const src = join(here, '../../backend/openapi.yaml');
 const destFull = join(here, '../public/openapi.yaml');
 const destPartners = join(here, '../public/openapi.partners.yaml');
+// La app carga JSON: Amplify reescribe a index.html cualquier ruta cuya extensión
+// no esté en su lista blanca, y `.yaml` no está (pero `.json` sí). Sirviendo .json
+// el spec se entrega tal cual en producción.
+const destFullJson = join(here, '../public/openapi.json');
+const destPartnersJson = join(here, '../public/openapi.partners.json');
 
 if (!existsSync(src)) {
   console.warn('[copy-openapi] no se encontró backend/openapi.yaml — se omite.');
@@ -23,6 +28,7 @@ if (!existsSync(src)) {
 
 const raw = readFileSync(src, 'utf8');
 writeFileSync(destFull, raw);
+writeFileSync(destFullJson, JSON.stringify(parse(raw), null, 2));
 console.log('[copy-openapi] backend/openapi.yaml → public/openapi.yaml');
 
 // ── Vista pública para integradores externos ─────────────────────────────────
@@ -62,4 +68,5 @@ const partners = {
 };
 
 writeFileSync(destPartners, stringify(partners));
-console.log('[copy-openapi] backend/openapi.yaml → public/openapi.partners.yaml (vista externa)');
+writeFileSync(destPartnersJson, JSON.stringify(partners, null, 2));
+console.log('[copy-openapi] backend/openapi.yaml → public/openapi.partners.{yaml,json} (vista externa)');

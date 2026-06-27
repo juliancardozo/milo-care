@@ -7,11 +7,14 @@ import '@scalar/api-reference-react/style.css';
  * sincronizado a /public por el script copy-openapi).
  *
  * - Pública (`/developers`): spec recortado para integradores externos
- *   (openapi.partners.yaml) — Auth + Aseguradoras + Partners + webhooks.
+ *   (openapi.partners.json) — Auth + Aseguradoras + Partners + webhooks.
  * - Interna (`/developers/internal`): spec completo (todas las audiencias).
+ *
+ * Nota: se sirve .json (no .yaml) porque Amplify reescribe a index.html las rutas
+ * con extensión fuera de su lista blanca, y `.yaml` no está; `.json` sí.
  */
 export default function DevelopersPage({ internal = false }) {
-  const url = internal ? '/openapi.yaml' : '/openapi.partners.yaml';
+  const url = internal ? '/openapi.json' : '/openapi.partners.json';
   return (
     <ApiReferenceReact
       configuration={{

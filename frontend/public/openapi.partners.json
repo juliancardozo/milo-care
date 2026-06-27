@@ -1,0 +1,1418 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Milo Care — API para Partners",
+    "version": "1.0.0",
+    "description": "Referencia para integradores (aseguradoras / fintech / banco). Incluye autenticación, la API de partners y los webhooks. Para integrar, pedinos tu API key.\n\n## Webhooks\n\n**Por qué existen:** el valor del modelo B2B2C depende de actuar **en el momento justo**. Cuando un tutor pide un seguro, la aseguradora necesita contactarlo mientras el interés está caliente; cuando se comparte un certificado, hay que correr la suscripción. Sin webhooks, el partner tendría que **preguntar todo el tiempo** (\"¿hay algo nuevo?\") — lento, caro y poco escalable. Los webhooks **invierten el flujo**: en vez de que el partner consulte, **Milo Care le avisa** apenas pasa algo, lo que habilita automatizar el funnel (lead → contacto → conversión) y el puente de datos consentidos en tiempo real. Son, en resumen, el **sistema nervioso de la integración**: el canal de salida de eventos hacia el partner, complementario a la API REST (que es el canal de entrada/consulta).\n\n### Cómo recibirlos\n\nMilo Care hace un `POST` a tu endpoint cuando ocurre algo relevante. Para usarlos:\n\n1. **Configurá tu `webhookUrl`** (HTTPS) en el partner — al crearlo (`POST /partners`) o\n   editándolo (`PATCH /partners/{id}`).\n\n2. **Recibís un `POST` JSON** con `Content-Type: application/json`. El body es el payload\n   del evento (cada uno descrito abajo); siempre trae un campo `event` con el tipo.\n\n3. **Respondé `2xx` rápido** (timeout de **5 s**). Si respondés un error o no contestás a\n   tiempo, Milo **reintenta hasta 3 veces** con backoff exponencial (~0,5 s, 1 s, 2 s).\n\n4. **Sé idempotente**: por los reintentos, un mismo evento puede llegar más de una vez —\n   deduplicá por su identificador (`leadId`, `dogId`).\n\n\nNota de seguridad: hoy el POST **no va firmado** (sin HMAC). Tratá tu `webhookUrl` como un secreto, validá la forma del payload y, si podés, restringí el origen. La entrega de cada webhook queda registrada del lado de Milo Care.\n"
+  },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "Backend Milo Care"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Autenticación",
+      "description": "Login y alta de cuenta. Común a todas las audiencias."
+    },
+    {
+      "name": "API para Aseguradoras",
+      "description": "Lectura consentida (nivel de certificado) y conversión de pólizas. Auth por API key."
+    },
+    {
+      "name": "API para Partners",
+      "description": "Integración white-label genérica — branding, eventos, métricas agregadas."
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT del usuario (tutor / vet / admin / partner_admin). Se obtiene con POST /auth/login (o /auth/register, /auth/magic-login) y se envía como Authorization: Bearer <token>."
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "API key del partner/aseguradora (también aceptada como Authorization: Bearer)."
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "JWT — enviar como Authorization: Bearer <token>"
+          },
+          "user": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string"
+              },
+              "email": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "user",
+                  "admin",
+                  "adminVet",
+                  "vet",
+                  "partner_admin"
+                ]
+              },
+              "tier": {
+                "type": "string",
+                "enum": [
+                  "free",
+                  "premium"
+                ]
+              },
+              "partnerId": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "Dog": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "example": "Milo"
+          },
+          "breed": {
+            "type": "string",
+            "example": "Border Collie"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "example": "2022-04-15"
+          },
+          "photoUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DogInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "breed",
+          "dateOfBirth"
+        ],
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Milo"
+          },
+          "breed": {
+            "type": "string",
+            "example": "Border Collie"
+          },
+          "dateOfBirth": {
+            "type": "string",
+            "format": "date",
+            "description": "En el pasado, máx. 30 años.",
+            "example": "2022-04-15"
+          },
+          "photoUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Vaccination": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "vaccineName": {
+            "type": "string",
+            "example": "Rabia"
+          },
+          "dateAdministered": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "nextDueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Próxima dosis; alimenta el recordatorio."
+          },
+          "nextReminderAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Cuándo se dispara el recordatorio."
+          },
+          "veterinarian": {
+            "type": "string",
+            "nullable": true
+          },
+          "lotNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "documentUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "description": "p.ej. completed (aplicada) o suggested (propuesta por el cuidado preventivo)."
+          },
+          "source": {
+            "type": "string",
+            "description": "manual (la cargó el tutor) o generada por el motor de calendario."
+          },
+          "requiresVetValidation": {
+            "type": "boolean",
+            "description": "Si todavía necesita validación profesional."
+          },
+          "vetValidatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true,
+            "description": "Cuándo la confirmó un veterinario (suma confianza al Pet Score)."
+          }
+        }
+      },
+      "VaccinationInput": {
+        "type": "object",
+        "required": [
+          "vaccineName",
+          "dateAdministered"
+        ],
+        "properties": {
+          "vaccineName": {
+            "type": "string",
+            "example": "Rabia"
+          },
+          "dateAdministered": {
+            "type": "string",
+            "format": "date",
+            "example": "2026-03-01"
+          },
+          "nextDueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true,
+            "description": "Si se omite, se sugiere desde el catálogo clínico (país + etapa de vida).",
+            "example": "2027-03-01"
+          },
+          "veterinarian": {
+            "type": "string",
+            "nullable": true,
+            "example": "Dra. Gómez"
+          },
+          "lotNumber": {
+            "type": "string",
+            "nullable": true,
+            "example": "RB-2026-014"
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CoverageItem": {
+        "type": "object",
+        "properties": {
+          "item": {
+            "type": "string",
+            "example": "cirugia",
+            "description": "Concepto cubierto (accidente, cirugía, consulta…)."
+          },
+          "covered": {
+            "type": "boolean"
+          },
+          "limit": {
+            "type": "number",
+            "nullable": true,
+            "description": "Tope de cobertura."
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "ARS",
+              "UYU",
+              "USD"
+            ]
+          },
+          "carenciaDays": {
+            "type": "integer",
+            "description": "Días de carencia antes de que aplique."
+          }
+        }
+      },
+      "InsurancePolicy": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "dogId": {
+            "type": "string"
+          },
+          "partnerId": {
+            "type": "string",
+            "nullable": true,
+            "description": "Aseguradora (partner) que emitió la póliza."
+          },
+          "policyNumber": {
+            "type": "string"
+          },
+          "productName": {
+            "type": "string"
+          },
+          "coverage": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CoverageItem"
+            }
+          },
+          "reimbursementModel": {
+            "type": "string",
+            "enum": [
+              "reimbursement",
+              "direct"
+            ]
+          },
+          "startDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "inactive"
+            ]
+          }
+        }
+      },
+      "CoverageCheck": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string"
+          },
+          "likelyCovered": {
+            "type": "boolean",
+            "description": "Orientativo, no vinculante"
+          },
+          "confidence": {
+            "type": "string",
+            "enum": [
+              "unknown",
+              "low",
+              "medium"
+            ]
+          },
+          "item": {
+            "type": "string",
+            "nullable": true
+          },
+          "limit": {
+            "type": "number",
+            "nullable": true
+          },
+          "carenciaDays": {
+            "type": "integer"
+          },
+          "inCarencia": {
+            "type": "boolean"
+          },
+          "message": {
+            "type": "string"
+          },
+          "disclaimer": {
+            "type": "string"
+          }
+        }
+      },
+      "Theme": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "insurer",
+              "fintech",
+              "bank",
+              "vet"
+            ]
+          },
+          "branding": {
+            "type": "object",
+            "properties": {
+              "appName": {
+                "type": "string"
+              },
+              "logoUrl": {
+                "type": "string",
+                "nullable": true
+              },
+              "primaryColor": {
+                "type": "string",
+                "nullable": true
+              },
+              "secondaryColor": {
+                "type": "string",
+                "nullable": true
+              }
+            }
+          }
+        }
+      },
+      "Metrics": {
+        "type": "object",
+        "description": "Solo agregados, sin PII clínica individual.",
+        "properties": {
+          "month": {
+            "type": "string"
+          },
+          "totalPets": {
+            "type": "integer"
+          },
+          "activePets": {
+            "type": "integer"
+          },
+          "adherenceRate": {
+            "type": "number"
+          },
+          "retentionRate": {
+            "type": "number"
+          },
+          "eventsByType": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            }
+          }
+        }
+      },
+      "HealthScore": {
+        "type": "object",
+        "description": "Indicador de bienestar (gamificado), con un sello de confianza encima. No es diagnóstico médico.",
+        "properties": {
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100,
+            "example": 78
+          },
+          "grade": {
+            "type": "string",
+            "description": "Nota derivada del score (p.ej. A/B/C)."
+          },
+          "factors": {
+            "type": "array",
+            "description": "Desglose por factor (vacunas, desparasitación, racha de check-in, bienestar, perfil, seguimiento vet).",
+            "items": {
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "example": "vaccines"
+                },
+                "label": {
+                  "type": "string"
+                },
+                "points": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                },
+                "status": {
+                  "type": "string",
+                  "enum": [
+                    "good",
+                    "warn",
+                    "bad"
+                  ]
+                },
+                "hint": {
+                  "type": "string",
+                  "description": "Sugerencia accionable para subir ese factor."
+                }
+              }
+            }
+          },
+          "verification": {
+            "type": "object",
+            "description": "Sello de confianza — NO altera el número del score.",
+            "properties": {
+              "level": {
+                "type": "string",
+                "enum": [
+                  "self",
+                  "verified",
+                  "certified"
+                ]
+              },
+              "label": {
+                "type": "string"
+              },
+              "certifiedBy": {
+                "type": "string",
+                "nullable": true,
+                "description": "Clínica que respalda el sello (solo en certified)."
+              },
+              "attestedAt": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true
+              },
+              "validUntil": {
+                "type": "string",
+                "format": "date-time",
+                "nullable": true,
+                "description": "Vencimiento del sello."
+              },
+              "attestedItems": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Certificate": {
+        "type": "object",
+        "description": "Vista del TUTOR del certificado — incluye el score. (La aseguradora recibe solo el nivel, ver CertificateShareable.)",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "confidenceLevel": {
+            "type": "string",
+            "enum": [
+              "self",
+              "verified",
+              "certified"
+            ]
+          },
+          "score": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Foto del Pet Score al emitir."
+          },
+          "grade": {
+            "type": "string",
+            "nullable": true
+          },
+          "certifiedBy": {
+            "type": "string",
+            "nullable": true,
+            "description": "Clínica que respalda (solo en certified)."
+          },
+          "attestedCount": {
+            "type": "integer"
+          },
+          "attestedItems": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            }
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "expired",
+              "revoked"
+            ]
+          }
+        }
+      },
+      "CertificateShareable": {
+        "type": "object",
+        "description": "Vista que recibe la aseguradora — nivel + vigencia, sin score ni clínica.",
+        "properties": {
+          "confidenceLevel": {
+            "type": "string",
+            "enum": [
+              "self",
+              "verified",
+              "certified"
+            ]
+          },
+          "certifiedBy": {
+            "type": "string",
+            "nullable": true
+          },
+          "attestedCount": {
+            "type": "integer"
+          },
+          "issuedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "validUntil": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "PartnerInput": {
+        "type": "object",
+        "required": [
+          "name",
+          "slug",
+          "type"
+        ],
+        "description": "Alta de un partner. Los precios del contrato son una plantilla sugerida (anclada al pricing one-pager, en USD) — ajustables por contrato.\n",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Aseguradora Demo"
+          },
+          "slug": {
+            "type": "string",
+            "description": "Identificador white-label (slug/subdominio), único y en minúsculas.",
+            "example": "aseguradora-demo"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "insurer",
+              "fintech",
+              "bank",
+              "vet"
+            ],
+            "example": "insurer"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused"
+            ],
+            "default": "active"
+          },
+          "webhookUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://partner.example.com/webhooks/milo"
+          },
+          "branding": {
+            "type": "object",
+            "properties": {
+              "appName": {
+                "type": "string",
+                "example": "PetSeguro"
+              },
+              "primaryColor": {
+                "type": "string",
+                "example": "#4f8ef7"
+              },
+              "secondaryColor": {
+                "type": "string",
+                "example": "#3370d4"
+              },
+              "logoUrl": {
+                "type": "string",
+                "nullable": true,
+                "example": "https://partner.example.com/logo.png"
+              }
+            }
+          },
+          "contract": {
+            "type": "object",
+            "properties": {
+              "setupFee": {
+                "type": "number",
+                "example": 3500
+              },
+              "pricePerActivePet": {
+                "type": "number",
+                "example": 0.9
+              },
+              "pricePerLead": {
+                "type": "number",
+                "description": "CPL — por lead calificado.",
+                "example": 10
+              },
+              "pricePerConversion": {
+                "type": "number",
+                "description": "CPA — por póliza convertida.",
+                "example": 40
+              },
+              "currency": {
+                "type": "string",
+                "enum": [
+                  "ARS",
+                  "UYU",
+                  "USD"
+                ],
+                "example": "USD"
+              },
+              "billingDay": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 28,
+                "example": 1
+              }
+            }
+          },
+          "billing": {
+            "type": "object",
+            "properties": {
+              "autoCharge": {
+                "type": "boolean",
+                "example": false
+              },
+              "payerEmail": {
+                "type": "string",
+                "nullable": true,
+                "example": "finanzas@partner.example.com"
+              }
+            }
+          }
+        }
+      },
+      "PartnerCreated": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "slug": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string",
+            "description": "API key en claro — se muestra UNA sola vez al crear."
+          }
+        }
+      },
+      "BillingRecord": {
+        "type": "object",
+        "properties": {
+          "month": {
+            "type": "string",
+            "example": "2026-05"
+          },
+          "setupFeeApplied": {
+            "type": "number"
+          },
+          "activePets": {
+            "type": "integer"
+          },
+          "pricePerActivePet": {
+            "type": "number"
+          },
+          "total": {
+            "type": "number"
+          },
+          "currency": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "issued",
+              "paid",
+              "failed"
+            ]
+          },
+          "chargedAt": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "chargeRef": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Crea una cuenta y devuelve un JWT.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 8
+                  }
+                }
+              },
+              "example": {
+                "name": "Ana Pérez",
+                "email": "ana@example.com",
+                "password": "unaClaveSegura"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Creado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "El email ya está registrado"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Login con email y contraseña. Devuelve un JWT.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email",
+                  "password"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                }
+              },
+              "example": {
+                "email": "ana@example.com",
+                "password": "unaClaveSegura"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciales inválidas"
+          }
+        }
+      }
+    },
+    "/auth/magic-link": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Pide un link de ingreso sin contraseña al email (anti-enumeración → 200 siempre).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "email"
+                ],
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Si la cuenta existe",
+            "se envió el link de ingreso": null
+          }
+        }
+      }
+    },
+    "/auth/magic-login": {
+      "post": {
+        "tags": [
+          "Autenticación"
+        ],
+        "summary": "Canjea el token del magic link e inicia sesión (devuelve JWT).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "token",
+                  "userId"
+                ],
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "userId": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Link inválido o expirado"
+          }
+        }
+      }
+    },
+    "/v1/pets/{id}/certificate": {
+      "get": {
+        "tags": [
+          "API para Aseguradoras"
+        ],
+        "summary": "Nivel del certificado de la mascota (solo con consentimiento del tutor para esta aseguradora).",
+        "description": "Lectura programática (con **API key** del partner) del **nivel de confianza** del certificado de una mascota. Pensado para que la aseguradora lo use en suscripción o descuentos, **sin acceder nunca al dato clínico**.\n\nDevuelve solo la vista compartible: `confidenceLevel` (`self`/`verified`/`certified`), quién respalda (`certifiedBy`), vigencia (`validUntil`) y estado. **No incluye el score ni el historial** — eso queda del lado del tutor.\n\nPasa por **tres controles** (los guardrails del producto):\n\n- **Aislamiento multi-tenant** — la mascota debe pertenecer a esta aseguradora; si no,\n  `404` (no se puede sondear mascotas de otros partners).\n\n- **Consentimiento** — el tutor tiene que haber habilitado\n  `share_certificate_with_partner` para **esta** aseguradora; si no, `403 NO_CONSENT`.\n\n- **Certificado vigente** — debe existir uno activo; si no, `404 NO_CERTIFICATE`.\n",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CertificateShareable"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "API key inválida o ausente"
+          },
+          "403": {
+            "description": "NO_CONSENT — el tutor no consintió compartir con esta aseguradora"
+          },
+          "404": {
+            "description": "Mascota fuera de la cartera (NOT_FOUND) o sin certificado activo (NO_CERTIFICATE)"
+          }
+        }
+      }
+    },
+    "/v1/leads/{id}/convert": {
+      "post": {
+        "tags": [
+          "API para Aseguradoras"
+        ],
+        "summary": "Marca un lead como póliza convertida (CPA). Idempotente, aislado por partner.",
+        "description": "La aseguradora informa que un lead generado por Milo Care **se convirtió en póliza**. **Cierra el ciclo de lead-gen** (`POST /dogs/{id}/insurance-lead` → contacto → conversión) y es lo que habilita el cobro **CPA** (precio por póliza convertida) en la facturación del partner.\n\nMarca el lead como `converted` con `convertedAt` y, opcionalmente, guarda la referencia externa de la póliza (`policyRef`). Es **idempotente** (reconvertir no duplica) y está **aislado por partner** (solo leads propios; ajeno → `404`).\n\nNota: la conversión es **auto-reportada por la aseguradora** vía su API key. Conviene acompañarla de conciliación/auditoría del lado de Milo Care (ver evaluación).\n",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "policyRef": {
+                    "type": "string",
+                    "description": "Referencia externa de la póliza emitida (para conciliar)."
+                  }
+                }
+              },
+              "example": {
+                "policyRef": "POL-2026-00123"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Convertido — { id, status, convertedAt }"
+          },
+          "401": {
+            "description": "API key inválida o ausente"
+          },
+          "404": {
+            "description": "Lead no encontrado o de otra aseguradora"
+          }
+        }
+      }
+    },
+    "/public/partners/by-slug/{slug}/theme": {
+      "get": {
+        "tags": [
+          "API para Partners"
+        ],
+        "summary": "Branding white-label por slug (público).",
+        "description": "Resuelve el **branding white-label** de un partner a partir de su `slug` (subdominio/identificador). Lo consume el frontend al entrar por la URL del partner para pintar la app con su marca: `appName`, `logoUrl` y colores (que se aplican como CSS variables).\n\nEs **público** (no requiere auth) porque se necesita antes de loguearse, en la pantalla de entrada. Solo devuelve datos de marca — nada sensible. Si el partner no existe o está pausado (`status` ≠ active), responde `404`.\n",
+        "parameters": [
+          {
+            "name": "slug",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "aseguradora-demo"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Theme"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Partner no encontrado o pausado"
+          }
+        }
+      }
+    },
+    "/v1/events": {
+      "post": {
+        "tags": [
+          "API para Partners"
+        ],
+        "summary": "El partner empuja un evento (aislado por partner).",
+        "description": "Canal de **ingesta de eventos** desde el sistema del partner hacia Milo Care (con **API key**). El partner manda un `type` y un `payload` libre; se guarda como `PartnerEvent` **atribuido a su partner** (aislado: nunca se mezcla con otro).\n\nSirve para integrar señales del lado del partner (p.ej. \"póliza emitida\", \"cliente dado de alta\") que luego pueden alimentar métricas o automatizaciones. El `payload` es flexible (objeto JSON arbitrario).\n",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "type"
+                ],
+                "properties": {
+                  "type": {
+                    "type": "string",
+                    "description": "Tipo de evento del partner.",
+                    "example": "policy_issued"
+                  },
+                  "payload": {
+                    "type": "object",
+                    "description": "Datos del evento (estructura libre)."
+                  }
+                }
+              },
+              "example": {
+                "type": "policy_issued",
+                "payload": {
+                  "policyRef": "POL-2026-00123",
+                  "plan": "full"
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Recibido — { id, received }"
+          },
+          "400": {
+            "description": "VALIDATION_ERROR — falta type"
+          },
+          "401": {
+            "description": "API key inválida o ausente"
+          }
+        }
+      }
+    },
+    "/v1/pets/{id}": {
+      "get": {
+        "tags": [
+          "API para Partners"
+        ],
+        "summary": "Vista read-only consentida de la mascota (sin dato clínico individual).",
+        "description": "Lectura (con **API key**) de una vista **mínima y no clínica** de una mascota de la cartera del partner. Devuelve identidad básica (`name`, `breed`), estado de `sponsorshipStatus`, si la mascota está `active` en el mes, el **nivel de verificación** (`verification.level` + emisor + vigencia) y un resumen de `policy` (estado y producto) — **nunca** vacunas, síntomas ni historial.\n\n**Aislado por partner**: solo mascotas con `partnerId` = el de la API key; cualquier otra → `404` (no se pueden sondear mascotas ajenas). Es el guardrail de \"el partner ve solo lo agregado/consentido, no dato clínico individual\".\n",
+        "security": [
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — { id, name, breed, sponsorshipStatus, active, verification, policy }"
+          },
+          "401": {
+            "description": "API key inválida o ausente"
+          },
+          "404": {
+            "description": "Mascota fuera de la cartera del partner"
+          }
+        }
+      }
+    },
+    "/partners/{id}/metrics": {
+      "get": {
+        "tags": [
+          "API para Partners"
+        ],
+        "summary": "Métricas agregadas de la cohorte (admin o partner_admin del partner). Sin PII.",
+        "description": "Panel de impacto del partner: **solo agregados**, sin PII ni dato clínico individual. Incluye `totalPets`, `activePets` (y el mes previo, para retención), `sponsoredPets`, mascotas con verificación vigente, tasas de adherencia/retención y `eventsByType` (conteo de eventos del mes por tipo).\n\nPor defecto toma el **mes en curso** (la cohorte viva); se puede pedir otro con `?month=YYYY-MM`. (Ojo: la **facturación** usa el mes anterior cerrado, no este.) Accesible por el **admin de Milo Care** o el **partner_admin del propio partner**; intentar ver otro partner devuelve `403`.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "example": "2026-05"
+            },
+            "description": "Mes a consultar (YYYY-MM). Default: mes en curso."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Metrics"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "VALIDATION_ERROR — month inválido"
+          },
+          "403": {
+            "description": "Cross-access — partner ajeno"
+          },
+          "404": {
+            "description": "Partner no encontrado"
+          }
+        }
+      }
+    },
+    "/partners/{id}/leads": {
+      "get": {
+        "tags": [
+          "API para Partners"
+        ],
+        "summary": "Leads de seguro generados por la cohorte (admin o partner_admin del partner).",
+        "description": "Lista los **leads de seguro** atribuidos al partner (los que generó el botón \"¿Necesito un seguro?\" del tutor). Cada uno trae `status` (`new`/`delivered`/ `failed`/`converted`), el `contact` que el tutor consintió compartir, fechas de creación y de entrega del webhook, y —si convirtió— `convertedAt` y `externalPolicyRef`.\n\nEs la vista operativa del funnel CPL→CPA del lado del partner. Se puede filtrar por `?status=`. Devuelve hasta 200, más recientes primero. Accesible por el admin de Milo Care o el partner_admin del propio partner.\n",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "new",
+                "delivered",
+                "failed",
+                "converted"
+              ]
+            },
+            "description": "Filtra por estado del lead."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK — { leads: [{ id, status, contact, createdAt, webhookDeliveredAt, convertedAt, externalPolicyRef }] }"
+          },
+          "403": {
+            "description": "Cross-access — partner ajeno"
+          },
+          "404": {
+            "description": "Partner no encontrado"
+          }
+        }
+      }
+    }
+  },
+  "webhooks": {
+    "insuranceLeadCreated": {
+      "post": {
+        "summary": "insurance_lead.created — enviado a tu webhookUrl cuando un tutor pide un seguro.",
+        "description": "Se dispara cuando un tutor de tu cohorte usa \"¿Necesito un seguro?\" (`POST /dogs/{dogId}/insurance-lead`). Es el **inicio del funnel**: contiene el `leadId` (guardalo para después convertirlo vía `POST /v1/leads/{id}/convert`), la mascota y el `contact` que el tutor consintió compartir. Respondé `2xx`; deduplicá por `leadId`. Ver la sección **Webhooks** de la introducción para reintentos y configuración.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "event": {
+                    "type": "string",
+                    "example": "insurance_lead.created"
+                  },
+                  "leadId": {
+                    "type": "string",
+                    "description": "Usalo para convertir el lead (CPA) y para deduplicar."
+                  },
+                  "dogId": {
+                    "type": "string"
+                  },
+                  "dogName": {
+                    "type": "string"
+                  },
+                  "intent": {
+                    "type": "string",
+                    "example": "wants_quote"
+                  },
+                  "contact": {
+                    "type": "object",
+                    "description": "Datos de contacto consentidos (email/teléfono)."
+                  },
+                  "createdAt": {
+                    "type": "string",
+                    "format": "date-time"
+                  }
+                }
+              },
+              "example": {
+                "event": "insurance_lead.created",
+                "leadId": "665f0a1b2c3d4e5f00112233",
+                "dogId": "665f0a1b2c3d4e5f00990011",
+                "dogName": "Milo",
+                "intent": "wants_quote",
+                "contact": {
+                  "email": "ana@example.com",
+                  "phone": "+59899123456"
+                },
+                "createdAt": "2026-06-26T14:03:00Z"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recibido por el partner"
+          }
+        }
+      }
+    },
+    "certificateShared": {
+      "post": {
+        "summary": "certificate.shared — enviado cuando un tutor comparte el nivel del certificado con vos.",
+        "description": "Se dispara cuando un tutor comparte el **nivel** del certificado de su mascota con tu organización (`POST /dogs/{dogId}/certificate/share`), con su consentimiento. Trae solo la vista compartible (nivel + vigencia + emisor) — **nunca el score ni el historial**. Útil para suscripción/descuentos. Respondé `2xx`; deduplicá por `dogId`.\n",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "event": {
+                        "type": "string",
+                        "example": "certificate.shared"
+                      },
+                      "dogId": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  {
+                    "$ref": "#/components/schemas/CertificateShareable"
+                  }
+                ]
+              },
+              "example": {
+                "event": "certificate.shared",
+                "dogId": "665f0a1b2c3d4e5f00990011",
+                "confidenceLevel": "certified",
+                "certifiedBy": "Veterinaria San Roque",
+                "attestedCount": 3,
+                "issuedAt": "2026-06-20T10:00:00Z",
+                "validUntil": "2026-12-20T10:00:00Z",
+                "status": "active"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Recibido por el partner"
+          }
+        }
+      }
+    }
+  }
+}
