@@ -52,7 +52,9 @@ function LandingNav({ variant }) {
           <span>Milo Care</span>
         </div>
         <div className="landing-nav-actions">
-          <a href="#para-quien" className="landing-nav-link">Para empresas</a>
+          <Link to="/para-veterinarias" className="landing-nav-link">Veterinarias</Link>
+          <Link to="/para-partners" className="landing-nav-link">Empresas</Link>
+          <Link to="/developers" className="landing-nav-link">Developers</Link>
           <Link to="/login" className="landing-nav-link">Iniciar sesión</Link>
           <Link
             to="/register"
