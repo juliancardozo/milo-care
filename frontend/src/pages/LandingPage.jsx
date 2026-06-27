@@ -304,10 +304,10 @@ function HowItWorks() {
 
 const ACTORS = [
   { icon: '🐶', title: 'Tutores', claim: 'Cuidá bien sin volverte experto.', body: 'Cero olvidos, el historial siempre a mano y menos ansiedad.', cta: 'Crear cuenta gratis →', to: '/register' },
-  { icon: '🏥', title: 'Veterinarias y clínicas', claim: 'Tus pacientes llegan con el historial al día.', body: 'Mejor seguimiento entre consultas y un programa de referidos con materiales para tu sala de espera.', cta: 'Ser clínica piloto →', mail: 'Quiero sumar mi clínica a Milo Care' },
+  { icon: '🏥', title: 'Veterinarias y clínicas', claim: 'Tus pacientes llegan con el historial al día.', body: 'Mejor seguimiento entre consultas y un programa de referidos con materiales para tu sala de espera.', cta: 'Ver cómo sumar mi clínica →', to: '/para-veterinarias' },
   { icon: '🛍️', title: 'Pet shops y partners', claim: 'La puerta de entrada al tutor que ya te elige.', body: 'Fidelización, recurrencia y co-marketing con la marca que el dueño abre todas las semanas.', cta: 'Quiero ser partner →', mail: 'Quiero ser partner de canal de Milo Care' },
   { icon: '🦴', title: 'Guarderías y paseadores', claim: 'Recibí al perro con instrucciones y datos claros.', body: 'Cuidado más seguro, responsabilidad cubierta y un servicio que se diferencia.', cta: 'Sumar mi servicio →', mail: 'Quiero sumar mi guardería/servicio a Milo Care' },
-  { icon: '🛡️', title: 'Aseguradoras', claim: 'Historial confiable = mejor prevención y pricing.', body: 'Datos longitudinales, menos siniestros evitables y onboarding de asegurados más simple.', cta: 'Hablar de integración →', mail: 'Integración de seguros con Milo Care' },
+  { icon: '🛡️', title: 'Aseguradoras', claim: 'Historial confiable = mejor prevención y pricing.', body: 'Datos longitudinales, menos siniestros evitables y onboarding de asegurados más simple.', cta: 'Ver cómo integrar →', to: '/para-partners' },
   { icon: '🏠', title: 'Refugios y criadores', claim: 'Continuidad del cuidado desde el día uno.', body: 'Adopciones y entregas con historial completo y portable que viaja con el perro.', cta: 'Sumar mi organización →', mail: 'Quiero sumar mi refugio/criadero a Milo Care' },
 ];
 

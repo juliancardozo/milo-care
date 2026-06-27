@@ -53,6 +53,8 @@ import InviteAcceptPage from './pages/InviteAcceptPage';
 import AlbumPage from './pages/AlbumPage';
 import CardsPage from './pages/CardsPage';
 import MiSeguroPage from './pages/MiSeguroPage';
+import ParaVeterinariasPage from './pages/ParaVeterinariasPage';
+import ParaPartnersPage from './pages/ParaPartnersPage';
 import PartnerRoute from './components/PartnerRoute';
 import PartnerDashboardPage from './pages/partner/PartnerDashboardPage';
 import { useI18n } from './i18n/I18nProvider';
@@ -73,10 +75,11 @@ export default function App() {
   const isClinicLanding = location.pathname.startsWith('/c/');
   const isVetPortal = location.pathname.startsWith('/vet-portal');
   const isDevelopers = location.pathname.startsWith('/developers');
+  const isMarketing = location.pathname.startsWith('/para-veterinarias') || location.pathname.startsWith('/para-partners');
   // Hide the global app header on dashboard, landing, and the public/vet/clinic/docs
   // pages (each has its own chrome / is meant for logged-out visitors).
   const showGlobalHeader = !isLanding && location.pathname !== '/dashboard'
-    && !isPublicPet && !isVetRecord && !isClinicLanding && !isVetPortal && !isDevelopers;
+    && !isPublicPet && !isVetRecord && !isClinicLanding && !isVetPortal && !isDevelopers && !isMarketing;
 
   return (
     <>
@@ -106,6 +109,8 @@ export default function App() {
         <Route path="/invite/:token" element={<InviteAcceptPage />} />
         <Route path="/c/:slug" element={<ClinicLandingPage />} />
         <Route path="/vet-portal/register" element={<VetRegisterPage />} />
+        <Route path="/para-veterinarias" element={<ParaVeterinariasPage />} />
+        <Route path="/para-partners" element={<ParaPartnersPage />} />
         <Route path="/developers" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage /></Suspense>} />
         <Route path="/developers/internal" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage internal /></Suspense>} />
 
