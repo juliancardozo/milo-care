@@ -43,11 +43,11 @@ function LandingNav({ variant }) {
       <div className="landing-nav-inner">
         <div className="landing-brand">
           <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
-            <ellipse cx="12" cy="19" rx="6.5" ry="8.5" fill="#fff" opacity=".9" />
-            <ellipse cx="25" cy="11" rx="6.5" ry="8.5" fill="#fff" opacity=".9" />
-            <ellipse cx="39" cy="11" rx="6.5" ry="8.5" fill="#fff" opacity=".9" />
-            <ellipse cx="52" cy="19" rx="6.5" ry="8.5" fill="#fff" opacity=".9" />
-            <path d="M32 27C20 27 12 34 12 43C12 52 20 57 32 57C44 57 52 52 52 43C52 34 44 27 32 27Z" fill="#fff" opacity=".9" />
+            <ellipse cx="12" cy="19" rx="6.5" ry="8.5" fill="currentColor" opacity=".9" />
+            <ellipse cx="25" cy="11" rx="6.5" ry="8.5" fill="currentColor" opacity=".9" />
+            <ellipse cx="39" cy="11" rx="6.5" ry="8.5" fill="currentColor" opacity=".9" />
+            <ellipse cx="52" cy="19" rx="6.5" ry="8.5" fill="currentColor" opacity=".9" />
+            <path d="M32 27C20 27 12 34 12 43C12 52 20 57 32 57C44 57 52 52 52 43C52 34 44 27 32 27Z" fill="currentColor" opacity=".9" />
           </svg>
           <span>Milo Care</span>
         </div>
