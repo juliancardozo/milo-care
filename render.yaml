@@ -53,5 +53,8 @@ services:
         sync: false
       - key: VAPID_SUBJECT
         value: mailto:hola@milocare.org
+      # ── Companion (B2B2C / partners / white-label / API v1) ──
+      - key: COMPANION_ENABLED
+        value: 'true'        # habilita /api/partners, /api/v1, seguros y certificados
       - key: RESEND_FROM_EMAIL
         value: noreply@milocare.org
