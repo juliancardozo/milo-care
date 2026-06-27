@@ -81,7 +81,9 @@ export default function ParaPartnersPage() {
               <a href={KEY_MAIL} className="landing-btn-primary landing-btn-lg">Pedir mi API key →</a>
               <Link to="/developers" className="landing-btn-ghost landing-btn-lg landing-hero-ghost">Ver la documentación</Link>
             </div>
-            <p className="landing-hero-footnote">Documentación abierta · Sandbox para probar · Datos solo con consentimiento del tutor</p>
+            <p className="landing-hero-footnote">
+              o escribinos a <a href={KEY_MAIL} style={{ color: '#fff', fontWeight: 700, textDecoration: 'underline' }}>hola@milocare.org</a> · Documentación abierta · Sandbox para probar
+            </p>
           </div>
         </section>
 
@@ -149,7 +151,8 @@ export default function ParaPartnersPage() {
             <p>Contanos tu caso de uso y te damos tu API key para empezar a probar.</p>
             <a href={KEY_MAIL} className="landing-btn-white landing-btn-lg">Pedir mi API key →</a>
             <p style={{ marginTop: '14px', fontSize: '0.95rem', color: '#dbeafe' }}>
-              <Link to="/developers" style={{ color: '#fff', fontWeight: 700 }}>Explorar la documentación primero →</Link>
+              Escribinos a <a href={KEY_MAIL} style={{ color: '#fff', fontWeight: 700 }}>hola@milocare.org</a>
+              {' '}· o <Link to="/developers" style={{ color: '#fff', fontWeight: 700 }}>explorá la documentación primero →</Link>
             </p>
           </div>
         </section>
