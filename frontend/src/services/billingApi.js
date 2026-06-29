@@ -6,3 +6,8 @@ export const requestPremiumInterest = () =>
 
 export const getSubscriptionStatus = () =>
   api.get('/billing/subscription');
+
+// Cancela la suscripción recurrente (Merchant of Record). El usuario conserva Premium
+// hasta el final del período ya pago.
+export const cancelSubscription = () =>
+  api.post('/billing/cancel');

@@ -85,7 +85,7 @@ export default function UpgradePage() {
           >
             {loading ? t('billing.sending') : t('billing.interestCta')}
           </button>
-          <p className="upgrade-cta-note">{t('billing.ctaNote')}</p>
+          <p className="upgrade-cta-note">{t('billing.recurringConsent')}</p>
         </div>
       </div>
     </div>

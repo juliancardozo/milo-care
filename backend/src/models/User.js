@@ -299,11 +299,24 @@ const userSchema = new Schema(
     // Último pedido de interés en Premium (se notifica al admin por email).
     // Agnóstico al proveedor de pago: usado para deduplicar pedidos dentro de 24h.
     premiumInterestAt: { type: Date, default: null },
-    // Idempotencia del webhook de pago (Mercado Pago): último payment id procesado.
+    // Idempotencia del webhook de pago: último pago procesado (MP = payment id;
+    // Paddle = `pd_<transactionId>`).
     premiumPaymentRef: { type: String, default: null },
     // Premium con vencimiento (Fase 4 — recompensa de referidos). Premium efectivo =
     // tier === 'premium' (manual/permanente) O premiumUntil en el futuro.
     premiumUntil: { type: Date, default: null },
+    // ── Suscripción B2C recurrente (Merchant of Record, ej. Paddle) ─────────────
+    // Espejo del estado: el cobro recurrente, el dunning y la cancelación viven en el
+    // MoR. premiumUntil sigue siendo la vigencia efectiva del acceso.
+    subscriptionProvider: { type: String, default: null }, // 'paddle' | 'mercadopago'
+    subscriptionId: { type: String, default: null, index: true, sparse: true },
+    subscriptionStatus: { type: String, default: null }, // active | past_due | cancelled | expired
+    // Consentimiento del cobro recurrente aceptado en el checkout (Ley 25.326 AR /
+    // 18.331 UY): cuándo y qué versión del texto.
+    consentAt: { type: Date, default: null },
+    consentVersion: { type: String, default: null },
+    // Pedido de cancelación (auditoría). Premium sigue vigente hasta premiumUntil.
+    cancelRequestedAt: { type: Date, default: null },
     // Código de referido permanente y único del usuario (ej. MILO-AB12).
     referralCode: { type: String, default: null, unique: true, sparse: true, uppercase: true, trim: true },
     // Fecha local (YYYY-MM-DD) de la última sorpresa mostrada (≤1/día).

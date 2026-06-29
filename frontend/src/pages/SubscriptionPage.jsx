@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
-import { getSubscriptionStatus } from '../services/billingApi';
+import { getSubscriptionStatus, cancelSubscription } from '../services/billingApi';
 
 export default function SubscriptionPage() {
   const { t } = useI18n();
   const [sub, setSub] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [cancelling, setCancelling] = useState(false);
+  const [cancelMsg, setCancelMsg] = useState(null);
 
   useEffect(() => {
     getSubscriptionStatus()
@@ -15,6 +17,21 @@ export default function SubscriptionPage() {
       .catch(() => setError(t('billing.loadError')))
       .finally(() => setLoading(false));
   }, [t]);
+
+  async function handleCancel() {
+    if (!window.confirm(t('billing.cancelConfirm'))) return;
+    setCancelling(true);
+    setError(null);
+    try {
+      await cancelSubscription();
+      setSub((prev) => ({ ...prev, canCancel: false, subscriptionStatus: 'cancelled' }));
+      setCancelMsg(t('billing.cancelDone'));
+    } catch {
+      setError(t('billing.cancelError'));
+    } finally {
+      setCancelling(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -24,7 +41,7 @@ export default function SubscriptionPage() {
     );
   }
 
-  const isPremium = sub?.tier === 'premium';
+  const isPremium = sub?.effectiveTier === 'premium' || sub?.tier === 'premium';
 
   return (
     <div className="page-container">
@@ -50,7 +67,24 @@ export default function SubscriptionPage() {
           </Link>
         )}
 
-        {isPremium && (
+        {cancelMsg && <p className="subscription-info-note">{cancelMsg}</p>}
+
+        {isPremium && sub?.canCancel && !cancelMsg && (
+          <button
+            className="btn btn-secondary"
+            style={{ marginTop: '1.5rem' }}
+            onClick={handleCancel}
+            disabled={cancelling}
+          >
+            {cancelling ? t('billing.cancelling') : t('billing.cancelBtn')}
+          </button>
+        )}
+
+        {isPremium && sub?.subscriptionStatus === 'cancelled' && !cancelMsg && (
+          <p className="subscription-info-note">{t('billing.cancelPending')}</p>
+        )}
+
+        {isPremium && !sub?.canCancel && sub?.subscriptionStatus !== 'cancelled' && (
           <p className="subscription-info-note">{t('billing.manageNote')}</p>
         )}
       </div>
