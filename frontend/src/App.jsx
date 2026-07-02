@@ -45,6 +45,8 @@ import RemindersPage from './pages/RemindersPage';
 import PdfExportPage from './pages/PdfExportPage';
 import UpgradePage from './pages/UpgradePage';
 import SubscriptionPage from './pages/SubscriptionPage';
+import CheckoutPage from './pages/CheckoutPage';
+import PremiumSuccessPage from './pages/PremiumSuccessPage';
 import PublicPetPage from './pages/PublicPetPage';
 import VetRecordPage from './pages/VetRecordPage';
 import VetShareLinkPage from './pages/VetShareLinkPage';
@@ -110,6 +112,8 @@ export default function App() {
         <Route path="/c/:slug" element={<ClinicLandingPage />} />
         <Route path="/vet-portal/register" element={<VetRegisterPage />} />
         <Route path="/para-veterinarias" element={<ParaVeterinariasPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/premium/success" element={<PremiumSuccessPage />} />
         <Route path="/para-partners" element={<ParaPartnersPage />} />
         <Route path="/developers" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage /></Suspense>} />
         <Route path="/developers/internal" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage internal /></Suspense>} />
