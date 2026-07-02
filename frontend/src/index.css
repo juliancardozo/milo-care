@@ -1345,6 +1345,49 @@ button.btn-secondary:hover { background: var(--color-bg); }
 }
 .landing-nav-link:hover { color: var(--color-primary); }
 
+/* Menú hamburguesa — oculto en desktop, visible en celular */
+.landing-nav-burger { display: none; }
+.landing-nav-mobile { display: none; }
+
+@media (max-width: 600px) {
+  /* En celular escondemos los links y el CTA inline: pasan al menú desplegable */
+  .landing-nav-actions .landing-nav-link,
+  .landing-nav-actions > .landing-nav-cta { display: none; }
+  .landing-nav-burger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: color .15s, border-color .15s;
+  }
+  .landing-nav-burger:hover { color: var(--color-primary); border-color: var(--color-primary); }
+  .landing-nav-mobile {
+    display: flex;
+    flex-direction: column;
+    padding: 8px 24px 18px;
+    background: rgba(255, 255, 255, .98);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+  .landing-nav-mobile .landing-nav-link {
+    display: block;
+    padding: 13px 2px;
+    font-size: 1rem;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .landing-nav-mobile .landing-nav-cta {
+    justify-content: center;
+    margin-top: 14px;
+  }
+}
+
 /* ── Buttons ─────────────────────────────────────────────── */
 .landing-btn-primary {
   display: inline-flex;
@@ -1853,7 +1896,6 @@ button.btn-secondary:hover { background: var(--color-bg); }
   .landing-features-grid { grid-template-columns: 1fr; }
   .landing-segments-grid { grid-template-columns: 1fr; }
   .landing-steps { grid-template-columns: 1fr; }
-  .landing-nav-link { display: none; }
 }
 
 /* ── Floating hero paws ──────────────────────────────────── */

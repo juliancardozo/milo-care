@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import PawCursorTrail from '../components/PawCursorTrail';
+import LanguageSwitcher from '../components/LanguageSwitcher';
+import { useI18n } from '../i18n/I18nProvider';
 import { FOUNDER_SLOTS_AVAILABLE } from '../config/founderPlan';
 import '../styles/landing-v2.css';
 
@@ -15,15 +17,6 @@ function getVariant() {
   return variant;
 }
 
-const SUBHEAD =
-  'Cargás a tu perro una vez y Milo Care arma su calendario de cuidado, te avisa antes de cada vencimiento y guarda su historial listo para compartir. Gratis para empezar.';
-
-const HERO_VARIANTS = {
-  a: { headline: 'Todo lo importante de la salud de tu perro, sin que se te escape nada.', subhead: SUBHEAD },
-  b: { headline: 'Cuidar a tu perro no debería depender de tu memoria.', subhead: SUBHEAD },
-  c: { headline: 'El sistema operativo de la salud preventiva de tu perro.', subhead: SUBHEAD },
-};
-
 // mailto de partners con asunto pre-cargado (no hay endpoint de leads B2B todavía).
 const partnerMail = (asunto) => `mailto:hola@milocare.org?subject=${encodeURIComponent(asunto)}`;
 
@@ -37,9 +30,20 @@ function track(event, props = {}) {
 
 // ── Nav ───────────────────────────────────────────────────────────────────────
 
+const NAV_LINKS = [
+  { to: '/para-veterinarias', key: 'landing.nav.vets' },
+  { to: '/para-partners', key: 'landing.nav.companies' },
+  { to: '/developers', key: 'landing.nav.developers' },
+  { to: '/login', key: 'landing.nav.login' },
+];
+
 function LandingNav({ variant }) {
+  const { t } = useI18n();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const closeMenu = () => setMenuOpen(false);
+
   return (
-    <nav className="landing-nav" aria-label="Navegación principal">
+    <nav className="landing-nav" aria-label={t('landing.nav.aria')}>
       <div className="landing-nav-inner">
         <div className="landing-brand">
           <svg width="28" height="28" viewBox="0 0 64 64" aria-hidden="true">
@@ -52,19 +56,59 @@ function LandingNav({ variant }) {
           <span>Milo Care</span>
         </div>
         <div className="landing-nav-actions">
-          <Link to="/para-veterinarias" className="landing-nav-link">Veterinarias</Link>
-          <Link to="/para-partners" className="landing-nav-link">Empresas</Link>
-          <Link to="/developers" className="landing-nav-link">Developers</Link>
-          <Link to="/login" className="landing-nav-link">Iniciar sesión</Link>
+          {NAV_LINKS.map((l) => (
+            <Link key={l.to} to={l.to} className="landing-nav-link">{t(l.key)}</Link>
+          ))}
+          <LanguageSwitcher />
           <Link
             to="/register"
-            className="landing-btn-primary landing-btn-sm"
+            className="landing-btn-primary landing-btn-sm landing-nav-cta"
             onClick={() => track('cta_signup_click', { position: 'nav', headline_variant: variant })}
           >
-            Empezar gratis
+            {t('landing.nav.cta')}
           </Link>
+          <button
+            type="button"
+            className="landing-nav-burger"
+            aria-label={menuOpen ? t('landing.nav.closeMenu') : t('landing.nav.openMenu')}
+            aria-expanded={menuOpen}
+            aria-controls="landing-mobile-menu"
+            onClick={() => setMenuOpen((o) => !o)}
+          >
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+              {menuOpen ? (
+                <>
+                  <line x1="6" y1="6" x2="18" y2="18" />
+                  <line x1="18" y1="6" x2="6" y2="18" />
+                </>
+              ) : (
+                <>
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <line x1="3" y1="12" x2="21" y2="12" />
+                  <line x1="3" y1="18" x2="21" y2="18" />
+                </>
+              )}
+            </svg>
+          </button>
         </div>
       </div>
+      {menuOpen && (
+        <div className="landing-nav-mobile" id="landing-mobile-menu">
+          {NAV_LINKS.map((l) => (
+            <Link key={l.to} to={l.to} className="landing-nav-link" onClick={closeMenu}>{t(l.key)}</Link>
+          ))}
+          <Link
+            to="/register"
+            className="landing-btn-primary landing-btn-full landing-nav-cta"
+            onClick={() => {
+              track('cta_signup_click', { position: 'nav_mobile', headline_variant: variant });
+              closeMenu();
+            }}
+          >
+            {t('landing.nav.cta')}
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
@@ -97,7 +141,9 @@ const PAW_SVG = (
 );
 
 function Hero({ variant, onCtaClick }) {
-  const { headline, subhead } = HERO_VARIANTS[variant];
+  const { t } = useI18n();
+  const headline = t(`landing.hero.headline${variant.toUpperCase()}`);
+  const subhead = t('landing.hero.subhead');
 
   return (
     <section className="landing-hero">
@@ -117,7 +163,7 @@ function Hero({ variant, onCtaClick }) {
       </div>
 
       <div className="landing-container" style={{ position: 'relative', zIndex: 1 }}>
-        <span className="landing-hero-badge">🇦🇷 🇺🇾 Nacida en el Río de la Plata · Plataforma tech, API-first</span>
+        <span className="landing-hero-badge">{t('landing.hero.badge')}</span>
         <h1 className="landing-hero-title">{headline}</h1>
         <p className="landing-hero-sub">{subhead}</p>
         <div className="landing-hero-ctas">
@@ -126,13 +172,13 @@ function Hero({ variant, onCtaClick }) {
             className="landing-btn-primary landing-btn-lg"
             onClick={() => onCtaClick('hero')}
           >
-            Empezar gratis →
+            {t('landing.hero.ctaPrimary')}
           </Link>
           <a href="#para-quien" className="landing-btn-ghost landing-btn-lg landing-hero-ghost">
-            Para veterinarias y partners
+            {t('landing.hero.ctaSecondary')}
           </a>
         </div>
-        <p className="landing-hero-footnote">Sin tarjeta de crédito · El plan gratuito incluye 1 perro · Argentina y Uruguay</p>
+        <p className="landing-hero-footnote">{t('landing.hero.footnote')}</p>
       </div>
     </section>
   );
@@ -448,47 +494,43 @@ function BrandStory() {
 
 // ── Planes ────────────────────────────────────────────────────────────────────
 
-const PLANS = [
-  {
-    name: 'Free', price: '$0', note: 'Para empezar hoy',
-    feats: ['1 perro', 'Calendario de vacunas personalizado', 'Recordatorios automáticos', 'Carnet básico'],
-    cta: 'Empezar gratis →', to: '/register', featured: false,
-  },
-  {
-    name: 'Premium', price: 'USD 4,99', per: '/mes', note: 'Más elegido',
-    feats: ['Perros ilimitados', 'Carnet e historial en PDF / WhatsApp', 'Checklist clínico WSAVA', 'Multi-tutor y roles familiares', 'Soporte prioritario'],
-    cta: 'Probar Premium →', to: '/register', featured: true,
-  },
-  {
-    name: 'Clínicas y aliados', price: 'A medida', note: 'B2B / partners',
-    feats: ['White-label y referidos', 'Integraciones y API', 'Para vets, pet shops, seguros y partners'],
-    cta: 'Hablemos →', mail: 'Plan para clínicas y aliados — Milo Care', featured: false,
-  },
+// Config estructural de planes; el texto (nombre, precio, features…) vive en i18n (landing.plans.*).
+const PLAN_CONFIG = [
+  { id: 'free', to: '/register', featured: false },
+  { id: 'premium', to: '/register', featured: true },
+  { id: 'b2b', mail: 'Plan para clínicas y aliados — Milo Care', featured: false },
 ];
 
 function Plans() {
+  const { t } = useI18n();
   return (
     <section className="landing-section" id="planes" aria-labelledby="plans-title">
       <div className="landing-container">
-        <span className="landing-eyebrow">Planes</span>
-        <h2 id="plans-title" className="landing-section-title">Empezá gratis. Crecé cuando lo necesites.</h2>
+        <span className="landing-eyebrow">{t('landing.plans.eyebrow')}</span>
+        <h2 id="plans-title" className="landing-section-title">{t('landing.plans.title')}</h2>
         <div className="landing-plans-grid">
-          {PLANS.map((p) => (
-            <div key={p.name} className={`landing-plan-card${p.featured ? ' landing-plan-featured' : ''}`}>
-              {p.featured && <span className="landing-plan-ribbon">{p.note}</span>}
-              <h3 className="landing-plan-name">{p.name}</h3>
-              <div className="landing-plan-price">{p.price}<span>{p.per || ''}</span></div>
-              {!p.featured && <p className="landing-plan-note">{p.note}</p>}
-              <ul className="landing-plan-feats">
-                {p.feats.map((f) => <li key={f}><span aria-hidden="true">✓</span> {f}</li>)}
-              </ul>
-              {p.to ? (
-                <Link to={p.to} className={p.featured ? 'landing-btn-primary landing-btn-full' : 'landing-btn-ghost landing-btn-full'}>{p.cta}</Link>
-              ) : (
-                <a href={partnerMail(p.mail)} className="landing-btn-ghost landing-btn-full">{p.cta}</a>
-              )}
-            </div>
-          ))}
+          {PLAN_CONFIG.map((p) => {
+            const base = `landing.plans.${p.id}`;
+            const note = t(`${base}.note`);
+            const cta = t(`${base}.cta`);
+            const feats = t(`${base}.feats`);
+            return (
+              <div key={p.id} className={`landing-plan-card${p.featured ? ' landing-plan-featured' : ''}`}>
+                {p.featured && <span className="landing-plan-ribbon">{note}</span>}
+                <h3 className="landing-plan-name">{t(`${base}.name`)}</h3>
+                <div className="landing-plan-price">{t(`${base}.price`)}<span>{t(`${base}.per`)}</span></div>
+                {!p.featured && <p className="landing-plan-note">{note}</p>}
+                <ul className="landing-plan-feats">
+                  {feats.map((f) => <li key={f}><span aria-hidden="true">✓</span> {f}</li>)}
+                </ul>
+                {p.to ? (
+                  <Link to={p.to} className={p.featured ? 'landing-btn-primary landing-btn-full' : 'landing-btn-ghost landing-btn-full'}>{cta}</Link>
+                ) : (
+                  <a href={partnerMail(p.mail)} className="landing-btn-ghost landing-btn-full">{cta}</a>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -741,18 +783,19 @@ function FAQ({ variant }) {
 // ── Final CTA (doble vía) ─────────────────────────────────────────────────────
 
 function FinalCTA({ onCtaClick }) {
+  const { t } = useI18n();
   return (
     <section className="landing-cta-section" aria-labelledby="final-cta-title">
       <div className="landing-container landing-cta-inner">
-        <h2 id="final-cta-title">Cuidar mejor empieza por tener todo en orden.</h2>
-        <p>Creá el perfil de tu perro en 90 segundos. Gratis, sin tarjeta.</p>
+        <h2 id="final-cta-title">{t('landing.finalCta.title')}</h2>
+        <p>{t('landing.finalCta.sub')}</p>
         <Link to="/register" className="landing-btn-white landing-btn-lg" onClick={() => onCtaClick('footer')}>
-          Empezar gratis →
+          {t('landing.finalCta.button')}
         </Link>
         <p style={{ marginTop: '14px', fontSize: '0.95rem', color: '#dbeafe' }}>
-          ¿Sos veterinaria, pet shop, aseguradora o partner?{' '}
+          {t('landing.finalCta.partnerLead')}{' '}
           <a href={partnerMail('Construyamos el ecosistema Milo Care')} style={{ color: '#fff', fontWeight: 700 }}>
-            Construyamos el ecosistema juntos →
+            {t('landing.finalCta.partnerLink')}
           </a>
         </p>
       </div>
