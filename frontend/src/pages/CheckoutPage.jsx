@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useI18n } from '../i18n/I18nProvider';
+import '../styles/billing.css';
 
 // Página destino del "Default Payment Link" de Paddle. Cuando el backend crea una
 // transacción, Paddle devuelve `…/checkout?_ptxn=txn_…`; acá inicializamos Paddle.js y
@@ -59,28 +60,78 @@ export default function CheckoutPage() {
     return () => { active = false; };
   }, []);
 
+  const busy = status === 'loading' || status === 'open';
+
   return (
     <div className="page-container">
-      <div className="checkout-page" style={{ textAlign: 'center', padding: '2.5rem 1rem' }}>
-        {(status === 'loading' || status === 'open') && (
-          <p className="loading-text">{t(status === 'open' ? 'checkout.open' : 'checkout.loading')}</p>
-        )}
-        {status === 'notxn' && (
-          <>
-            <p>{t('checkout.notxn')}</p>
-            <Link to="/upgrade" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-              {t('billing.upgradeBtn')}
-            </Link>
-          </>
-        )}
-        {status === 'error' && (
-          <>
-            <p className="form-error">{t('checkout.error')}</p>
-            <Link to="/upgrade" className="btn btn-primary" style={{ marginTop: '1rem' }}>
-              {t('billing.upgradeBtn')}
-            </Link>
-          </>
-        )}
+      <div className="billing-shell">
+        <div className="checkout-card">
+          <div className="checkout-head">
+            <span className="checkout-brand">
+              <span className="checkout-brand-dot" />
+              {t('checkout.brandTag')}
+            </span>
+            <h1 className="checkout-plan-name">Milo Care Premium</h1>
+            <p className="checkout-plan-period">{t('checkout.planPeriod')}</p>
+          </div>
+
+          <div className="checkout-body">
+            {busy && (
+              <>
+                <div className="checkout-spinner" aria-hidden="true" />
+                <p className="checkout-status-text">
+                  {t(status === 'open' ? 'checkout.open' : 'checkout.loading')}
+                </p>
+                <p className="checkout-status-sub">{t('checkout.busySub')}</p>
+
+                <div className="checkout-trust">
+                  <span className="checkout-trust-item">
+                    <span className="checkout-trust-icon">🔒</span>
+                    {t('checkout.trustSecure')}
+                  </span>
+                  <span className="checkout-trust-item">
+                    <span className="checkout-trust-icon">🛡️</span>
+                    {t('checkout.trustMor')}
+                  </span>
+                  <span className="checkout-trust-item">
+                    <span className="checkout-trust-icon">↺</span>
+                    {t('checkout.trustCancel')}
+                  </span>
+                </div>
+
+                <div className="checkout-consent">
+                  <span className="checkout-consent-icon">ℹ️</span>
+                  <span>{t('billing.recurringConsent')}</span>
+                </div>
+              </>
+            )}
+
+            {status === 'notxn' && (
+              <>
+                <div className="checkout-state-icon is-warn" aria-hidden="true">🔍</div>
+                <p className="checkout-status-text">{t('checkout.notxn')}</p>
+                <p className="checkout-status-sub">{t('checkout.notxnSub')}</p>
+                <Link to="/upgrade" className="btn btn-primary checkout-cta">
+                  {t('billing.upgradeBtn')}
+                </Link>
+              </>
+            )}
+
+            {status === 'error' && (
+              <>
+                <div className="checkout-state-icon is-error" aria-hidden="true">⚠️</div>
+                <p className="checkout-status-text">{t('checkout.error')}</p>
+                <p className="checkout-status-sub">{t('checkout.errorSub')}</p>
+                <Link to="/upgrade" className="btn btn-primary checkout-cta">
+                  {t('billing.upgradeBtn')}
+                </Link>
+                <Link to="/subscription" className="checkout-link-quiet">
+                  {t('checkout.backToAccount')}
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
