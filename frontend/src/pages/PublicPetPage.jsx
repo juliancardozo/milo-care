@@ -54,7 +54,7 @@ export default function PublicPetPage() {
   return (
     <div className="public-pet">
       <div className="public-pet-langbar">
-        <LanguageSwitcher />
+        <LanguageSwitcher source="public_pet" />
       </div>
 
       <div className="public-pet-card">

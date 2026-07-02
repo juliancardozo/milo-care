@@ -59,7 +59,7 @@ function LandingNav({ variant }) {
           {NAV_LINKS.map((l) => (
             <Link key={l.to} to={l.to} className="landing-nav-link">{t(l.key)}</Link>
           ))}
-          <LanguageSwitcher />
+          <LanguageSwitcher source="landing" />
           <Link
             to="/register"
             className="landing-btn-primary landing-btn-sm landing-nav-cta"

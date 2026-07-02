@@ -90,7 +90,7 @@ export default function App() {
             <span>{t('appName')}</span>
           </Link>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <LanguageSwitcher />
+            <LanguageSwitcher source="header" />
             <UserMenu />
           </div>
         </header>

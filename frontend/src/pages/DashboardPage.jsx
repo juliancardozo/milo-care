@@ -121,7 +121,7 @@ export default function DashboardPage() {
         </div>
         <div className="dashboard-topbar-right">
           <ExploreMenu dogId={activeDogId} dogName={activeDog?.name} isPremium={isPremium} />
-          <LanguageSwitcher />
+          <LanguageSwitcher source="dashboard" />
           <UserMenu dogs={dogs} />
         </div>
       </header>
