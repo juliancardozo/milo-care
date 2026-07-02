@@ -1,0 +1,143 @@
+/* ══════════════════════════════════════════════════════════════════════════════
+   Landing redesign — rebrand cálido + accesibilidad
+   Rioplatense, cálida, "abrir el álbum de tu perro". Paleta: papel + teal río +
+   ámbar miel (reusa el gold del billing → cohesión de marca).
+
+   Se carga DESPUÉS de index.css y landing-v2.css, así que overridea por orden.
+   La paleta se scopea a .landing-warm para NO tocar los tokens globales de la app.
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.landing-warm {
+  --color-primary: #146B5E;      /* teal río — CTA, links, acentos */
+  --color-primary-dark: #0F5347;
+  --color-success: #2F7D4F;
+  --color-text: #22282A;         /* charcoal teal — texto */
+  --color-muted: #566360;        /* gris sesgado al teal (AA sobre papel) */
+  --color-border: #E6DECF;       /* hairline cálido */
+  --color-bg: #F5F0E6;           /* papel (secciones alt) */
+  --color-surface: #FFFDF8;      /* papel claro (base / cards) */
+
+  background: var(--color-surface);
+  color: var(--color-text);
+}
+
+/* ── Nav ─────────────────────────────────────────────────── */
+.landing-warm .landing-nav-link-muted { opacity: .78; }
+
+/* ── Hero cálido (dark navy → papel con glow miel) ───────── */
+.landing-warm .landing-hero {
+  background: radial-gradient(125% 82% at 50% 0%, #FBEDD1 0%, #F7F1E4 46%, #EFE6D4 100%);
+  color: var(--color-text);
+}
+.landing-hero-inner { position: relative; z-index: 1; }
+
+.landing-warm .landing-hero-badge {
+  background: rgba(20, 107, 94, .10);
+  border: 1px solid rgba(20, 107, 94, .24);
+  color: #0F5347;
+}
+.landing-warm .landing-hero-title { color: var(--color-text); }
+.landing-warm .landing-hero-sub { color: var(--color-muted); opacity: 1; }
+.landing-warm .landing-hero-footnote { color: var(--color-muted); opacity: .95; }
+.landing-warm .landing-hero-paw-float { color: #146B5E; }
+
+.landing-hero-link {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: .95rem;
+  padding: 8px 4px;
+}
+.landing-hero-link:hover { text-decoration: underline; }
+
+/* ── Comparación: alineo el lado "bueno" al verde de marca ── */
+.landing-warm .landing-compare-good { background: #EAF5EE; border-color: #C3E1CD; }
+.landing-warm .landing-compare-good h3 { color: #2F7D4F; }
+.landing-warm .landing-compare-good li span { color: #2F7D4F; }
+.landing-warm .landing-compare-good li { color: #244F38; }
+
+/* ── Confianza · garantías ───────────────────────────────── */
+.landing-guarantees {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 10px;
+}
+.landing-guarantee { display: flex; gap: 14px; align-items: flex-start; }
+.landing-guarantee-icon { font-size: 1.7rem; line-height: 1; flex-shrink: 0; }
+.landing-guarantee h3 { margin: 2px 0 4px; font-size: 1.02rem; font-weight: 700; color: var(--color-text); }
+.landing-guarantee p { margin: 0; color: var(--color-muted); font-size: .92rem; line-height: 1.5; }
+
+/* ── Confianza · testimonios (vacío hasta tener material real) */
+.landing-testimonials {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+  margin: 10px 0 30px;
+}
+.landing-testimonial {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  padding: 22px;
+  margin: 0;
+}
+.landing-testimonial blockquote { margin: 0 0 12px; font-size: 1.02rem; line-height: 1.55; color: var(--color-text); }
+.landing-testimonial figcaption { color: var(--color-muted); font-size: .85rem; font-weight: 600; }
+
+/* ── Planes: 2 columnas (sin card B2B) ───────────────────── */
+.landing-plans-grid-2 {
+  grid-template-columns: repeat(2, 1fr);
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── CTA final: navy → gradiente teal ────────────────────── */
+.landing-warm .landing-cta-section {
+  background: linear-gradient(150deg, #0F5347 0%, #146B5E 55%, #1C8A78 100%);
+  color: #fff;
+}
+
+/* ── Disclaimer compacto (ex sección NoVet) ──────────────── */
+.landing-novet-note {
+  margin: 30px auto 0;
+  max-width: 640px;
+  text-align: center;
+  font-size: .9rem;
+  line-height: 1.6;
+  color: var(--color-muted);
+}
+
+/* ── Footer cálido oscuro ────────────────────────────────── */
+.landing-warm .landing-footer {
+  background: #1B2422;
+  color: #A6B1AD;
+  border-top: 1px solid #2C3A36;
+}
+.landing-warm .landing-footer-brand { color: #E7BE6A; }
+.landing-warm .landing-footer-copy { color: #94A09C; }
+.landing-warm .landing-footer-links a { color: #C9D3CF; }
+.landing-warm .landing-footer-links a:hover { color: #fff; }
+
+/* ── Responsive ──────────────────────────────────────────── */
+@media (max-width: 760px) {
+  .landing-guarantees { grid-template-columns: 1fr; gap: 16px; }
+}
+@media (max-width: 680px) {
+  .landing-plans-grid-2 { grid-template-columns: 1fr; max-width: 400px; }
+}
+
+/* ── Accesibilidad: respeta prefers-reduced-motion ───────── */
+@media (prefers-reduced-motion: reduce) {
+  .landing-root *,
+  .landing-root *::before,
+  .landing-root *::after {
+    animation-duration: .001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .landing-hero-paw-float { display: none !important; }
+}
