@@ -7,16 +7,10 @@
    La paleta se scopea a .landing-warm para NO tocar los tokens globales de la app.
    ══════════════════════════════════════════════════════════════════════════════ */
 
+/* La paleta cálida ahora vive en :root (index.css) y aplica a toda la app.
+   .landing-warm queda como hook para los overrides de color hardcodeado del
+   hero, la CTA y el footer de la landing. */
 .landing-warm {
-  --color-primary: #146B5E;      /* teal río — CTA, links, acentos */
-  --color-primary-dark: #0F5347;
-  --color-success: #2F7D4F;
-  --color-text: #22282A;         /* charcoal teal — texto */
-  --color-muted: #566360;        /* gris sesgado al teal (AA sobre papel) */
-  --color-border: #E6DECF;       /* hairline cálido */
-  --color-bg: #F5F0E6;           /* papel (secciones alt) */
-  --color-surface: #FFFDF8;      /* papel claro (base / cards) */
-
   background: var(--color-surface);
   color: var(--color-text);
 }
@@ -94,11 +88,10 @@
   margin-right: auto;
 }
 
-/* ── CTA final: navy → gradiente teal ────────────────────── */
-.landing-warm .landing-cta-section {
-  background: linear-gradient(150deg, #0F5347 0%, #146B5E 55%, #1C8A78 100%);
-  color: #fff;
-}
+/* La CTA final y el footer cálidos viven en las clases base (index.css) para que
+   las páginas profesionales (que comparten .landing-cta-section / .landing-footer)
+   queden consistentes. Acá solo el color de marca del footer de la landing. */
+.landing-footer-brand { color: #e7be6a; }
 
 /* ── Disclaimer compacto (ex sección NoVet) ──────────────── */
 .landing-novet-note {
@@ -109,17 +102,6 @@
   line-height: 1.6;
   color: var(--color-muted);
 }
-
-/* ── Footer cálido oscuro ────────────────────────────────── */
-.landing-warm .landing-footer {
-  background: #1B2422;
-  color: #A6B1AD;
-  border-top: 1px solid #2C3A36;
-}
-.landing-warm .landing-footer-brand { color: #E7BE6A; }
-.landing-warm .landing-footer-copy { color: #94A09C; }
-.landing-warm .landing-footer-links a { color: #C9D3CF; }
-.landing-warm .landing-footer-links a:hover { color: #fff; }
 
 /* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 760px) {

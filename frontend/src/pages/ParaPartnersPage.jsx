@@ -50,7 +50,7 @@ function Footer() {
   return (
     <footer className="landing-footer">
       <div className="landing-container landing-footer-inner">
-        <div className="landing-brand" style={{ color: '#7dd3fc' }}>{BRAND_SVG}<span>Milo Care</span></div>
+        <div className="landing-brand" style={{ color: '#e7be6a' }}>{BRAND_SVG}<span>Milo Care</span></div>
         <p className="landing-footer-copy">© 2026 Milocura · Plataforma API-first de salud de mascotas.</p>
         <div className="landing-footer-links">
           <Link to="/">Inicio</Link>

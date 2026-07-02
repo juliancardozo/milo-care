@@ -13,14 +13,14 @@
 .install-icon {
   flex: none; width: 40px; height: 40px; border-radius: 11px;
   display: grid; place-items: center; font-size: 20px;
-  background: linear-gradient(135deg, #4f8ef7, #22c55e);
+  background: linear-gradient(135deg, #146b5e, #22c55e);
 }
 .install-text { display: flex; flex-direction: column; gap: 1px; flex: 1; min-width: 0; }
 .install-text strong { font-size: 14px; color: #0f172a; }
 .install-text span { font-size: 12px; color: #475569; line-height: 1.35; }
 
 button.install-btn {
-  flex: none; background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  flex: none; background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff;
   border: none; border-radius: 10px; padding: 9px 14px; font-weight: 700; font-size: 13px; cursor: pointer;
   white-space: nowrap;
 }

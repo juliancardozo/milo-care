@@ -36,8 +36,8 @@
   flex: 1; border: none; border-radius: 11px; padding: 13px;
   font-weight: 600; font-size: 15px; cursor: pointer;
 }
-button.milestone-btn-share { background: #4f8ef7; color: #fff; }
-button.milestone-btn-share:hover:not(:disabled) { background: #3370d4; }
+button.milestone-btn-share { background: #146b5e; color: #fff; }
+button.milestone-btn-share:hover:not(:disabled) { background: #0f5347; }
 button.milestone-btn-download { background: #eff6ff; color: #1d4ed8; }
 button.milestone-btn-download:hover:not(:disabled) { background: #dbeafe; color: #1d4ed8; }
 .milestone-btn:disabled { opacity: 0.6; cursor: default; }

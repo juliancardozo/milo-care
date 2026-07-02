@@ -7,7 +7,7 @@
 
 button.doglist-add, .doglist-add {
   display: inline-flex; align-items: center; gap: 6px;
-  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff;
   border: none; border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 14px;
   text-decoration: none; cursor: pointer;
 }
@@ -31,7 +31,7 @@ button.doglist-add:disabled { opacity: 0.5; cursor: not-allowed; }
 .doglist-avatar-ph {
   width: 64px; height: 64px; border-radius: 50%; flex: none;
   display: grid; place-items: center; font-size: 26px; font-weight: 800; color: #fff;
-  background: linear-gradient(135deg, #4f8ef7, #22c55e);
+  background: linear-gradient(135deg, #146b5e, #22c55e);
   border: 3px solid #fff; box-shadow: 0 6px 16px -8px rgba(15,23,42,0.35);
 }
 .doglist-info { min-width: 0; flex: 1; }

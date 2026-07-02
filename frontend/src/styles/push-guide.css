@@ -24,14 +24,14 @@
 
 .pg-stepper { display: flex; gap: 6px; margin-bottom: 20px; }
 .pg-seg { flex: 1; height: 6px; border-radius: 999px; background: #e8eefc; transition: background 0.3s; }
-.pg-seg.done { background: linear-gradient(90deg, #4f8ef7, #22c55e); }
-.pg-seg.current { background: #4f8ef7; }
+.pg-seg.done { background: linear-gradient(90deg, #146b5e, #22c55e); }
+.pg-seg.current { background: #146b5e; }
 
 .pg-step { text-align: center; }
 .pg-step-badge {
   width: 44px; height: 44px; border-radius: 50%; margin: 0 auto 12px;
   display: grid; place-items: center; font-size: 18px; font-weight: 800; color: #fff;
-  background: linear-gradient(135deg, #4f8ef7, #6d28d9);
+  background: linear-gradient(135deg, #146b5e, #6d28d9);
 }
 .pg-step h3 { font-size: 17px; color: #0f172a; margin: 0 0 6px; }
 .pg-step-text { font-size: 14px; color: #475569; line-height: 1.5; margin: 0 0 16px; }
@@ -46,7 +46,7 @@
 .pg-list b { color: #0f172a; }
 
 button.pg-btn {
-  width: 100%; background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  width: 100%; background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff;
   border: none; border-radius: 13px; padding: 14px; font-weight: 700; font-size: 15px; cursor: pointer;
 }
 button.pg-btn:hover:not(:disabled) { filter: brightness(1.04); }

@@ -31,7 +31,7 @@
 .checkin-eyebrow::before {
   content: '';
   width: 7px; height: 7px; border-radius: 50%;
-  background: linear-gradient(135deg, #4f8ef7, #22c55e);
+  background: linear-gradient(135deg, #146b5e, #22c55e);
 }
 
 .checkin-question {

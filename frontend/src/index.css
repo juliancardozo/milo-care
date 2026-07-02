@@ -9,16 +9,19 @@ html, body { max-width: 100%; overflow-x: clip; }
 img, svg, video, canvas { max-width: 100%; height: auto; }
 
 :root {
-  --color-primary: #4f8ef7;
-  --color-primary-dark: #3370d4;
+  /* Paleta cálida de marca — teal río + papel + ámbar (ver landing redesign).
+     Se promovió a global para unificar la landing, las páginas profesionales
+     y el resto de la app. El ámbar de acento vive en --billing-gold / componentes. */
+  --color-primary: #146b5e;
+  --color-primary-dark: #0f5347;
   --color-danger: #e74c3c;
-  --color-success: #27ae60;
+  --color-success: #2f7d4f;
   --color-warning: #f39c12;
-  --color-text: #1a1a2e;
-  --color-muted: #6b7280;
-  --color-border: #d1d5db;
-  --color-bg: #f9fafb;
-  --color-surface: #ffffff;
+  --color-text: #22282a;
+  --color-muted: #566360;
+  --color-border: #e6decf;
+  --color-bg: #f5f0e6;
+  --color-surface: #fffdf8;
   --radius: 8px;
   --shadow: 0 1px 3px rgba(0,0,0,.10), 0 1px 2px rgba(0,0,0,.06);
   --shadow-lg: 0 4px 16px rgba(0,0,0,.12);
@@ -965,7 +968,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
   display: flex;
   align-items: center;
   gap: 20px;
-  background: linear-gradient(135deg, #4f8ef7 0%, #6a5cf6 100%);
+  background: linear-gradient(135deg, #146b5e 0%, #6a5cf6 100%);
   border-radius: 16px;
   padding: 24px 28px;
   margin-bottom: 32px;
@@ -1432,7 +1435,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
 
 /* ── Hero ────────────────────────────────────────────────── */
 .landing-hero {
-  background: linear-gradient(145deg, #1a1a2e 0%, #2a3f7e 60%, #4f8ef7 100%);
+  background: linear-gradient(145deg, #1a1a2e 0%, #2a3f7e 60%, #146b5e 100%);
   color: #fff;
   padding: 96px 0 80px;
   text-align: center;
@@ -1825,7 +1828,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
 
 /* ── Final CTA section ───────────────────────────────────── */
 .landing-cta-section {
-  background: linear-gradient(145deg, #1e3a8a 0%, #2563eb 45%, #4f8ef7 100%);
+  background: linear-gradient(150deg, #0f5347 0%, #146b5e 55%, #1c8a78 100%);
   color: #fff;
   padding: 80px 0;
   text-align: center;
@@ -1848,17 +1851,17 @@ button.btn-secondary:hover { background: var(--color-bg); }
 
 .landing-cta-inner > p {
   font-size: 1.05rem;
-  color: #dbeafe;
+  color: #d9efe9;
   max-width: 480px;
   margin: 0;
 }
 
 /* ── Footer ──────────────────────────────────────────────── */
 .landing-footer {
-  background: #0f172a;
-  color: #94a3b8;
+  background: #1b2422;
+  color: #a6b1ad;
   padding: 36px 0;
-  border-top: 1px solid #1e3a8a;
+  border-top: 1px solid #2c3a36;
 }
 
 .landing-footer-inner {
@@ -1869,7 +1872,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
   text-align: center;
 }
 
-.landing-footer-copy { font-size: .82rem; line-height: 1.7; margin: 0; color: #94a3b8; }
+.landing-footer-copy { font-size: .82rem; line-height: 1.7; margin: 0; color: #94a09c; }
 
 .landing-footer-links {
   display: flex;
@@ -1877,7 +1880,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
   font-size: .85rem;
 }
 
-.landing-footer-links a { color: #7dd3fc; text-decoration: none; transition: color .15s; }
+.landing-footer-links a { color: #c9d3cf; text-decoration: none; transition: color .15s; }
 .landing-footer-links a:hover { color: #fff; }
 
 /* ── Responsive ──────────────────────────────────────────── */
@@ -2785,7 +2788,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
 
 /* ── Upgrade banner (dashboard) ───────────────────────────── */
 .upgrade-banner {
-  background: linear-gradient(135deg, #4f8ef7 0%, #3370d4 100%);
+  background: linear-gradient(135deg, #146b5e 0%, #0f5347 100%);
   border-radius: var(--radius);
   padding: 16px 20px;
   margin-bottom: 16px;
@@ -2954,7 +2957,7 @@ button.btn-secondary:hover { background: var(--color-bg); }
 .public-pet-brand {
   display: inline-block;
   font-weight: 600;
-  color: #4f8ef7;
+  color: #146b5e;
   margin-bottom: 16px;
 }
 .public-pet-photo {

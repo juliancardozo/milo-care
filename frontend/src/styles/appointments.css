@@ -14,7 +14,7 @@
 .appt-hero p { font-size: 13px; color: #64748b; margin: 2px 0 0; }
 .appt-hero-spacer { flex: 1; }
 button.appt-add {
-  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff; border: none; border-radius: 12px;
+  background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff; border: none; border-radius: 12px;
   padding: 10px 16px; font-weight: 700; font-size: 14px; cursor: pointer; flex: none;
 }
 button.appt-add:hover:not(:disabled) { background: linear-gradient(135deg,#3f7ee7,#2a5fc0); }
@@ -37,7 +37,7 @@ button.appt-add.cancel { background: #fff; color: #475569; border: 1px solid #e5
   border: 1px solid #e7eef9; background: #fff;
 }
 .appt-tile-month { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #fff; padding: 3px 0; }
-.appt-tile.blue .appt-tile-month { background: #4f8ef7; }
+.appt-tile.blue .appt-tile-month { background: #146b5e; }
 .appt-tile.amber .appt-tile-month { background: #f59e0b; }
 .appt-tile.red .appt-tile-month { background: #ef4444; }
 .appt-tile.gray .appt-tile-month { background: #94a3b8; }
@@ -62,7 +62,7 @@ button.appt-add.cancel { background: #fff; color: #475569; border: 1px solid #e5
 .appt-notes { font-size: 12.5px; color: #64748b; margin: 8px 0 0; line-height: 1.4; }
 
 .appt-checklist { margin-top: 9px; }
-.appt-checklist summary { cursor: pointer; font-size: 12.5px; color: #4f8ef7; font-weight: 700; list-style: none; }
+.appt-checklist summary { cursor: pointer; font-size: 12.5px; color: #146b5e; font-weight: 700; list-style: none; }
 .appt-checklist summary::-webkit-details-marker { display: none; }
 .appt-checklist ul { margin: 7px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 5px; }
 .appt-checklist li { font-size: 12.5px; color: #475569; display: flex; align-items: center; gap: 7px; }
@@ -89,6 +89,6 @@ button.appt-act.del:hover:not(:disabled) { background: #fef2f2; }
 }
 .appt-form input:focus, .appt-form textarea:focus, .appt-form select:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(79,142,247,0.15); }
 .appt-form .form-actions { display: flex; gap: 10px; margin-top: 4px; }
-button.appt-form-save { background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff; border: none; border-radius: 11px; padding: 11px 22px; font-weight: 700; cursor: pointer; }
+button.appt-form-save { background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff; border: none; border-radius: 11px; padding: 11px 22px; font-weight: 700; cursor: pointer; }
 button.appt-form-save:disabled { opacity: 0.6; }
 button.appt-form-cancel { background: #fff; color: #475569; border: 1px solid #e5e7eb; border-radius: 11px; padding: 11px 18px; font-weight: 600; cursor: pointer; }

@@ -17,7 +17,7 @@
 
 button.vac-add {
   display: inline-flex; align-items: center; gap: 6px;
-  background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff;
+  background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff;
   border: none; border-radius: 12px; padding: 10px 16px; font-weight: 700; font-size: 14px; cursor: pointer; flex: none;
 }
 button.vac-add:hover:not(:disabled) { background: linear-gradient(135deg, #3f7ee7, #2a5fc0); }
@@ -75,6 +75,6 @@ button.vac-del:hover:not(:disabled) { color: #ef4444; background: #fef2f2; }
 }
 .vac-form input:focus, .vac-form textarea:focus, .vac-form select:focus { outline: none; border-color: #93c5fd; box-shadow: 0 0 0 3px rgba(79,142,247,0.15); }
 .vac-form .form-actions { display: flex; gap: 10px; margin-top: 4px; }
-button.vac-form-save { background: linear-gradient(135deg, #4f8ef7, #3370d4); color: #fff; border: none; border-radius: 11px; padding: 11px 22px; font-weight: 700; cursor: pointer; }
+button.vac-form-save { background: linear-gradient(135deg, #146b5e, #0f5347); color: #fff; border: none; border-radius: 11px; padding: 11px 22px; font-weight: 700; cursor: pointer; }
 button.vac-form-save:disabled { opacity: 0.6; }
 button.vac-form-cancel { background: #fff; color: #475569; border: 1px solid #e5e7eb; border-radius: 11px; padding: 11px 18px; font-weight: 600; cursor: pointer; }

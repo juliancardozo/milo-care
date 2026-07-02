@@ -4,7 +4,7 @@
    ════════════════════════════════════════════════════════════════ */
 
 :root {
-  --billing-grad: linear-gradient(135deg, #4f8ef7 0%, #3370d4 100%);
+  --billing-grad: linear-gradient(135deg, #146b5e 0%, #0f5347 100%);
   --billing-gold: #f2b705;
   --billing-gold-soft: #fff7e0;
 }
