@@ -170,34 +170,23 @@ function Hero({ variant, onCtaClick }) {
 
 // ── Problema → Solución ─────────────────────────────────────────────────────────
 
-const COMPARE_ROWS = [
-  ['Te enterás del vencimiento tarde', 'Te avisa antes, sin configurar nada'],
-  ['El historial está en 5 lugares', 'Todo en un solo lugar, siempre a mano'],
-  ['Llegás a la consulta sin datos', 'Llegás con el resumen clínico listo'],
-  ['Cambiás de país y perdés todo', 'El carnet viaja con tu perro'],
-  ['"¿Le tocaba algo este mes?"', 'El calendario lo sabe por vos'],
-];
-
 function ProblemSolution() {
+  const { t } = useI18n();
+  const rows = t('landing.problem.rows');
   return (
     <section className="landing-section landing-section-alt" aria-labelledby="problem-title">
       <div className="landing-container">
-        <span className="landing-eyebrow">El problema real</span>
-        <h2 id="problem-title" className="landing-section-title">
-          Cuidar bien a tu perro no debería depender de tu memoria.
-        </h2>
-        <p className="landing-section-sub">
-          La vacuna que toca y nadie recuerda. El tratamiento que se cortó a la mitad. La info repartida
-          entre WhatsApp, fotos del carnet y papeles. Milo Care lo ordena por vos y te avisa a tiempo.
-        </p>
+        <span className="landing-eyebrow">{t('landing.problem.eyebrow')}</span>
+        <h2 id="problem-title" className="landing-section-title">{t('landing.problem.title')}</h2>
+        <p className="landing-section-sub">{t('landing.problem.sub')}</p>
         <div className="landing-compare">
           <div className="landing-compare-card landing-compare-bad">
-            <h3>Sin Milo Care</h3>
-            <ul>{COMPARE_ROWS.map((r) => <li key={r[0]}><span aria-hidden="true">✕</span> {r[0]}</li>)}</ul>
+            <h3>{t('landing.problem.badTitle')}</h3>
+            <ul>{rows.map((r) => <li key={r[0]}><span aria-hidden="true">✕</span> {r[0]}</li>)}</ul>
           </div>
           <div className="landing-compare-card landing-compare-good">
-            <h3>Con Milo Care</h3>
-            <ul>{COMPARE_ROWS.map((r) => <li key={r[1]}><span aria-hidden="true">✓</span> {r[1]}</li>)}</ul>
+            <h3>{t('landing.problem.goodTitle')}</h3>
+            <ul>{rows.map((r) => <li key={r[1]}><span aria-hidden="true">✓</span> {r[1]}</li>)}</ul>
           </div>
         </div>
       </div>
@@ -207,24 +196,19 @@ function ProblemSolution() {
 
 // ── Cómo funciona ─────────────────────────────────────────────────────────────
 
-const STEPS = [
-  { n: '1', t: 'Creá el perfil de tu perro', d: 'Nombre, edad, raza y país. Nada más.' },
-  { n: '2', t: 'Recibí su plan de cuidado', d: 'Su calendario de vacunas y controles, armado para él.' },
-  { n: '3', t: 'Cargá lo que ya tiene', d: 'Sus vacunas y tratamientos, a tu ritmo.' },
-  { n: '4', t: 'Dejá que Milo te avise', d: 'Te recordamos antes de cada vencimiento. Vos solo cuidalo.' },
-];
-
 function HowItWorks() {
+  const { t } = useI18n();
+  const steps = t('landing.how.steps');
   return (
     <section className="landing-section" id="como-funciona" aria-labelledby="how-title">
       <div className="landing-container">
-        <span className="landing-eyebrow">Cómo funciona</span>
-        <h2 id="how-title" className="landing-section-title">Empezás en 90 segundos.</h2>
+        <span className="landing-eyebrow">{t('landing.how.eyebrow')}</span>
+        <h2 id="how-title" className="landing-section-title">{t('landing.how.title')}</h2>
         <div className="landing-steps">
-          {STEPS.map((s, i) => (
-            <div key={s.n} className="landing-step">
-              <div className="landing-step-number">{s.n}</div>
-              {i < STEPS.length - 1 && <div className="landing-step-connector" />}
+          {steps.map((s, i) => (
+            <div key={i} className="landing-step">
+              <div className="landing-step-number">{i + 1}</div>
+              {i < steps.length - 1 && <div className="landing-step-connector" />}
               <div className="landing-step-content">
                 <h3>{s.t}</h3>
                 <p>{s.d}</p>
@@ -239,31 +223,21 @@ function HowItWorks() {
 
 // ── Qué hace por vos (features en lenguaje de resultado) ─────────────────────────
 
-const FEATURES = [
-  { icon: '🔔', title: 'Nunca más se te pasa una vacuna', desc: 'Te avisamos por email antes de cada vacuna, dosis o control. Sin configurar nada.' },
-  { icon: '💉', title: 'Su calendario, armado por su edad y país', desc: 'Sabés qué le toca y cuándo, según guías WSAVA. Sin volverte experta.' },
-  { icon: '📄', title: 'El carnet siempre a mano', desc: 'Su historial listo para el vet, la guardería o un viaje, en un toque (PDF / WhatsApp).' },
-  { icon: '💊', title: 'Ningún tratamiento a medias', desc: 'Dosis, horarios y fin del tratamiento, siempre bajo control.' },
-  { icon: '📝', title: 'Llegás al vet con todo', desc: 'Anotás síntomas y le mostrás el resumen clínico, sin depender de tu memoria.' },
-  { icon: '👨‍👩‍👧', title: 'Toda la familia cuida', desc: 'El mismo dato para vos, tu pareja y quien lo cuide. Roles claros.' },
-];
+const FEATURE_ICONS = ['🔔', '💉', '📄', '💊', '📝', '👨‍👩‍👧'];
 
 function Features() {
+  const { t } = useI18n();
+  const items = t('landing.features.items');
   return (
     <section className="landing-section landing-section-alt" id="funcionalidades" aria-labelledby="features-title">
       <div className="landing-container">
-        <span className="landing-eyebrow">Todo lo que hace por vos</span>
-        <h2 id="features-title" className="landing-section-title">
-          Una sola app para todo el cuidado preventivo.
-        </h2>
-        <p className="landing-section-sub">
-          Desde el primer día tenés el plan armado, los recordatorios andando y el historial creciendo
-          solo. Vos cuidás; del orden nos encargamos nosotros.
-        </p>
+        <span className="landing-eyebrow">{t('landing.features.eyebrow')}</span>
+        <h2 id="features-title" className="landing-section-title">{t('landing.features.title')}</h2>
+        <p className="landing-section-sub">{t('landing.features.sub')}</p>
         <div className="landing-features-grid landing-features-grid-3">
-          {FEATURES.map((f) => (
-            <div key={f.title} className="landing-feature-card">
-              <div className="landing-feature-icon">{f.icon}</div>
+          {items.map((f, i) => (
+            <div key={i} className="landing-feature-card">
+              <div className="landing-feature-icon">{FEATURE_ICONS[i]}</div>
               <h3>{f.title}</h3>
               <p>{f.desc}</p>
             </div>
@@ -277,24 +251,16 @@ function Features() {
 // ── Historia de marca ─────────────────────────────────────────────────────────
 
 function BrandStory() {
+  const { t } = useI18n();
   return (
     <section className="landing-section" aria-labelledby="story-title">
       <div className="landing-container landing-story">
-        <span className="landing-eyebrow">Nuestra historia</span>
-        <h2 id="story-title" className="landing-section-title">Milo Care nació de una mudanza.</h2>
-        <p>
-          En Montevideo, Milo tenía todo en orden: su veterinaria coordinaba las vacunas, las
-          desparasitaciones, los controles y los recordatorios. Era fácil cuidarlo bien porque alguien
-          llevaba el hilo.
-        </p>
-        <p>
-          Cuando nos mudamos a Argentina, ese hilo se cortó. No había forma de llevarnos su historial,
-          de saber qué le correspondía según su edad y el nuevo país, ni de que algo nos avisara antes
-          de que venciera. Empezamos de cero, a pura memoria.
-        </p>
+        <span className="landing-eyebrow">{t('landing.story.eyebrow')}</span>
+        <h2 id="story-title" className="landing-section-title">{t('landing.story.title')}</h2>
+        <p>{t('landing.story.p1')}</p>
+        <p>{t('landing.story.p2')}</p>
         <p className="landing-story-close">
-          Milo Care es lo que necesitábamos ese día y no existía: <strong>la continuidad del cuidado,
-          en cualquier lugar, para que ningún perro dependa de que te acuerdes de todo.</strong>
+          {t('landing.story.closeLead')} <strong>{t('landing.story.closeStrong')}</strong>
         </p>
       </div>
     </section>
@@ -306,22 +272,17 @@ function BrandStory() {
 // (quotes de tutores beta + respaldo de un veterinario/a), va en `TESTIMONIALS`.
 const TESTIMONIALS = []; // [{ quote, name, city, dog }]
 
-const GUARANTEES = [
-  ['🩺', 'Basada en guías veterinarias', 'Seguimos las guías WSAVA 2022 y las adaptamos a Argentina y Uruguay.'],
-  ['🔒', 'Tus datos son tuyos', 'Viajan cifrados y vos controlás con quién se comparten. Siempre.'],
-  ['💛', 'Hecha en el Río de la Plata', 'Pensada para vos y tu perro, no un genérico traducido.'],
-];
+const GUARANTEE_ICONS = ['🩺', '🔒', '💛'];
 
 function Trust() {
+  const { t } = useI18n();
+  const guarantees = t('landing.trust.guarantees');
   return (
     <section className="landing-section landing-section-alt" aria-labelledby="trust-title">
       <div className="landing-container">
-        <span className="landing-eyebrow">En quién confiar</span>
-        <h2 id="trust-title" className="landing-section-title">Cuidamos a tu perro con criterio veterinario.</h2>
-        <p className="landing-section-sub">
-          Estamos en beta con tutores y clínicas reales del Río de la Plata, construyendo la plataforma
-          de salud preventiva de la región.
-        </p>
+        <span className="landing-eyebrow">{t('landing.trust.eyebrow')}</span>
+        <h2 id="trust-title" className="landing-section-title">{t('landing.trust.title')}</h2>
+        <p className="landing-section-sub">{t('landing.trust.sub')}</p>
 
         {TESTIMONIALS.length > 0 && (
           <div className="landing-testimonials">
@@ -335,12 +296,12 @@ function Trust() {
         )}
 
         <div className="landing-guarantees">
-          {GUARANTEES.map((g) => (
-            <div key={g[1]} className="landing-guarantee">
-              <span className="landing-guarantee-icon" aria-hidden="true">{g[0]}</span>
+          {guarantees.map((g, i) => (
+            <div key={i} className="landing-guarantee">
+              <span className="landing-guarantee-icon" aria-hidden="true">{GUARANTEE_ICONS[i]}</span>
               <div>
-                <h3>{g[1]}</h3>
-                <p>{g[2]}</p>
+                <h3>{g.title}</h3>
+                <p>{g.desc}</p>
               </div>
             </div>
           ))}
@@ -408,15 +369,12 @@ function FinalCTA({ onCtaClick }) {
 
 // ── FAQ (recortado a preguntas del tutor) ───────────────────────────────────────
 
-const FAQ_ITEMS = [
-  { id: 'reemplaza-vet', q: '¿Milo Care reemplaza al veterinario?', a: 'No. Milo Care organiza información, recordatorios e historial, y potencia al veterinario. Para diagnósticos, tratamientos o urgencias, siempre consultá con un profesional.' },
-  { id: 'paises', q: '¿Funciona en Argentina y Uruguay?', a: 'Sí. Los calendarios están adaptados a cada país y siguen las guías WSAVA. Nacimos en el Río de la Plata.' },
-  { id: 'datos', q: '¿Quién ve los datos de mi perro?', a: 'Vos. El dato se comparte con otros solo con tu consentimiento explícito (Ley 25.326 AR / 18.331 UY), y siempre podés revocarlo.' },
-  { id: 'no-se-fecha', q: '¿Qué pasa si no sé cuándo fue la última vacuna?', a: 'Cargás lo que tengas y completás el historial de a poco. Milo Care te ayuda a ordenar, no te exige tener todo perfecto desde el día uno.' },
-];
+const FAQ_IDS = ['reemplaza-vet', 'paises', 'datos', 'no-se-fecha'];
 
 function FAQ({ variant }) {
+  const { t } = useI18n();
   const [openId, setOpenId] = useState(null);
+  const items = t('landing.faq.items');
 
   function toggle(id) {
     const isOpening = openId !== id;
@@ -427,27 +385,25 @@ function FAQ({ variant }) {
   return (
     <section className="landing-section landing-section-alt" aria-labelledby="faq-title">
       <div className="landing-container">
-        <h2 id="faq-title" className="landing-section-title">Preguntas frecuentes</h2>
+        <h2 id="faq-title" className="landing-section-title">{t('landing.faq.title')}</h2>
         <div className="landing-faq-list">
-          {FAQ_ITEMS.map((item) => {
-            const isOpen = openId === item.id;
+          {items.map((item, i) => {
+            const id = FAQ_IDS[i];
+            const isOpen = openId === id;
             return (
-              <div key={item.id} className="landing-faq-item">
-                <button className="landing-faq-question" aria-expanded={isOpen} aria-controls={`faq-answer-${item.id}`} onClick={() => toggle(item.id)}>
+              <div key={id} className="landing-faq-item">
+                <button className="landing-faq-question" aria-expanded={isOpen} aria-controls={`faq-answer-${id}`} onClick={() => toggle(id)}>
                   <span>{item.q}</span>
                   <span className="landing-faq-chevron" aria-hidden="true">{isOpen ? '−' : '+'}</span>
                 </button>
-                <div id={`faq-answer-${item.id}`} role="region" className={`landing-faq-answer${isOpen ? ' landing-faq-answer--open' : ''}`}>
+                <div id={`faq-answer-${id}`} role="region" className={`landing-faq-answer${isOpen ? ' landing-faq-answer--open' : ''}`}>
                   <p>{item.a}</p>
                 </div>
               </div>
             );
           })}
         </div>
-        <p className="landing-novet-note">
-          🩺 Milo Care es una herramienta de apoyo para cuidar mejor, no para diagnosticar. Ante síntomas
-          importantes, urgencias o dudas médicas, consultá siempre con un profesional veterinario.
-        </p>
+        <p className="landing-novet-note">{t('landing.faq.disclaimer')}</p>
       </div>
     </section>
   );
@@ -456,6 +412,7 @@ function FAQ({ variant }) {
 // ── Footer (acá vive el acceso B2B) ─────────────────────────────────────────────
 
 function LandingFooter() {
+  const { t } = useI18n();
   return (
     <footer className="landing-footer">
       <div className="landing-container landing-footer-inner">
@@ -469,16 +426,16 @@ function LandingFooter() {
           </svg>
           <span>Milo Care</span>
         </div>
-        <p className="landing-footer-copy">© 2026 Milocura · Guías WSAVA 2022 · Hecho en Buenos Aires y Montevideo.</p>
+        <p className="landing-footer-copy">{t('landing.footer.copy')}</p>
         <div className="landing-footer-links">
-          <a href="#funcionalidades">Producto</a>
-          <a href="#planes">Precios</a>
-          <Link to="/para-veterinarias">Veterinarias</Link>
-          <Link to="/para-partners">Empresas</Link>
-          <Link to="/developers">Developers</Link>
-          <a href="/terminos.pdf">Términos</a>
-          <a href="/privacidad.pdf">Privacidad</a>
-          <a href={partnerMail('Contacto Milo Care')}>Contacto</a>
+          <a href="#funcionalidades">{t('landing.footer.product')}</a>
+          <a href="#planes">{t('landing.footer.pricing')}</a>
+          <Link to="/para-veterinarias">{t('landing.footer.vets')}</Link>
+          <Link to="/para-partners">{t('landing.footer.companies')}</Link>
+          <Link to="/developers">{t('landing.footer.developers')}</Link>
+          <a href="/terminos.pdf">{t('landing.footer.terms')}</a>
+          <a href="/privacidad.pdf">{t('landing.footer.privacy')}</a>
+          <a href={partnerMail('Contacto Milo Care')}>{t('landing.footer.contact')}</a>
         </div>
       </div>
     </footer>
