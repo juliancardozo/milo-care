@@ -15,6 +15,7 @@ import ExploreMenu from '../components/ExploreMenu';
 import LocationConsentModal, { wasLocationPromptDismissed } from '../components/LocationConsentModal';
 import MilestoneCelebration from '../components/MilestoneCelebration';
 import PreventiveCareCard from '../components/PreventiveCareCard';
+import VetWelcome from '../components/VetWelcome';
 import { getMilestones } from '../services/milestoneApi';
 import { useI18n } from '../i18n/I18nProvider';
 import { typeMeta, relativeDueLabel } from '../utils/reminderDisplay';
@@ -128,20 +129,21 @@ export default function DashboardPage() {
 
       <main className="dashboard-content">
         {dogs.length === 0 ? (
-          /* Empty state */
-          <div className="dashboard-empty">
-            <div className="dashboard-empty-icon">{isVet ? '🏥' : '🐶'}</div>
-            <h2>{isVet ? t('vetPanel.emptyTitle') : t('dashboard.addFirstDog')}</h2>
-            <p>{isVet ? t('vetPanel.emptyDesc') : t('dashboard.addFirstDogDesc')}</p>
-            <div className="dashboard-empty-actions">
-              {isVet && (
-                <Link to="/vet-portal" className="btn">{t('vetPanel.goToPanel')}</Link>
-              )}
-              <Link to="/dogs/new" className={`btn ${isVet ? 'btn-secondary' : ''}`}>
-                {t('dashboard.createDogProfile')}
-              </Link>
+          /* Empty state — el vet ve la activación de su clínica; el tutor, el alta de su perro */
+          isVet ? (
+            <VetWelcome />
+          ) : (
+            <div className="dashboard-empty">
+              <div className="dashboard-empty-icon">🐶</div>
+              <h2>{t('dashboard.addFirstDog')}</h2>
+              <p>{t('dashboard.addFirstDogDesc')}</p>
+              <div className="dashboard-empty-actions">
+                <Link to="/dogs/new" className="btn">
+                  {t('dashboard.createDogProfile')}
+                </Link>
+              </div>
             </div>
-          </div>
+          )
         ) : (
           <>
             {/* Hero unificado: switcher (primero) + identidad + Health Score + "⋯" */}
