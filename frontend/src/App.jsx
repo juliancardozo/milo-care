@@ -59,6 +59,7 @@ import ParaVeterinariasPage from './pages/ParaVeterinariasPage';
 import ParaPartnersPage from './pages/ParaPartnersPage';
 import PartnerRoute from './components/PartnerRoute';
 import PartnerDashboardPage from './pages/partner/PartnerDashboardPage';
+import MiloChatWidget from './components/MiloChatWidget';
 import { useI18n } from './i18n/I18nProvider';
 
 // Scalar es pesado (~4MB): se carga solo al entrar a /developers (code-split).
@@ -82,6 +83,8 @@ export default function App() {
   // pages (each has its own chrome / is meant for logged-out visitors).
   const showGlobalHeader = !isLanding && location.pathname !== '/dashboard'
     && !isPublicPet && !isVetRecord && !isClinicLanding && !isVetPortal && !isDevelopers && !isMarketing;
+  // Milo (captación de leads B2C) aparece en la landing y las páginas de marketing.
+  const showMiloBot = isLanding || isMarketing;
 
   return (
     <>
@@ -173,6 +176,8 @@ export default function App() {
         />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
+      {showMiloBot && <MiloChatWidget />}
     </>
   );
 }

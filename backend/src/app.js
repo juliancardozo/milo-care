@@ -45,6 +45,7 @@ const insuranceRoutes = require('./routes/insurance');
 const claimsRoutes = require('./routes/claims');
 const certificateRoutes = require('./routes/certificate');
 const apiV1Routes = require('./routes/apiV1');
+const miloChatRoutes = require('./routes/miloChat');
 const featureFlags = require('./config/featureFlags');
 
 const app = express();
@@ -105,6 +106,7 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/referrals', referralsRoutes);
 app.use('/api/checkins', publicCheckinsRouter);
 app.use('/api/public/clinics', publicClinicsRoutes); // antes de /api/public (prefijo más específico)
+app.use('/api/milo-chat', miloChatRoutes); // asistente de captación de leads (público)
 
 // ── Companion (B2B2C) — detrás del flag companionEnabled ──────────────────────
 // Las rutas de partners quedan invisibles (404) hasta habilitar COMPANION_ENABLED.
