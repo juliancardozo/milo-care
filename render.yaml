@@ -58,3 +58,10 @@ services:
         value: 'true'        # habilita /api/partners, /api/v1, seguros y certificados
       - key: RESEND_FROM_EMAIL
         value: noreply@milocare.org
+      # ── Milo Bot (asistente de captación de leads · Claude API) ──
+      - key: ANTHROPIC_API_KEY
+        sync: false          # cargá la key en el dashboard de Render; sin ella /api/milo-chat responde 503 y el widget se oculta
+      - key: MILO_BOT_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: MILO_BOT_MAX_TOKENS
+        value: '400'
