@@ -16,13 +16,13 @@ const clinicService = require('../services/clinicService');
 const coTutorService = require('../services/CoTutorService');
 const { deleteUserEvents } = require('../core/events/eventBus');
 const pushService = require('../services/pushService');
+const { issueMagicLinkUrl } = require('../services/magicLinkService');
 const authenticate = require('../middleware/auth');
 
 const router = express.Router();
 
 const SALT_ROUNDS = 12;
 const RESET_TOKEN_TTL_MS = 60 * 60 * 1000; // 1 hour
-const MAGIC_TOKEN_TTL_MS = 15 * 60 * 1000; // 15 min — login link de vida corta
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -279,14 +279,7 @@ router.post('/magic-link', magicLimiter, async (req, res, next) => {
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (user) {
-      await MagicLoginToken.deleteMany({ userId: user._id });
-
-      const plainToken = crypto.randomBytes(32).toString('hex');
-      const tokenHash = await bcrypt.hash(plainToken, SALT_ROUNDS);
-      const expiresAt = new Date(Date.now() + MAGIC_TOKEN_TTL_MS);
-      await MagicLoginToken.create({ userId: user._id, tokenHash, expiresAt });
-
-      const magicUrl = `${process.env.APP_URL || 'http://localhost:5173'}/magic-login?token=${plainToken}&userId=${user._id}`;
+      const magicUrl = await issueMagicLinkUrl(user);
       await EmailService.sendMagicLink({ to: user.email, userName: user.name, magicUrl });
     }
 

@@ -1,8 +1,12 @@
 'use strict';
 
+const crypto = require('crypto');
+const bcrypt = require('bcryptjs');
 const Anthropic = require('@anthropic-ai/sdk');
 const Lead = require('../models/Lead');
+const User = require('../models/User');
 const EmailService = require('./EmailService');
+const { issueMagicLinkUrl, SALT_ROUNDS } = require('./magicLinkService');
 const SYSTEM_PROMPT = require('../config/miloBotPrompt');
 
 // Modelo barato y rápido, suficiente para este flujo guiado de captación.
@@ -107,17 +111,35 @@ async function captureLead(input = {}) {
     };
   }
 
-  // Welcome best-effort: si Resend falla, el lead ya quedó guardado igual.
+  // Crear (o recuperar) la cuenta y mandarle un magic link para que entre directo.
+  // Best-effort: si algo falla, el lead ya quedó guardado igual.
+  let magicSent = false;
   try {
-    await EmailService.sendWelcome({ to: email, userName: nombre || 'tutor/a' });
+    let user = await User.findOne({ email });
+    if (!user) {
+      const randomPassword = crypto.randomBytes(32).toString('hex');
+      const passwordHash = await bcrypt.hash(randomPassword, SALT_ROUNDS);
+      try {
+        user = await User.create({ email, name: nombre || 'Tutor/a', passwordHash });
+      } catch (e) {
+        // Carrera: la cuenta se creó en paralelo (email único) → recuperarla.
+        if (e && e.code === 11000) user = await User.findOne({ email });
+        else throw e;
+      }
+    }
+    const magicUrl = await issueMagicLinkUrl(user);
+    await EmailService.sendMagicLink({ to: user.email, userName: user.name, magicUrl });
+    magicSent = true;
   } catch (err) {
-    console.error('[MiloBot] no se pudo enviar el welcome:', err.message);
+    console.error('[MiloBot] no se pudo crear la cuenta / enviar el magic link:', err.message);
   }
 
   return {
     ok: true,
     lead,
-    message: 'Lead registrado con éxito. Confirmale al visitante repitiendo su email y contale que le va a llegar un correo para activar su acceso.',
+    message: magicSent
+      ? 'Lead registrado y cuenta creada. Se le envió al email un link de ingreso (vence en 15 minutos). Confirmale repitiendo su email y decile que toque el botón del correo para entrar directo a Milo Care.'
+      : 'El lead quedó guardado, pero el email con el link de ingreso no se pudo enviar. Confirmale que lo anotaste y ofrecé hola@milocare.org si no le llega nada.',
   };
 }
 

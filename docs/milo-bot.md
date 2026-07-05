@@ -119,6 +119,6 @@ Cuando captures un lead, emití (además de tu respuesta al usuario, en el canal
 ## NOTAS DE IMPLEMENTACIÓN (para el equipo, NO van en el system prompt)
 
 - **Métrica principal:** tasa de captura de email por conversación iniciada. Secundarias: % que llega al paso de descubrimiento, leads de veterinarios para clínicas piloto.
-- Conectar el JSON del lead a la base/CRM y disparar el email de bienvenida existente (`EmailService.sendWelcome`).
+- Al capturar el lead (tool `registrar_lead`): se guarda un `Lead` (tipo `'bot'`, visible en `/admin/leads`), se crea (o recupera) una cuenta `User` passwordless, y se le envía un **magic link** de ingreso (`EmailService.sendMagicLink`, vence en 15 min) para que entre directo a la app. Sin cuenta previa no hace falta: el link la activa.
 - Modelo recomendado: **`claude-haiku-4-5-20251001`** (rápido y económico, suficiente para este flujo guiado) o `claude-sonnet-5` si se busca más matiz conversacional. `max_tokens` bajo (300–400) para forzar respuestas cortas.
 - Revisar semanalmente las conversaciones donde el usuario preguntó algo fuera del conocimiento del bot: es la lista de FAQs a agregar.
