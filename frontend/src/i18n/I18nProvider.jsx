@@ -897,6 +897,7 @@ const translations = {
       nav: {
         aria: 'Navegación principal',
         pros: 'Para profesionales',
+        barrios: 'Barrios privados',
         login: 'Iniciar sesión',
         cta: 'Empezar gratis',
         openMenu: 'Abrir menú',
@@ -1001,6 +1002,7 @@ const translations = {
         pricing: 'Precios',
         vets: 'Veterinarias',
         companies: 'Empresas',
+        barrios: 'Barrios privados',
         developers: 'Developers',
         terms: 'Términos',
         privacy: 'Privacidad',
@@ -1900,6 +1902,7 @@ const translations = {
       nav: {
         aria: 'Main navigation',
         pros: 'For professionals',
+        barrios: 'Gated communities',
         login: 'Log in',
         cta: 'Start free',
         openMenu: 'Open menu',
@@ -2004,6 +2007,7 @@ const translations = {
         pricing: 'Pricing',
         vets: 'Vets',
         companies: 'Business',
+        barrios: 'Gated communities',
         developers: 'Developers',
         terms: 'Terms',
         privacy: 'Privacy',

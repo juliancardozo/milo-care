@@ -57,6 +57,7 @@ import CardsPage from './pages/CardsPage';
 import MiSeguroPage from './pages/MiSeguroPage';
 import ParaVeterinariasPage from './pages/ParaVeterinariasPage';
 import ParaPartnersPage from './pages/ParaPartnersPage';
+import ParaBarriosPage from './pages/ParaBarriosPage';
 import PartnerRoute from './components/PartnerRoute';
 import PartnerDashboardPage from './pages/partner/PartnerDashboardPage';
 import MiloChatWidget from './components/MiloChatWidget';
@@ -78,7 +79,7 @@ export default function App() {
   const isClinicLanding = location.pathname.startsWith('/c/');
   const isVetPortal = location.pathname.startsWith('/vet-portal');
   const isDevelopers = location.pathname.startsWith('/developers');
-  const isMarketing = location.pathname.startsWith('/para-veterinarias') || location.pathname.startsWith('/para-partners');
+  const isMarketing = location.pathname.startsWith('/para-veterinarias') || location.pathname.startsWith('/para-partners') || location.pathname.startsWith('/para-barrios');
   // Hide the global app header on dashboard, landing, and the public/vet/clinic/docs
   // pages (each has its own chrome / is meant for logged-out visitors).
   const showGlobalHeader = !isLanding && location.pathname !== '/dashboard'
@@ -118,6 +119,7 @@ export default function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/premium/success" element={<PremiumSuccessPage />} />
         <Route path="/para-partners" element={<ParaPartnersPage />} />
+        <Route path="/para-barrios" element={<ParaBarriosPage />} />
         <Route path="/developers" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage /></Suspense>} />
         <Route path="/developers/internal" element={<Suspense fallback={<div style={{ padding: '40px', textAlign: 'center' }}>Cargando documentación…</div>}><DevelopersPage internal /></Suspense>} />
 

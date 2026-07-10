@@ -49,6 +49,7 @@ function LandingNav({ variant }) {
           <span>Milo Care</span>
         </div>
         <div className="landing-nav-actions">
+          <Link to="/para-barrios" className="landing-nav-link landing-nav-link-muted">{t('landing.nav.barrios')}</Link>
           <Link to="/para-partners" className="landing-nav-link landing-nav-link-muted">{t('landing.nav.pros')}</Link>
           <Link to="/login" className="landing-nav-link">{t('landing.nav.login')}</Link>
           <LanguageSwitcher source="landing" />
@@ -86,6 +87,7 @@ function LandingNav({ variant }) {
       </div>
       {menuOpen && (
         <div className="landing-nav-mobile" id="landing-mobile-menu">
+          <Link to="/para-barrios" className="landing-nav-link" onClick={closeMenu}>{t('landing.nav.barrios')}</Link>
           <Link to="/para-partners" className="landing-nav-link" onClick={closeMenu}>{t('landing.nav.pros')}</Link>
           <Link to="/login" className="landing-nav-link" onClick={closeMenu}>{t('landing.nav.login')}</Link>
           <Link
@@ -431,6 +433,7 @@ function LandingFooter() {
           <a href="#funcionalidades">{t('landing.footer.product')}</a>
           <a href="#planes">{t('landing.footer.pricing')}</a>
           <Link to="/para-veterinarias">{t('landing.footer.vets')}</Link>
+          <Link to="/para-barrios">{t('landing.footer.barrios')}</Link>
           <Link to="/para-partners">{t('landing.footer.companies')}</Link>
           <Link to="/developers">{t('landing.footer.developers')}</Link>
           <a href="/terminos.pdf">{t('landing.footer.terms')}</a>
