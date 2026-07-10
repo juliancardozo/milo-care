@@ -13,6 +13,7 @@ const MagicLoginToken = require('../models/MagicLoginToken');
 const InsuranceLead = require('../models/InsuranceLead');
 const MeteringService = require('../services/MeteringService');
 const MetricsService = require('../services/MetricsService');
+const barrioCompliance = require('../services/barrioCompliance');
 const ChargeService = require('../services/ChargeService');
 const ReconciliationService = require('../services/ReconciliationService');
 const EmailService = require('../services/EmailService');
@@ -224,6 +225,24 @@ router.get('/:id/metrics', authenticate, partnerScope, async (req, res, next) =>
     }
     const metrics = await MetricsService.computeMetrics(partner, month, { now: new Date() });
     return res.json(metrics);
+  } catch (err) {
+    next(err);
+  }
+});
+
+// GET /api/partners/:id/compliance  (admin o partner_admin del partner)
+// Panel de CUMPLIMIENTO VACUNAL por unidad para partners de tipo `barrio`.
+// Devuelve solo el semáforo antirrábica agregado por unidad (sin PII ni clínica):
+// es el censo que exige el reglamento interno, no un registro clínico individual.
+router.get('/:id/compliance', authenticate, partnerScope, async (req, res, next) => {
+  try {
+    const partner = await Partner.findById(req.params.id);
+    if (!partner) return res.status(404).json({ code: 'NOT_FOUND', message: 'Partner not found.' });
+    if (partner.type !== 'barrio') {
+      return res.status(400).json({ code: 'VALIDATION_ERROR', message: 'Compliance panel is only available for barrio partners.' });
+    }
+    const report = await barrioCompliance.computeCompliance(partner, { now: new Date() });
+    return res.json(report);
   } catch (err) {
     next(err);
   }
