@@ -1,0 +1,75 @@
+{
+  "schema_version": 1,
+  "diagram_type": "architecture",
+  "meta": {
+    "title": "Milo Care — Arquitectura del Sistema",
+    "output": "docs/architecture/milo-care.html",
+    "quality_profile": "showcase",
+    "repository": {
+      "url": "https://github.com/juliancardozo/milo-care",
+      "revision": "b74f616ae108613a0d55095fe4e67458b90117a8"
+    },
+    "views": [
+      {
+        "id": "client-request",
+        "label": "Flujo de un dueño de mascota",
+        "focus": ["client", "frontend", "backend", "mongodb"],
+        "note": "La SPA en Amplify llama a la API REST en Render, que persiste en MongoDB administrado."
+      },
+      {
+        "id": "background-jobs",
+        "label": "Jobs en segundo plano",
+        "focus": ["backend", "cron", "resend", "push"],
+        "note": "node-cron corre dentro del mismo proceso del backend y dispara emails y push cuando vencen recordatorios."
+      },
+      {
+        "id": "integrations",
+        "label": "Integraciones externas",
+        "focus": ["backend", "claude", "resend", "push", "payments", "wallet"],
+        "note": "El backend es el único integrador: chat con Claude, email transaccional, push, pagos y Google Wallet."
+      },
+      {
+        "id": "partner-api",
+        "label": "API B2B2C de partners",
+        "focus": ["partners", "backend", "mongodb"],
+        "note": "Clínicas y partners acceden vía API key a /api/v1, separado del tráfico de la SPA."
+      }
+    ]
+  },
+  "components": [
+    { "id": "client", "type": "external", "label": "Dueños de mascotas", "sublabel": "navegador / PWA", "pos": [40, 370], "size": [150, 62] },
+    { "id": "partners", "type": "external", "label": "Clínicas y Partners", "sublabel": "API key (v1)", "pos": [40, 760], "size": [150, 62] },
+    { "id": "frontend", "type": "frontend", "label": "SPA React", "sublabel": "AWS Amplify (estático)", "pos": [300, 370], "size": [160, 62], "sources": [{ "path": "frontend/src/services/api.js", "label": "cliente Axios" }] },
+    { "id": "backend", "type": "backend", "label": "API REST Express", "sublabel": "Render · Node.js", "pos": [600, 370], "size": [170, 66], "sources": [{ "path": "backend/src/app.js", "label": "entrypoint" }] },
+    { "id": "cron", "type": "backend", "label": "Jobs Programados", "sublabel": "node-cron (in-process)", "pos": [600, 700], "size": [170, 62], "sources": [{ "path": "backend/src/services/ReminderJob.js", "label": "node-cron" }] },
+    { "id": "mongodb", "type": "database", "label": "MongoDB", "sublabel": "administrado (Atlas)", "pos": [960, 370], "size": [150, 66], "sources": [{ "path": "backend/src/config/db.js", "label": "conexión Mongoose" }] },
+    { "id": "claude", "type": "external", "label": "Anthropic Claude", "sublabel": "Milo Bot (chat)", "pos": [200, 60], "size": [160, 62], "sources": [{ "path": "backend/src/services/MiloBotService.js", "label": "@anthropic-ai/sdk" }] },
+    { "id": "resend", "type": "external", "label": "Resend", "sublabel": "email transaccional", "pos": [410, 60], "size": [160, 62], "sources": [{ "path": "backend/src/services/EmailService.js", "label": "cliente Resend" }] },
+    { "id": "push", "type": "external", "label": "Web Push", "sublabel": "VAPID / navegador", "pos": [660, 60], "size": [160, 62], "sources": [{ "path": "backend/src/services/pushService.js", "label": "web-push" }] },
+    { "id": "payments", "type": "external", "label": "MercadoPago / Paddle", "sublabel": "pagos y suscripciones", "pos": [870, 60], "size": [170, 62], "sources": [{ "path": "backend/src/services/MercadoPagoService.js", "label": "MercadoPago" }, { "path": "backend/src/services/PaddleService.js", "label": "Paddle" }] },
+    { "id": "wallet", "type": "external", "label": "Google Wallet API", "sublabel": "tarjetas digitales", "pos": [1090, 60], "size": [170, 62], "sources": [{ "path": "backend/src/services/GoogleWalletService.js", "label": "Google Wallet" }] }
+  ],
+  "boundaries": [
+    { "kind": "region", "label": "AWS Amplify", "wraps": ["frontend"], "pad": 18 },
+    { "kind": "region", "label": "Render", "wraps": ["backend", "cron"], "pad": 20 },
+    { "kind": "region", "label": "Base de datos administrada", "wraps": ["mongodb"], "pad": 18 },
+    { "kind": "security-group", "label": "Servicios de terceros (SaaS)", "wraps": ["claude", "resend", "push", "payments", "wallet"], "pad": 16 }
+  ],
+  "connections": [
+    { "from": "client", "to": "frontend", "label": "HTTPS", "variant": "emphasis" },
+    { "from": "frontend", "to": "backend", "label": "Axios REST /api", "variant": "emphasis" },
+    { "from": "partners", "to": "backend", "label": "API key /api/v1", "variant": "security" },
+    { "from": "backend", "to": "mongodb", "label": "Mongoose", "variant": "emphasis" },
+    { "from": "backend", "to": "cron", "label": "arranca en el mismo proceso", "variant": "dashed", "fromSide": "bottom", "toSide": "top", "labelAt": [685, 452] },
+    { "from": "backend", "to": "claude", "label": "chat lead-capture", "fromSide": "top", "toSide": "bottom", "labelSegment": 2, "labelAt": [280, 180] },
+    { "from": "backend", "to": "resend", "label": "email transaccional + recordatorios", "fromSide": "top", "toSide": "bottom", "labelSegment": 2, "labelAt": [490, 210] },
+    { "from": "backend", "to": "push", "label": "alta + recordatorios push", "fromSide": "top", "toSide": "bottom", "labelSegment": 2, "labelAt": [740, 180] },
+    { "from": "backend", "to": "payments", "label": "checkout / webhook", "variant": "security", "fromSide": "top", "toSide": "bottom", "labelSegment": 2, "labelAt": [955, 210] },
+    { "from": "backend", "to": "wallet", "label": "wallet pass (JWT)", "variant": "security", "fromSide": "top", "toSide": "bottom", "labelSegment": 2, "labelAt": [1175, 180] }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Monolito modular", "items": ["SPA React servida estática en AWS Amplify", "API Express corriendo en Render", "MongoDB administrado como único data store"] },
+    { "dot": "violet", "title": "Integraciones externas", "items": ["Anthropic Claude para el chatbot Milo Bot", "Resend (email) y Web Push (VAPID) para notificaciones", "MercadoPago, Paddle y Google Wallet para pagos/tarjetas"] },
+    { "dot": "emerald", "title": "Canales de entrada", "items": ["Dueños de mascotas vía SPA", "Clínicas y partners vía API key (/api/v1)", "Jobs de node-cron corriendo dentro del mismo proceso backend"] }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "schema_version": 2,
+  "diagram_type": "workflow",
+  "meta": {
+    "title": "Milo Care — Flujo de Onboarding",
+    "output": "docs/architecture/milo-care-onboarding.html",
+    "quality_profile": "showcase",
+    "views": [
+      { "id": "happy-path", "label": "Registro exitoso", "focus": ["start", "form", "validate", "redflag", "confirm", "persist", "dashboard"], "note": "13 pasos validados uno a uno hasta crear el perfil del dueño y su mascota." },
+      { "id": "clinical-safety", "label": "Bloqueo por seguridad clínica", "focus": ["validate", "redflag", "blocked"], "note": "RedFlagDetector detiene el avance ante síntomas de emergencia." },
+      { "id": "tier-limit", "label": "Límite de plan gratuito", "focus": ["confirm", "tierBlocked"], "note": "TierService bloquea un segundo perro en el tier free." }
+    ]
+  },
+  "lanes": [
+    { "id": "frontend", "label": "Frontend (Onboarding UI)" },
+    { "id": "backend", "label": "Backend (Onboarding Service)" },
+    { "id": "data", "label": "Persistencia" },
+    { "id": "ui", "label": "Dueño de Mascota" },
+    { "id": "exception", "label": "Excepciones", "variant": "exception" }
+  ],
+  "phases": [
+    { "id": "intake", "label": "Inicio", "fromCol": 0, "toCol": 0 },
+    { "id": "steps", "label": "13 pasos (perfil, mascota, historia clínica, estilo de vida...)", "fromCol": 1, "toCol": 2, "variant": "emphasis" },
+    { "id": "safety", "label": "Validación final", "fromCol": 3, "toCol": 3, "variant": "dashed" },
+    { "id": "confirm", "label": "Confirmación", "fromCol": 4, "toCol": 5 }
+  ],
+  "mainPath": ["start", "form", "validate", "redflag", "confirm", "persist", "dashboard"],
+  "semanticChecks": {
+    "allowedRoots": ["start"],
+    "allowedTerminals": ["dashboard", "blocked", "tierBlocked"]
+  },
+  "nodes": [
+    { "id": "start", "lane": "ui", "col": 0, "type": "external", "label": "Dueño de Mascota", "sublabel": "inicia registro", "width": 132 },
+    { "id": "form", "lane": "frontend", "col": 1, "type": "frontend", "label": "Formulario Multi-Paso", "sublabel": "13 pasos · StepIndicator", "width": 152 },
+    { "id": "validate", "lane": "backend", "col": 2, "type": "backend", "label": "Validación por Paso", "sublabel": "ValidationService", "width": 140 },
+    { "id": "redflag", "lane": "backend", "col": 3, "type": "security", "label": "Detección Red Flag", "sublabel": "RedFlagDetector", "tag": "síntomas de emergencia", "width": 150 },
+    { "id": "confirm", "lane": "backend", "col": 4, "type": "backend", "label": "Confirmar Onboarding", "sublabel": "OnboardingService", "width": 148 },
+    { "id": "persist", "lane": "data", "col": 5, "type": "database", "label": "User + Dog", "sublabel": "MongoDB (embebido)", "width": 132 },
+    { "id": "dashboard", "lane": "ui", "col": 5, "type": "frontend", "label": "Dashboard", "sublabel": "perfil creado", "width": 132 },
+    { "id": "blocked", "lane": "exception", "col": 3, "type": "security", "label": "Bloquea Progreso", "sublabel": "alerta clínica", "tag": "requiere validación veterinaria", "width": 150 },
+    { "id": "tierBlocked", "lane": "exception", "col": 4, "type": "security", "label": "Límite Free Tier", "sublabel": "TierLimitError", "tag": "máx. 1 perro", "width": 132 }
+  ],
+  "edges": [
+    { "from": "start", "to": "form", "label": "comienza registro" },
+    { "from": "form", "to": "validate", "label": "envía paso (1 de 13)", "variant": "emphasis" },
+    { "from": "validate", "to": "redflag", "label": "chequea síntomas" },
+    { "from": "redflag", "to": "confirm", "label": "sin alertas", "variant": "emphasis" },
+    { "from": "redflag", "to": "blocked", "label": "síntoma de emergencia", "variant": "security", "role": "error" },
+    { "from": "confirm", "to": "persist", "label": "guarda perfil + mascota", "variant": "emphasis" },
+    { "from": "confirm", "to": "tierBlocked", "label": "límite free tier (1 perro)", "variant": "security", "role": "error" },
+    { "from": "persist", "to": "dashboard", "label": "onboarding completo", "variant": "emphasis" }
+  ],
+  "cards": [
+    { "dot": "cyan", "title": "Progreso monotónico", "items": ["13 pasos validados uno a uno antes de confirmar", "El perfil y la mascota se crean juntos al final", "El dashboard solo se muestra tras persistir en MongoDB"] },
+    { "dot": "rose", "title": "Seguridad clínica primero", "items": ["RedFlagDetector revisa cada paso antes de avanzar", "Un síntoma de emergencia bloquea el registro", "El bloqueo exige validación veterinaria, no es solo una advertencia"] },
+    { "dot": "amber", "title": "Enforcement de negocio", "items": ["TierService exige upgrade para un segundo perro en tier free", "El bloqueo de tier es independiente del bloqueo clínico", "Ambas excepciones detienen el flujo antes de persistir datos"] }
+  ]
+}
