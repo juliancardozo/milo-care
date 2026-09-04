@@ -11,6 +11,7 @@ const User = require('../models/User');
 const PasswordResetToken = require('../models/PasswordResetToken');
 const MagicLoginToken = require('../models/MagicLoginToken');
 const EmailService = require('../services/EmailService');
+const SlackService = require('../services/SlackService');
 const referralService = require('../services/referralService');
 const clinicService = require('../services/clinicService');
 const coTutorService = require('../services/CoTutorService');
@@ -162,6 +163,14 @@ router.post('/register', registerLimiter, async (req, res, next) => {
       console.error('[Auth] Welcome email failed:', err.message);
     });
 
+    // Aviso interno a Slack (fire-and-forget, nunca rompe el registro).
+    SlackService.notifyNewUser({
+      name: user.name,
+      email: user.email,
+      tier: user.tier,
+      country: user.location?.country,
+    });
+
     const token = signToken(user);
     return res.status(201).json({ user: userResponse(user), token });
   } catch (err) {
@@ -219,6 +228,9 @@ router.post('/forgot-password', resetLimiter, async (req, res, next) => {
 
       const resetUrl = `${process.env.APP_URL || 'http://localhost:5173'}/reset-password?token=${plainToken}&userId=${user._id}`;
       await EmailService.sendPasswordReset({ to: user.email, resetUrl });
+
+      // Solo se avisa cuando el email existe (dentro del if). Fire-and-forget.
+      SlackService.notifyPasswordReset({ userEmail: user.email });
     }
 
     return res.json({ message: 'If an account with this email exists, a reset link has been sent.' });
@@ -417,10 +429,25 @@ router.patch('/me/notifications', authenticate, async (req, res, next) => {
 
 router.delete('/me', authenticate, async (req, res, next) => {
   try {
+    // Capturamos datos para el aviso antes del borrado en duro (después no existen).
+    const user = await User.findById(req.user.id).select('email dogs createdAt').lean();
+
     await PasswordResetToken.deleteMany({ userId: req.user.id });
     await deleteUserEvents(req.user.id); // GDPR: borra el event log del usuario
     await pushService.removeAllForUser(req.user.id).catch(() => {}); // y sus suscripciones push
     await User.findByIdAndDelete(req.user.id);
+
+    if (user) {
+      const accountAgeDays = user.createdAt
+        ? Math.floor((Date.now() - new Date(user.createdAt).getTime()) / 86400000)
+        : null;
+      SlackService.notifyAccountDeleted({
+        userEmail: user.email,
+        dogsCount: user.dogs?.length ?? 0,
+        accountAgeDays,
+      });
+    }
+
     return res.json({ message: 'Account deleted. All data has been permanently removed.' });
   } catch (err) {
     next(err);

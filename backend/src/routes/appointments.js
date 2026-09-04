@@ -3,6 +3,7 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const DogAccess = require('../services/DogAccess');
+const SlackService = require('../services/SlackService');
 
 const router = express.Router({ mergeParams: true });
 
@@ -51,6 +52,8 @@ router.post('/', authenticate, async (req, res, next) => {
     const windowHours = user.notificationPreferences?.appointmentWindowHours || 24;
     const reminderAt = computeAppointmentReminder(apptDate, windowHours);
 
+    const isFirstRecord = dog.appointments.length === 0;
+
     dog.appointments.push({
       title,
       catalogId: catalogId || null,
@@ -68,6 +71,10 @@ router.post('/', authenticate, async (req, res, next) => {
       source: 'manual',
     });
     await user.save();
+
+    if (isFirstRecord) {
+      SlackService.notifyHealthRecordMilestone({ userEmail: user.email, dogName: dog.name, recordType: 'appointment' });
+    }
 
     const newAppt = dog.appointments[dog.appointments.length - 1];
     return res.status(201).json(newAppt);

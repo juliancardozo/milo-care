@@ -4,6 +4,7 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const TierService = require('../services/TierService');
 const DogAccess = require('../services/DogAccess');
+const SlackService = require('../services/SlackService');
 const User = require('../models/User');
 
 const router = express.Router();
@@ -143,12 +144,30 @@ router.post('/', authenticate, async (req, res, next) => {
     const user = await User.findById(req.user.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
-    TierService.assertCanAddDog(user);
+    try {
+      TierService.assertCanAddDog(user);
+    } catch (err) {
+      if (err.name === 'TierLimitError') {
+        // Señal de intención de upgrade: un usuario free quiere un 2º perro.
+        SlackService.notifyTierLimitHit({ userName: user.name, userEmail: user.email });
+      }
+      throw err;
+    }
 
     user.dogs.push({ name: name.trim(), breed: breed.trim(), dateOfBirth: dob, photoUrl: photoUrl || null });
     await user.save();
 
     const newDog = user.dogs[user.dogs.length - 1];
+
+    SlackService.notifyNewDog({
+      userName: user.name,
+      userEmail: user.email,
+      dogName: newDog.name,
+      breed: newDog.breed,
+      dob: newDog.dateOfBirth,
+      totalDogsUser: user.dogs.length,
+    });
+
     return res.status(201).json(dogResponse(newDog));
   } catch (err) {
     next(err);
@@ -248,9 +267,13 @@ router.delete('/:dogId', authenticate, async (req, res, next) => {
       return res.status(403).json({ code: 'OWNER_ONLY', message: 'Only the owner can delete this dog.' });
     }
     const { owner: user, dog } = found;
+    const dogName = dog.name;
 
     dog.deleteOne();
     await user.save();
+
+    SlackService.notifyDogDeleted({ userEmail: user.email, dogName });
+
     return res.json({ message: 'Dog profile deleted.' });
   } catch (err) {
     next(err);
