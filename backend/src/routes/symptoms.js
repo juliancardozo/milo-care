@@ -4,6 +4,7 @@ const express = require('express');
 const authenticate = require('../middleware/auth');
 const DogAccess = require('../services/DogAccess');
 const EmailService = require('../services/EmailService');
+const SlackService = require('../services/SlackService');
 const analytics = require('../services/analyticsService');
 const { evaluateVomitRule } = require('../services/symptomAlertService');
 
@@ -57,6 +58,8 @@ router.post('/', authenticate, async (req, res, next) => {
     if (!found) return;
     const { owner: user, dog } = found;
 
+    const isFirstRecord = dog.symptoms.length === 0;
+
     dog.symptoms.push({
       symptomType: description,
       description,
@@ -65,6 +68,10 @@ router.post('/', authenticate, async (req, res, next) => {
       notes: notes || '',
     });
     await user.save();
+
+    if (isFirstRecord) {
+      SlackService.notifyHealthRecordMilestone({ userEmail: user.email, dogName: dog.name, recordType: 'symptom' });
+    }
 
     const newSymptom = dog.symptoms[dog.symptoms.length - 1];
     return res.status(201).json(newSymptom);
@@ -89,6 +96,8 @@ router.post('/quick', authenticate, async (req, res, next) => {
     if (!found) return;
     const { owner: user, dog } = found;
 
+    const isFirstRecord = dog.symptoms.length === 0;
+
     const now = new Date();
     dog.symptoms.push({
       symptomType: QUICK_TYPES[quickType],
@@ -104,6 +113,10 @@ router.post('/quick', authenticate, async (req, res, next) => {
 
     const newSymptom = dog.symptoms[dog.symptoms.length - 1];
     analytics.track('quick_symptom_logged', { userId: user._id, dogId: dog._id, channel: 'app', meta: { quickType } });
+
+    if (isFirstRecord) {
+      SlackService.notifyHealthRecordMilestone({ userEmail: user.email, dogName: dog.name, recordType: 'symptom' });
+    }
 
     // Regla acumulativa de vómitos.
     const alert = evaluateVomitRule(dog, dog.symptoms, now);

@@ -3,6 +3,7 @@
 const express = require('express');
 const authenticate = require('../middleware/auth');
 const DogAccess = require('../services/DogAccess');
+const SlackService = require('../services/SlackService');
 
 const router = express.Router({ mergeParams: true });
 
@@ -56,6 +57,8 @@ router.post('/', authenticate, async (req, res, next) => {
     const freq = oneTime ? null : Number(frequencyHours);
     const nextReminderAt = computeMedicationReminder(start, freq);
 
+    const isFirstRecord = dog.medications.length === 0;
+
     dog.medications.push({
       medicationName,
       dosage,
@@ -68,6 +71,10 @@ router.post('/', authenticate, async (req, res, next) => {
       nextReminderAt,
     });
     await user.save();
+
+    if (isFirstRecord) {
+      SlackService.notifyHealthRecordMilestone({ userEmail: user.email, dogName: dog.name, recordType: 'medication' });
+    }
 
     const newMed = dog.medications[dog.medications.length - 1];
     return res.status(201).json(newMed);
