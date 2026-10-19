@@ -1,4 +1,5 @@
 import api from './api';
+import { apiUrl } from '../config/apiBase';
 
 /**
  * Resuelve el branding white-label de un partner por slug. Endpoint público:
@@ -12,4 +13,4 @@ export const shareDogWhatsapp = (dogId, payload = {}) =>
   api.post(`/dogs/${dogId}/share/whatsapp`, payload);
 
 /** URL del carnet PDF generado en backend (gated por entitlement). */
-export const dogExportPdfUrl = (dogId) => `/api/dogs/${dogId}/export.pdf`;
+export const dogExportPdfUrl = (dogId) => apiUrl(`/dogs/${dogId}/export.pdf`);

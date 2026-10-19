@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { getAdminStats, sendAdminTestEmail } from '../../services/api';
+import { getAdminStats, sendAdminTestEmail, previewAdminEmail } from '../../services/api';
 
 function StatCard({ label, value, sub }) {
   return (
@@ -103,7 +103,7 @@ export default function AdminDashboardPage() {
               </select>
 
               <a
-                href={`/api/admin/email/preview/${testType}`}
+                href={previewAdminEmail(testType)}
                 target="_blank"
                 rel="noreferrer"
                 className="btn-secondary btn-sm"
