@@ -9,6 +9,7 @@ const Event = require('../models/Event');
 const Partner = require('../models/Partner');
 const { deleteUserEvents } = require('../core/events/eventBus');
 const EmailService = require('../services/EmailService');
+const SlackService = require('../services/SlackService');
 
 const router = express.Router();
 
@@ -162,6 +163,8 @@ router.patch('/users/:id', async (req, res, next) => {
     const user = await User.findById(req.params.id);
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
+    const prevTier = user.tier;
+
     // Vínculo a un partner (para partner_admin). null/'' lo desvincula.
     if (partnerId !== undefined) {
       if (partnerId === null || partnerId === '') {
@@ -183,6 +186,26 @@ router.patch('/users/:id', async (req, res, next) => {
     }
 
     await user.save();
+
+    // Avisos a Slack (fire-and-forget). Traza de mutación admin + transición de tier.
+    const changed = [];
+    if (name !== undefined) changed.push('name');
+    if (role !== undefined) changed.push(`role=${user.role}`);
+    if (partnerId !== undefined) changed.push('partnerId');
+    if (tier !== undefined) changed.push(`tier=${user.tier}`);
+    SlackService.notifyAdminAction({
+      adminEmail: req.user.email,
+      action: 'update_user',
+      targetEmail: user.email,
+      details: changed.join(', ') || 'sin cambios',
+    });
+    if (tier !== undefined && tier !== prevTier) {
+      if (tier === 'premium') {
+        SlackService.notifyPlanUpgrade({ userName: user.name, userEmail: user.email, fromTier: prevTier, toTier: 'premium' });
+      } else if (tier === 'free') {
+        SlackService.notifyPlanDowngrade({ userName: user.name, userEmail: user.email, fromTier: prevTier, toTier: 'free' });
+      }
+    }
 
     return res.json({
       id: user._id,
@@ -209,6 +232,12 @@ router.delete('/users/:id', async (req, res, next) => {
     if (!user) return res.status(404).json({ code: 'NOT_FOUND', message: 'User not found.' });
 
     await deleteUserEvents(req.params.id); // GDPR: borra el event log del usuario
+
+    SlackService.notifyAdminAction({
+      adminEmail: req.user.email,
+      action: 'delete_user',
+      targetEmail: user.email,
+    });
 
     return res.json({ message: 'User deleted.' });
   } catch (err) {
