@@ -11,6 +11,7 @@ const { localDateString, localHour, addDaysToLocalDate } = require('../utils/loc
 const { questionForDate } = require('./checkinQuestionService');
 const { generateResponseTokens } = require('./checkinTokenService');
 const { getActiveLocalAlerts } = require('./localAlertsService');
+const { runExclusive } = require('./jobLock');
 
 const API_URL = () => process.env.API_URL || 'http://localhost:3001';
 
@@ -169,7 +170,7 @@ function startCheckinJob() {
     console.log('[CheckinJob] Disabled (set CHECKIN_ENABLED=true to enable).');
     return;
   }
-  cron.schedule('*/15 * * * *', () => runCheckins(new Date()));
+  cron.schedule('*/15 * * * *', () => runExclusive('checkins', () => runCheckins(new Date())));
   console.log('[CheckinJob] Scheduler started — running every 15 minutes.');
 }
 

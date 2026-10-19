@@ -5,6 +5,7 @@ const Partner = require('../models/Partner');
 const featureFlags = require('../config/featureFlags');
 const MeteringService = require('./MeteringService');
 const ChargeService = require('./ChargeService');
+const { runExclusive } = require('./jobLock');
 
 /**
  * Job mensual de metering/facturación B2B2C. Corre a diario 03:00 y procesa cada
@@ -38,9 +39,8 @@ async function runMetering(now = new Date()) {
 
 function startMeteringJob() {
   if (!featureFlags.companionEnabled) return; // metering solo si la capa B2B2C está activa
-  cron.schedule('0 3 * * *', () => {
-    runMetering(new Date()).catch((err) => console.error('[Metering] job failed:', err.message));
-  });
+  // runExclusive loguea errores y evita solapar con el cron externo.
+  cron.schedule('0 3 * * *', () => runExclusive('metering', () => runMetering(new Date())));
   console.log('[Metering] monthly billing job scheduled (daily 03:00, runs on each partner billingDay)');
 }
 

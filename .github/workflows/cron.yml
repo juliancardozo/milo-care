@@ -1,0 +1,86 @@
+# Cron externo para los jobs del backend (Render free duerme el proceso y los
+# node-cron in-process dejan de correr). Llama a POST /api/internal/cron/<job>.
+#
+# Requisitos:
+#   - secrets.CRON_SECRET en GitHub == CRON_SECRET en Render (mismo valor).
+#   - Opcional: vars.CRON_BASE_URL (default https://milocare.org).
+#   - Opcional: vars.CRON_ENABLED = 'false' para pausar sin borrar el workflow.
+#
+# Notas:
+#   - GitHub solo ejecuta `schedule` desde la rama por defecto (main) y puede
+#     demorar o saltear corridas en horas pico; por eso los minutos están
+#     desfasados de :00. Los jobs son idempotentes y gatean por hora local.
+#   - En repos públicos GitHub desactiva los schedules tras 60 días sin actividad.
+#   - El primer request despierta Render (~40 s); hay timeout + reintentos.
+#     Si el proxy de Amplify corta antes (504), el reintento encuentra el
+#     servicio ya despierto.
+name: cron
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'          # reminders
+    - cron: '2,17,32,47 * * * *'   # checkins (cada 15 min)
+    - cron: '7 * * * *'            # campaigns (cada hora)
+    - cron: '13 3 * * *'           # metering (diario 03:13 UTC)
+  workflow_dispatch:
+    inputs:
+      job:
+        description: 'Job a disparar'
+        required: true
+        default: reminders
+        type: choice
+        options: [reminders, checkins, campaigns, metering]
+
+permissions: {}
+
+concurrency:
+  group: cron-${{ github.event.schedule || inputs.job }}
+  cancel-in-progress: false
+
+jobs:
+  trigger:
+    if: vars.CRON_ENABLED != 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - name: Resolver job
+        id: pick
+        env:
+          SCHEDULE: ${{ github.event.schedule }}
+          INPUT_JOB: ${{ inputs.job }}
+        run: |
+          case "$SCHEDULE" in
+            '*/5 * * * *')        job=reminders ;;
+            '2,17,32,47 * * * *') job=checkins ;;
+            '7 * * * *')          job=campaigns ;;
+            '13 3 * * *')         job=metering ;;
+            '')                   job="$INPUT_JOB" ;;
+            *) echo "::error::schedule sin mapear: $SCHEDULE"; exit 1 ;;
+          esac
+          echo "job=$job" >> "$GITHUB_OUTPUT"
+
+      - name: POST /api/internal/cron/${{ steps.pick.outputs.job }}
+        env:
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          BASE_URL: ${{ vars.CRON_BASE_URL || 'https://milocare.org' }}
+          JOB: ${{ steps.pick.outputs.job }}
+        run: |
+          if [ -z "$CRON_SECRET" ]; then
+            echo "::warning::secrets.CRON_SECRET no está configurado; se omite la llamada."
+            exit 0
+          fi
+          url="$BASE_URL/api/internal/cron/$JOB"
+          for attempt in 1 2 3 4; do
+            code=$(curl -sS -o resp.json -w '%{http_code}' \
+              --connect-timeout 15 --max-time 75 \
+              -X POST -H "X-Cron-Secret: $CRON_SECRET" "$url") || code=000
+            echo "intento $attempt: HTTP $code $(head -c 300 resp.json 2>/dev/null)"
+            case "$code" in
+              200|202) exit 0 ;;
+              401) echo "::error::secreto rechazado (CRON_SECRET distinto en GitHub y Render)"; exit 1 ;;
+              404) echo "::error::404: CRON_SECRET no seteado en el backend o job desconocido"; exit 1 ;;
+            esac
+            sleep 20
+          done
+          echo "::error::$url no respondió OK tras 4 intentos"
+          exit 1

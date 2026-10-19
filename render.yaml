@@ -29,6 +29,8 @@ services:
         value: julian.cardozo.viggiano@gmail.com   # recibe los avisos de interés en Premium
       - key: API_URL
         sync: false          # URL pública de ESTE backend (links del email de check-in)
+      - key: CRON_SECRET
+        sync: false          # mismo valor que secrets.CRON_SECRET en GitHub (cron externo)
       - key: CHECKIN_ENABLED
         value: 'false'       # 'true' para activar el envío diario del check-in
       # ── Google Wallet (pase de perfil de perro) ──
