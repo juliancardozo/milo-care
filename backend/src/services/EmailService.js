@@ -23,7 +23,26 @@ async function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+// Dominios reservados (RFC 2606 / RFC 6761): nunca reciben correo. Mandarles un
+// email solo genera rebotes que dañan la reputación del dominio en Resend
+// (p. ej. usuarios de los seeds demo `@barrio-demo.test`).
+const RESERVED_EMAIL_DOMAIN = /(^|\.)(test|example|invalid|localhost)$|^example\.(com|net|org)$/i;
+
+function isUndeliverableAddress(address) {
+  const domain = String(address).trim().replace(/>$/, '').split('@').pop().toLowerCase();
+  return RESERVED_EMAIL_DOMAIN.test(domain);
+}
+
 async function sendWithRetry(payload, attempt = 1) {
+  if (attempt === 1) {
+    const recipients = [].concat(payload.to || []);
+    const deliverable = recipients.filter((to) => !isUndeliverableAddress(to));
+    if (deliverable.length < recipients.length) {
+      console.warn(`[EmailService] ${recipients.length - deliverable.length} destinatario(s) en dominio reservado omitido(s): "${payload.subject}"`);
+    }
+    if (deliverable.length === 0) return;
+    payload = { ...payload, to: Array.isArray(payload.to) ? deliverable : deliverable[0] };
+  }
   try {
     const { error } = await getResend().emails.send(payload);
     if (error) throw new Error(error.message);
@@ -652,6 +671,7 @@ const EmailService = {
   // the one-click confirmation page, and tests.
   _checkinCopy: CHECKIN_COPY,
   checkinQuestionText,
+  isUndeliverableAddress,
 };
 
 module.exports = EmailService;
