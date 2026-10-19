@@ -1,8 +1,19 @@
+# Render Blueprint — backend de Milo Care.
+#
+# Estado real (2026-10-19): el servicio de producción en Render se llama
+# `milo-care-production` (https://milo-care-production.onrender.com) y se creó desde el dashboard; este
+# archivo es la referencia de su configuración (no está verificado que el
+# Blueprint esté vinculado). `sync: false` = secreto o valor que se carga a mano
+# en el dashboard; Render nunca lo sobreescribe desde el repo.
+#
+# Inventario completo de env vars y runbook: docs/devops/ENVIRONMENTS.md
 services:
+  # ── Producción ────────────────────────────────────────────────────────────────
   - type: web
-    name: milocura-backend
+    name: milo-care-production
     runtime: node
     rootDir: backend
+    branch: main            # verificado 2026-10-19 (srv-d8mlsv9o3t8c73bvi9fg)
     buildCommand: npm install
     startCommand: npm start
     plan: free
@@ -12,7 +23,7 @@ services:
       - key: PORT
         value: 3001
       - key: MONGODB_URI
-        sync: false          # lo cargás manualmente en el dashboard de Render
+        sync: false          # Atlas, DB milocura (prod)
       - key: JWT_SECRET
         sync: false
       - key: JWT_EXPIRES_IN
@@ -20,17 +31,35 @@ services:
       - key: RESEND_API_KEY
         sync: false
       - key: RESEND_FROM_EMAIL
-        sync: false
+        value: noreply@milocare.org
       - key: APP_URL
         value: https://milocare.org
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false          # orígenes extra separados por coma (vacío en prod)
       - key: VET_SHARE_PUBLIC_BASE_URL
         value: https://milocare.org
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com   # recibe los avisos de interés en Premium
       - key: API_URL
-        sync: false          # URL pública de ESTE backend (links del email de check-in)
+        value: https://milocare.org   # links del email de check-in (pasan por el proxy /api de Amplify)
+      - key: API_PUBLIC_URL
+        sync: false          # notification_url del webhook de Mercado Pago (default APP_URL)
+      - key: CRON_SECRET
+        sync: false          # mismo valor que secrets.CRON_SECRET en GitHub (cron externo)
+      - key: SLACK_ENABLED
+        value: 'false'      # notificaciones internas (no-op si falta el webhook)
+      - key: SLACK_WEBHOOK_URL
+        sync: false
+      - key: SLACK_WEBHOOK_URL_BILLING
+        sync: false
+      - key: SLACK_WEBHOOK_URL_ALERTS
+        sync: false
       - key: CHECKIN_ENABLED
         value: 'false'       # 'true' para activar el envío diario del check-in
+      - key: REMINDER_FULL_LIST_ENABLED
+        sync: false          # default on (solo 'false' lo apaga)
+      - key: VET_SEAL_ENABLED
+        sync: false          # default on (solo 'false' lo apaga)
       # ── Google Wallet (pase de perfil de perro) ──
       - key: GOOGLE_WALLET_ENABLED
         value: 'true'        # habilita POST /api/dogs/:dogId/wallet-pass
@@ -42,6 +71,8 @@ services:
         sync: false
       - key: WALLET_PUBLIC_BASE_URL
         value: https://milocare.org       # URL pública del frontend para el QR del pase
+      - key: WALLET_LOGO_URL
+        sync: false          # opcional: logo público para el pase
       - key: SURPRISE_PROBABILITY
         value: '0.15'
       # ── Notificaciones push (Web Push / VAPID) ──
@@ -55,12 +86,133 @@ services:
         value: mailto:hola@milocare.org
       # ── Companion (B2B2C / partners / white-label / API v1) ──
       - key: COMPANION_ENABLED
-        value: 'true'        # habilita /api/partners, /api/v1, seguros y certificados
-      - key: RESEND_FROM_EMAIL
-        value: noreply@milocare.org
+        value: 'true'        # habilita /api/partners, /api/v1, seguros, certificados y metering
+      # ── Cobro B2C (Paddle / Mercado Pago) ──
+      - key: BILLING_PROVIDER
+        sync: false          # 'paddle' | 'mercadopago' (default mercadopago)
+      - key: BILLING_CONSENT_VERSION
+        sync: false
+      - key: PADDLE_API_KEY
+        sync: false
+      - key: PADDLE_PRICE_ID
+        sync: false
+      - key: PADDLE_WEBHOOK_SECRET
+        sync: false
+      - key: PADDLE_API_URL
+        sync: false          # https://api.paddle.com (prod) | https://sandbox-api.paddle.com
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false
+      - key: PREMIUM_PRICE
+        sync: false
+      - key: PREMIUM_CURRENCY
+        sync: false
       # ── Milo Bot (asistente de captación de leads · Claude API) ──
       - key: ANTHROPIC_API_KEY
-        sync: false          # cargá la key en el dashboard de Render; sin ella /api/milo-chat responde 503 y el widget se oculta
+        sync: false          # sin ella /api/milo-chat responde 503 y el widget se oculta
+      - key: MILO_BOT_MODEL
+        value: claude-haiku-4-5-20251001
+      - key: MILO_BOT_MAX_TOKENS
+        value: '400'
+
+  # ── Staging ───────────────────────────────────────────────────────────────────
+  # Backend aislado para la rama `develop`: DB Atlas propia (milocura-staging),
+  # secretos propios, pagos en sandbox. La rama `develop` de Amplify lo usa vía
+  # VITE_API_BASE_URL (ver docs/devops/ENVIRONMENTS.md). NO apuntar a la DB de prod.
+  - type: web
+    name: milo-care
+    runtime: node
+    rootDir: backend
+    branch: develop
+    buildCommand: npm install
+    startCommand: npm start
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3001
+      - key: MONGODB_URI
+        sync: false          # Atlas, DB milocura-staging (NUNCA la de prod)
+      - key: JWT_SECRET
+        sync: false          # distinto del de prod
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: RESEND_API_KEY
+        sync: false          # idealmente una key aparte en Resend
+      - key: RESEND_FROM_EMAIL
+        value: noreply@milocare.org
+      - key: APP_URL
+        value: https://develop.d2d3bj1p216a32.amplifyapp.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: http://localhost:5173
+      - key: VET_SHARE_PUBLIC_BASE_URL
+        value: https://develop.d2d3bj1p216a32.amplifyapp.com
+      - key: BILLING_NOTIFY_EMAIL
+        value: julian.cardozo.viggiano@gmail.com
+      - key: API_URL
+        value: https://milo-care.onrender.com
+      - key: API_PUBLIC_URL
+        value: https://milo-care.onrender.com
+      - key: CRON_SECRET
+        sync: false          # opcional en staging; vacío = endpoint de cron deshabilitado (404)
+      - key: SLACK_ENABLED
+        value: 'false'      # notificaciones internas (no-op si falta el webhook)
+      - key: SLACK_WEBHOOK_URL
+        sync: false
+      - key: SLACK_WEBHOOK_URL_BILLING
+        sync: false
+      - key: SLACK_WEBHOOK_URL_ALERTS
+        sync: false
+      - key: CHECKIN_ENABLED
+        value: 'false'
+      - key: REMINDER_FULL_LIST_ENABLED
+        sync: false
+      - key: VET_SEAL_ENABLED
+        sync: false
+      - key: GOOGLE_WALLET_ENABLED
+        value: 'false'
+      - key: GOOGLE_WALLET_ISSUER_ID
+        sync: false
+      - key: GOOGLE_WALLET_CLASS_ID
+        value: milo_dog_card
+      - key: GOOGLE_WALLET_SA_KEY_B64
+        sync: false
+      - key: WALLET_PUBLIC_BASE_URL
+        value: https://develop.d2d3bj1p216a32.amplifyapp.com
+      - key: WALLET_LOGO_URL
+        sync: false
+      - key: SURPRISE_PROBABILITY
+        value: '0.15'
+      - key: PUSH_ENABLED
+        value: 'false'
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:hola@milocare.org
+      - key: COMPANION_ENABLED
+        value: 'true'
+      - key: BILLING_PROVIDER
+        sync: false
+      - key: BILLING_CONSENT_VERSION
+        sync: false
+      - key: PADDLE_API_KEY
+        sync: false          # credenciales SANDBOX
+      - key: PADDLE_PRICE_ID
+        sync: false
+      - key: PADDLE_WEBHOOK_SECRET
+        sync: false
+      - key: PADDLE_API_URL
+        value: https://sandbox-api.paddle.com
+      - key: MERCADOPAGO_ACCESS_TOKEN
+        sync: false          # credenciales de prueba (TEST-...)
+      - key: PREMIUM_PRICE
+        sync: false
+      - key: PREMIUM_CURRENCY
+        sync: false
+      - key: ANTHROPIC_API_KEY
+        sync: false          # opcional: sin key el bot queda oculto
       - key: MILO_BOT_MODEL
         value: claude-haiku-4-5-20251001
       - key: MILO_BOT_MAX_TOKENS

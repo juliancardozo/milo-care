@@ -163,6 +163,11 @@ async function main() {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error('MONGODB_URI no está definida en .env');
   await mongoose.connect(uri);
+  // Los usuarios demo usan dominios .test: en prod generan rebotes en Resend.
+  if (mongoose.connection.name === 'milocura' && process.env.ALLOW_DEMO_SEED_IN_PROD !== 'true') {
+    await mongoose.disconnect();
+    throw new Error('Base de producción (milocura): seed demo bloqueado. Usá milocura-staging.');
+  }
 
   await clean();
   if (process.argv.includes('--clean')) {

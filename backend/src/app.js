@@ -46,6 +46,7 @@ const claimsRoutes = require('./routes/claims');
 const certificateRoutes = require('./routes/certificate');
 const apiV1Routes = require('./routes/apiV1');
 const miloChatRoutes = require('./routes/miloChat');
+const internalCronRoutes = require('./routes/internalCron');
 const featureFlags = require('./config/featureFlags');
 
 const app = express();
@@ -56,7 +57,14 @@ const app = express();
 app.set('trust proxy', 1);
 
 // ── Middleware ──────────────────────────────────────────────────────────────
-app.use(cors({ origin: process.env.APP_URL || 'http://localhost:5173', credentials: true }));
+// Orígenes permitidos: APP_URL (frontend principal) + CORS_ALLOWED_ORIGINS
+// (lista separada por comas; p. ej. el dominio de la rama `develop` de Amplify
+// cuando apunta a un backend de staging con VITE_API_BASE_URL).
+const corsOrigins = [process.env.APP_URL || 'http://localhost:5173']
+  .concat((process.env.CORS_ALLOWED_ORIGINS || '').split(','))
+  .map((o) => o.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+app.use(cors({ origin: corsOrigins, credentials: true }));
 // Las fotos de perros se guardan como data-URL (base64) dentro del documento,
 // por lo que el body legítimamente puede superar el default de 100kb de Express.
 // `verify` guarda el body crudo en `req.rawBody` para verificar firmas HMAC de
@@ -107,6 +115,8 @@ app.use('/api/referrals', referralsRoutes);
 app.use('/api/checkins', publicCheckinsRouter);
 app.use('/api/public/clinics', publicClinicsRoutes); // antes de /api/public (prefijo más específico)
 app.use('/api/milo-chat', miloChatRoutes); // asistente de captación de leads (público)
+// Cron externo (GitHub Actions): 404 si CRON_SECRET no está seteado.
+app.use('/api/internal/cron', internalCronRoutes);
 
 // ── Companion (B2B2C) — detrás del flag companionEnabled ──────────────────────
 // Las rutas de partners quedan invisibles (404) hasta habilitar COMPANION_ENABLED.
