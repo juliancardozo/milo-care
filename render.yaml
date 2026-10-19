@@ -41,7 +41,7 @@ services:
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com   # recibe los avisos de interés en Premium
       - key: API_URL
-        sync: false          # URL pública de ESTE backend (links del email de check-in)
+        value: https://milocare.org   # links del email de check-in (pasan por el proxy /api de Amplify)
       - key: API_PUBLIC_URL
         sync: false          # notification_url del webhook de Mercado Pago (default APP_URL)
       - key: CRON_SECRET

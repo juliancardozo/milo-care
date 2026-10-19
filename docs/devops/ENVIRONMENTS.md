@@ -85,7 +85,7 @@ Fuente: `grep -rhoE "process\.env\.[A-Z_]+" backend/src | sort -u` (39 vars, má
 | `NODE_ENV` | (no se lee en `src`) | `production` | `production` |
 | `APP_URL` | CORS + links | `https://milocare.org` | `https://develop.d2d3bj1p216a32.amplifyapp.com` |
 | `CORS_ALLOWED_ORIGINS` | CORS extra (coma) | vacío | `http://localhost:5173` |
-| `API_URL` | links one-click del check-in | 🔒 manual | `https://milo-care.onrender.com` |
+| `API_URL` | links one-click del check-in | `https://milocare.org` (seteada 2026-10-19) | `https://milo-care.onrender.com` (seteada 2026-10-19) |
 | `API_PUBLIC_URL` | webhook MP (default APP_URL) | 🔒 manual | URL de staging |
 | `VET_SHARE_PUBLIC_BASE_URL` | links vet-share | `https://milocare.org` | develop |
 | `WALLET_PUBLIC_BASE_URL` | QR del pase | `https://milocare.org` | develop |
@@ -149,7 +149,8 @@ Ninguna de estas cosas tiene CLI disponible acá (Atlas, Render, Cloudflare) o l
 **Staging**
 - [x] Atlas: base `milocura-staging` en el mismo cluster (creada 2026-10-19 al arrancar el servicio). Pendiente: usuario `milo-staging` con `readWrite` **solo** sobre `milocura-staging` (hoy staging usa `milo-care-dev`, que es `atlasAdmin`).
 - [x] Render: el servicio `milo-care` (rama `develop`) es staging desde 2026-10-19.
-- [ ] Separar secretos de staging: hoy `milo-care` comparte `JWT_SECRET`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY` y VAPID con prod. Mínimo: `JWT_SECRET` propio (`openssl rand -hex 32`) para que un token de un ambiente no sirva en el otro.
+- [x] `JWT_SECRET` propio en staging (2026-10-19, 96 caracteres; distinto del de prod).
+- [ ] Opcional: separar también `RESEND_API_KEY`, `ANTHROPIC_API_KEY` y VAPID de staging (hoy los comparte con prod).
 - [ ] Cuando staging responda, correr el `aws amplify update-branch … VITE_API_BASE_URL=…` de la sección 2 y redeployar `develop`.
 
 **Cron externo**
