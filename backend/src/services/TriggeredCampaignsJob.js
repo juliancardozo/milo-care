@@ -6,6 +6,7 @@ const DailyCheckin = require('../models/DailyCheckin');
 const EmailService = require('./EmailService');
 const Notifier = require('./NotificationDispatcher');
 const { localHour, localDateString } = require('../utils/localTime');
+const { runExclusive } = require('./jobLock');
 
 /**
  * Campañas disparadas (Fase 3 — Notifications 2.0).
@@ -149,7 +150,7 @@ async function runTriggeredCampaigns(now = new Date()) {
 }
 
 function startTriggeredCampaignsJob() {
-  cron.schedule('0 * * * *', () => runTriggeredCampaigns()); // cada hora (el gate de hora local hace el resto)
+  cron.schedule('0 * * * *', () => runExclusive('campaigns', () => runTriggeredCampaigns())); // cada hora (el gate de hora local hace el resto)
   console.log('[Campaigns] Scheduler started — running hourly.');
 }
 

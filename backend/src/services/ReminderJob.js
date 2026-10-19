@@ -5,6 +5,7 @@ const User = require('../models/User');
 const EmailService = require('./EmailService');
 const Notifier = require('./NotificationDispatcher');
 const { localHour } = require('../utils/localTime');
+const { runExclusive } = require('./jobLock');
 
 const APP = () => Notifier.appUrl();
 
@@ -220,7 +221,8 @@ async function runReminders() {
  * Start the cron-based reminder scheduler (every 5 minutes).
  */
 function startReminderJob() {
-  cron.schedule('*/5 * * * *', runReminders);
+  // runExclusive: evita solapar con el cron externo (POST /api/internal/cron/reminders).
+  cron.schedule('*/5 * * * *', () => runExclusive('reminders', runReminders));
   console.log('[ReminderJob] Scheduler started — running every 5 minutes.');
 }
 

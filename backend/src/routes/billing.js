@@ -6,6 +6,7 @@ const User = require('../models/User');
 const BillingService = require('../services/BillingService');
 const MercadoPagoService = require('../services/MercadoPagoService');
 const PaddleService = require('../services/PaddleService');
+const SlackService = require('../services/SlackService');
 
 const router = express.Router();
 
@@ -132,9 +133,15 @@ router.post('/webhook', async (req, res, next) => {
     // Idempotencia: no volver a otorgar por el mismo pago.
     if (user.premiumPaymentRef === String(paymentId)) return res.sendStatus(200);
 
+    const wasPremium = typeof user.isPremiumActive === 'function' ? user.isPremiumActive() : false;
     user.grantPremiumDays(PREMIUM_DAYS_PER_PAYMENT);
     user.premiumPaymentRef = String(paymentId);
     await user.save();
+
+    // Solo avisamos en la transición real free→premium (no en renovaciones).
+    if (!wasPremium) {
+      SlackService.notifyPlanUpgrade({ userName: user.name, userEmail: user.email });
+    }
 
     return res.sendStatus(200);
   } catch (err) {
@@ -187,11 +194,16 @@ router.post('/paddle/webhook', async (req, res, next) => {
         // para no duplicar la concesión si el MoR reintenta la notificación.
         const txRef = `pd_${entity.id}`;
         if (user.premiumPaymentRef === txRef) break;
+        const wasPremium = typeof user.isPremiumActive === 'function' ? user.isPremiumActive() : false;
         user.grantPremiumDays(PREMIUM_DAYS_PER_PAYMENT);
         user.premiumPaymentRef = txRef;
         user.subscriptionStatus = 'active';
         if (subscriptionId) user.subscriptionId = subscriptionId;
         await user.save();
+        // Solo la transición real free→premium (el primer cobro, no las renovaciones).
+        if (!wasPremium) {
+          SlackService.notifyPlanUpgrade({ userName: user.name, userEmail: user.email });
+        }
         break;
       }
 
