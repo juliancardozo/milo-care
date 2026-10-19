@@ -214,3 +214,90 @@
   .landing-actors-grid,
   .landing-plans-grid { grid-template-columns: 1fr; }
 }
+
+/* ── Preview del panel de cumplimiento del barrio (product shot) ───────────
+   Maqueta fiel de BarrioCompliancePanel para mostrar el producto real en la
+   landing. Semáforo verde/ámbar/rojo/gris explícito; el resto usa tokens. */
+.bprev-wrap { max-width: 720px; margin: 8px auto 0; }
+.bprev-frame {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 18px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+.bprev-chrome {
+  display: flex; align-items: center; gap: 14px;
+  padding: 11px 16px; border-bottom: 1px solid var(--color-border);
+  background: color-mix(in srgb, var(--color-border) 22%, var(--color-surface));
+}
+.bprev-dots { display: flex; gap: 6px; }
+.bprev-dots i { width: 11px; height: 11px; border-radius: 50%; display: block; }
+.bprev-dots i:nth-child(1) { background: #ff5f57; }
+.bprev-dots i:nth-child(2) { background: #febc2e; }
+.bprev-dots i:nth-child(3) { background: #28c840; }
+.bprev-url {
+  font-size: .78rem; color: var(--color-muted);
+  background: var(--color-bg); border: 1px solid var(--color-border);
+  border-radius: 999px; padding: 4px 14px; font-family: ui-monospace, Menlo, monospace;
+}
+.bprev-body { padding: 20px; }
+
+/* Header de marca del barrio */
+.bprev-head {
+  display: flex; align-items: center; gap: 12px; color: #fff;
+  background: linear-gradient(135deg, #166b4e, #0f4d38);
+  border-radius: 14px; padding: 16px 18px; margin-bottom: 16px;
+}
+.bprev-logo { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center;
+  background: rgba(255,255,255,.18); font-weight: 800; font-size: 1.2rem; }
+.bprev-head h3 { margin: 0; font-size: 1.15rem; font-weight: 800; line-height: 1.1; }
+.bprev-head span { font-size: .78rem; opacity: .85; }
+
+/* Hero con anillo */
+.bprev-hero {
+  display: flex; align-items: center; gap: 20px; flex-wrap: wrap;
+  background: linear-gradient(135deg, #166b4e, #0d3f2e); color: #fff;
+  border-radius: 14px; padding: 18px 20px; margin-bottom: 14px;
+}
+.bprev-ring { flex: none; }
+.bprev-ring-bg { fill: none; stroke: rgba(255,255,255,.22); }
+.bprev-ring-fg { fill: none; stroke: #eafff4; stroke-linecap: round; }
+.bprev-ring-num { fill: #fff; font-size: 1.35rem; font-weight: 800; }
+.bprev-hero-copy { display: flex; flex-direction: column; gap: 4px; }
+.bprev-hero-copy b { font-size: 1rem; }
+.bprev-hero-alert { align-self: flex-start; margin-top: 4px; font-size: .8rem; font-weight: 700;
+  background: rgba(255,255,255,.18); border-radius: 999px; padding: 4px 12px; }
+
+/* KPIs semáforo */
+.bprev-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 14px; }
+.bprev-kpi { background: var(--color-bg); border: 1px solid var(--color-border);
+  border-top-width: 3px; border-radius: 12px; padding: 12px 8px; text-align: center; }
+.bprev-kpi.ok   { border-top-color: #16a34a; }
+.bprev-kpi.soon { border-top-color: #d97706; }
+.bprev-kpi.over { border-top-color: #dc2626; }
+.bprev-kpi.none { border-top-color: var(--color-muted); }
+.bprev-kpi b { display: block; font-size: 1.5rem; font-weight: 800; line-height: 1; color: var(--color-text); }
+.bprev-kpi span { font-size: .7rem; color: var(--color-muted); }
+
+/* Tabla por unidad */
+.bprev-table { width: 100%; border-collapse: collapse; font-size: .86rem; }
+.bprev-table th { text-align: left; font-size: .66rem; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--color-muted); font-weight: 700; padding: 7px 10px; border-bottom: 1px solid var(--color-border); }
+.bprev-table td { padding: 9px 10px; border-bottom: 1px solid var(--color-border); color: var(--color-text); }
+.bprev-table tr:last-child td { border-bottom: none; }
+.bprev-c { text-align: center; }
+.bprev-due { color: var(--color-muted); white-space: nowrap; }
+.bprev-pill { display: inline-block; font-size: .74rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.bprev-pill.ok   { background: color-mix(in srgb, #16a34a 15%, transparent); color: #15803d; }
+.bprev-pill.soon { background: color-mix(in srgb, #d97706 18%, transparent); color: #b45309; }
+.bprev-pill.over { background: color-mix(in srgb, #dc2626 16%, transparent); color: #b91c1c; }
+.bprev-pill.none { background: color-mix(in srgb, var(--color-muted) 20%, transparent); color: var(--color-muted); }
+.bprev-caption { margin: 14px 2px 0; font-size: .82rem; color: var(--color-muted); text-align: center; }
+
+@media (prefers-color-scheme: dark) {
+  .bprev-pill.ok { color: #4ade80; } .bprev-pill.soon { color: #fbbf24; } .bprev-pill.over { color: #f87171; }
+}
+@media (max-width: 560px) {
+  .bprev-kpis { grid-template-columns: repeat(2, 1fr); }
+}

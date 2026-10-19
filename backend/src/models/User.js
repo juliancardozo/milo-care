@@ -164,6 +164,10 @@ const dogSchema = new Schema(
     // desbloquea features premium para este perro vía EntitlementService.
     partnerId: { type: Schema.Types.ObjectId, ref: 'Partner', default: null, index: true },
     sponsorshipStatus: { type: String, enum: ['none', 'sponsored'], default: 'none' },
+    // Unidad dentro del partner de tipo `barrio` (lote / manzana / N.º de unidad).
+    // Solo se usa para el censo y el panel de cumplimiento del barrio; jamás expone
+    // dato clínico. Nullable: irrelevante para perros sin partner barrio.
+    partnerUnit: { type: String, trim: true, default: null, maxlength: 60 },
     countryProfile: { type: String, enum: ['AR', 'UY'], default: 'AR' },
     city: { type: String, trim: true, default: '' },
     timezone: { type: String, trim: true, default: '' },

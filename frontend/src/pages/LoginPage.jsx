@@ -35,7 +35,11 @@ export default function LoginPage() {
     try {
       const { data } = await login(form);
       dispatch(setCredentials({ user: data.user, token: data.token }));
-      navigate(next && next.startsWith('/') ? next : '/dashboard');
+      // Respetamos un `next` explícito; si no, routeamos por rol: el partner_admin
+      // (p. ej. la administración de un barrio) no tiene perros propios y va a su
+      // panel, no al dashboard de tutor.
+      const home = data.user?.role === 'partner_admin' ? '/partner' : '/dashboard';
+      navigate(next && next.startsWith('/') ? next : home);
     } catch (err) {
       const msg = err.response?.data?.message || t('auth.errors.loginFailed');
       setServerError(msg);

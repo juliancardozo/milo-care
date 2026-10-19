@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import { selectPartnerId, selectCurrentUser } from '../../store/authSlice';
 import { getPartnerMetrics, getPartnerBilling } from '../../services/partnerAdminApi';
+import BarrioCompliancePanel from './BarrioCompliancePanel';
 import '../../styles/partner-dashboard.css';
 
 // ── helpers de mes ──────────────────────────────────────────────────────────
@@ -81,6 +82,12 @@ export default function PartnerDashboardPage() {
 
   if (!partnerId) {
     return <div className="page-container"><p>Tu cuenta no está vinculada a un partner.</p></div>;
+  }
+
+  // Los barrios privados usan un panel distinto: cumplimiento vacunal por unidad
+  // (semáforo antirrábica), sin métricas de seguro ni facturación por mascota.
+  if (metrics?.partner?.type === 'barrio') {
+    return <BarrioCompliancePanel partnerId={partnerId} user={user} />;
   }
 
   return (

@@ -59,7 +59,9 @@ const partnerSchema = new Schema(
     name: { type: String, required: true, trim: true, maxlength: 120 },
     // Identificador white-label (subdominio/slug). Único, minúsculas.
     slug: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
-    type: { type: String, enum: ['insurer', 'fintech', 'bank', 'vet'], required: true },
+    // `barrio` = plataforma de administración de barrio privado / country / consorcio
+    // (OpenKey y equivalentes). Consume el panel de cumplimiento vacunal por unidad.
+    type: { type: String, enum: ['insurer', 'fintech', 'bank', 'vet', 'barrio'], required: true },
     branding: { type: brandingSchema, default: () => ({}) },
     contract: { type: contractSchema, default: () => ({}) },
     billing: { type: billingSchema, default: () => ({}) },

@@ -6,3 +6,7 @@ export const getPartnerMetrics = (partnerId, month) =>
 
 export const getPartnerBilling = (partnerId, month) =>
   api.get(`/partners/${partnerId}/billing`, { params: month ? { month } : {} });
+
+// Panel de cumplimiento vacunal por unidad — solo para partners de tipo `barrio`.
+export const getPartnerCompliance = (partnerId) =>
+  api.get(`/partners/${partnerId}/compliance`);

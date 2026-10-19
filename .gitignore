@@ -49,3 +49,7 @@ docker-compose.override.yml
 # Database
 *.db
 *.sqlite
+
+# Local-only tooling (not committed)
+.claude/skills/
+skills-lock.json

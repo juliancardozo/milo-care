@@ -87,3 +87,63 @@
   .pdash-hero-num { font-size: 2.6rem; }
   .pdash-bar-row { grid-template-columns: 110px 1fr 28px; }
 }
+
+/* ════════════════════════════════════════════════════════════════════════
+   Panel de cumplimiento del barrio (semáforo antirrábica por unidad)
+   Colores del semáforo: verde/ámbar/rojo/gris — separados del acento de marca.
+   ════════════════════════════════════════════════════════════════════════ */
+.bcomp-hero { align-items: center; gap: 24px; }
+.bcomp-hero-ring { flex: none; }
+.bcomp-ring { display: block; }
+.bcomp-ring-num { font-size: 1.5rem; font-weight: 900; fill: #fff; }
+.bcomp-hero-copy { display: flex; flex-direction: column; gap: 2px; }
+.bcomp-hero-alert {
+  margin-top: 10px; align-self: flex-start; font-size: .82rem; font-weight: 700;
+  background: rgba(255,255,255,.18); border-radius: 999px; padding: 5px 12px;
+}
+
+.bcomp-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 16px; }
+.bcomp-kpi {
+  background: var(--color-surface); border: 1px solid var(--color-border);
+  border-radius: 14px; padding: 16px 12px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  border-top-width: 3px;
+}
+.bcomp-kpi.ok   { border-top-color: #16a34a; }
+.bcomp-kpi.soon { border-top-color: #d97706; }
+.bcomp-kpi.over { border-top-color: #dc2626; }
+.bcomp-kpi.none { border-top-color: var(--color-muted); }
+.bcomp-kpi-num { font-size: 1.9rem; font-weight: 800; line-height: 1; color: var(--color-text); font-variant-numeric: tabular-nums; }
+.bcomp-kpi-label { font-size: .74rem; color: var(--color-muted); }
+
+.bcomp-tablewrap { overflow-x: auto; margin: 4px 0 10px; }
+.bcomp-table { width: 100%; min-width: 420px; border-collapse: collapse; font-size: .9rem; }
+.bcomp-table thead th {
+  text-align: left; font-size: .72rem; letter-spacing: .04em; text-transform: uppercase;
+  color: var(--color-muted); font-weight: 700; padding: 8px 12px; border-bottom: 1px solid var(--color-border);
+}
+.bcomp-table tbody td { padding: 11px 12px; border-bottom: 1px solid var(--color-border); color: var(--color-text); }
+.bcomp-table tbody tr:last-child td { border-bottom: none; }
+.bcomp-c { text-align: center; font-variant-numeric: tabular-nums; }
+.bcomp-unit { font-weight: 700; }
+.bcomp-due { color: var(--color-muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+.bcomp-pill {
+  display: inline-block; font-size: .78rem; font-weight: 700; white-space: nowrap;
+  padding: 3px 10px; border-radius: 999px;
+}
+.bcomp-pill.ok   { background: color-mix(in srgb, #16a34a 15%, transparent); color: #15803d; }
+.bcomp-pill.soon { background: color-mix(in srgb, #d97706 18%, transparent); color: #b45309; }
+.bcomp-pill.over { background: color-mix(in srgb, #dc2626 16%, transparent); color: #b91c1c; }
+.bcomp-pill.none { background: color-mix(in srgb, var(--color-muted) 18%, transparent); color: var(--color-muted); }
+
+@media (prefers-color-scheme: dark) {
+  .bcomp-pill.ok   { color: #4ade80; }
+  .bcomp-pill.soon { color: #fbbf24; }
+  .bcomp-pill.over { color: #f87171; }
+}
+
+@media (max-width: 640px) {
+  .bcomp-kpis { grid-template-columns: repeat(2, 1fr); }
+  .bcomp-hero { flex-direction: row; }
+}
