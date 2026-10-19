@@ -1,7 +1,7 @@
 # Render Blueprint — backend de Milo Care.
 #
 # Estado real (2026-10-19): el servicio de producción en Render se llama
-# `milo-care` (https://milo-care.onrender.com) y se creó desde el dashboard; este
+# `milo-care-production` (https://milo-care-production.onrender.com) y se creó desde el dashboard; este
 # archivo es la referencia de su configuración (no está verificado que el
 # Blueprint esté vinculado). `sync: false` = secreto o valor que se carga a mano
 # en el dashboard; Render nunca lo sobreescribe desde el repo.
@@ -10,10 +10,10 @@
 services:
   # ── Producción ────────────────────────────────────────────────────────────────
   - type: web
-    name: milo-care
+    name: milo-care-production
     runtime: node
     rootDir: backend
-    branch: main            # verificar en el dashboard que coincide con la rama real
+    branch: main            # verificado 2026-10-19 (srv-d8mlsv9o3t8c73bvi9fg)
     buildCommand: npm install
     startCommand: npm start
     plan: free
@@ -111,7 +111,7 @@ services:
   # secretos propios, pagos en sandbox. La rama `develop` de Amplify lo usa vía
   # VITE_API_BASE_URL (ver docs/devops/ENVIRONMENTS.md). NO apuntar a la DB de prod.
   - type: web
-    name: milo-care-staging
+    name: milo-care
     runtime: node
     rootDir: backend
     branch: develop
@@ -142,9 +142,9 @@ services:
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com
       - key: API_URL
-        value: https://milo-care-staging.onrender.com
+        value: https://milo-care.onrender.com
       - key: API_PUBLIC_URL
-        value: https://milo-care-staging.onrender.com
+        value: https://milo-care.onrender.com
       - key: CRON_SECRET
         sync: false          # opcional en staging; vacío = endpoint de cron deshabilitado (404)
       - key: CHECKIN_ENABLED

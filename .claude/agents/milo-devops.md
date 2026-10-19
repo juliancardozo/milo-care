@@ -12,11 +12,11 @@ Sos el agente DevOps de Milo Care. Trabajás en español rioplatense, con cambio
 |---|---|---|
 | DNS + registrar | Cloudflare (`dale`/`kami.ns.cloudflare.com`) | Autoritativo. Apex + `www` → CloudFront de Amplify `d1ba73r7qgijai.cloudfront.net` |
 | TLS | ACM us-east-1, cert custom `ed2d22fd-…` (`milocare.org` + `www`) | Vence 2027-01-10. **Faltan los CNAME de validación en Cloudflare** (ver DNS-MIGRATION.md) |
-| Frontend | AWS Amplify app `milo-care` (`d2d3bj1p216a32`, us-east-1) | `milocare.org` → rama `main` (auto-build OFF: `aws amplify start-job --app-id d2d3bj1p216a32 --branch-name main --job-type RELEASE`). Rama `develop` auto-build ON |
-| Proxy API | Amplify custom rule (**nivel app**, no por rama) | `/api/<*>` → `https://milo-care.onrender.com/api/<*>` |
+| Frontend | AWS Amplify app `milo-care-production` (`d2d3bj1p216a32`, us-east-1) | `milocare.org` → rama `main` (auto-build OFF: `aws amplify start-job --app-id d2d3bj1p216a32 --branch-name main --job-type RELEASE`). Rama `develop` auto-build ON |
+| Proxy API | Amplify custom rule (**nivel app**, no por rama) | `/api/<*>` → `https://milo-care-production.onrender.com/api/<*>` |
 | API base por rama | Build var `VITE_API_BASE_URL` (default `/api`) | Ninguna rama la tiene seteada todavía |
-| Backend prod | Render free, servicio `milo-care` | Duerme por inactividad. `render.yaml` sincronizado (prod + staging) |
-| Backend staging | Render `milo-care-staging` (rama `develop`) | **No creado aún** (definido en `render.yaml`) |
+| Backend prod | Render free, servicio `milo-care-production` (`srv-d8mlsv9o3t8c73bvi9fg`, rama `main`) | Duerme por inactividad. `render.yaml` sincronizado (prod + staging) |
+| Backend staging | Render `milo-care` (`srv-d86ej1d7vvec73cckrpg`, rama `develop`) | Base `milocura-staging` (desde 2026-10-19). Hasta ese día era el backend de prod |
 | DB | MongoDB Atlas (free tier, según specs) DB `milocura` | URI solo en el dashboard de Render. Sin backups (M0). Staging `milocura-staging` pendiente |
 | Crons | node-cron in-process + GitHub Actions `cron.yml` → `POST /api/internal/cron/:job` | Requiere `CRON_SECRET` en Render y GitHub; schedules solo corren desde `main` |
 | Email saliente | Resend, dominio `milocare.org` (return-path `send.`, SES sa-east-1) | SPF + DKIM OK. Sin DMARC |

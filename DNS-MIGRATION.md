@@ -8,15 +8,15 @@
 | Capa | Servicio | Detalle |
 |---|---|---|
 | Registrar + DNS autoritativo | Cloudflare (`dale` / `kami.ns.cloudflare.com`) | Registro vence 2027-06-26 |
-| Frontend (SPA) | AWS Amplify app `milo-care` (`d2d3bj1p216a32`) | `milocare.org` y `www` → CloudFront de Amplify `d1ba73r7qgijai.cloudfront.net` (DNS only, nube gris) |
+| Frontend (SPA) | AWS Amplify app `milo-care-production` (`d2d3bj1p216a32`) | `milocare.org` y `www` → CloudFront de Amplify `d1ba73r7qgijai.cloudfront.net` (DNS only, nube gris) |
 | Certificado TLS | ACM us-east-1, **custom cert** de la app Amplify | `milocare.org` + `www.milocare.org` (no wildcard). Vence 2027-01-10 |
-| API | Proxy de Amplify (custom rule a nivel app) | `https://milocare.org/api/*` → `https://milo-care.onrender.com/api/*` |
+| API | Proxy de Amplify (custom rule a nivel app) | `https://milocare.org/api/*` → `https://milo-care-production.onrender.com/api/*` |
 | Email saliente | Resend (dominio `milocare.org`) | DKIM `resend._domainkey`, return-path `send.milocare.org` (MX + SPF a SES sa-east-1) |
 | Email entrante | **Pendiente** | No hay MX en el apex: `hola@` y `partners@` rebotan |
 
 ### `api.milocare.org` no existe y no hace falta
 
-El frontend llama a `/api/...` en el mismo origen y Amplify lo reenvía a Render. Así no hay CORS en producción, no se necesita un registro DNS extra y no hay que sacar otro certificado. Si algún día se necesita un subdominio para la API pública (p. ej. partners `/api/v1`), se agrega un CNAME `api` → `milo-care.onrender.com` y un custom domain en Render. Hoy no hay motivo.
+El frontend llama a `/api/...` en el mismo origen y Amplify lo reenvía a Render. Así no hay CORS en producción, no se necesita un registro DNS extra y no hay que sacar otro certificado. Si algún día se necesita un subdominio para la API pública (p. ej. partners `/api/v1`), se agrega un CNAME `api` → `milo-care-production.onrender.com` y un custom domain en Render. Hoy no hay motivo.
 
 ### Route 53: eliminado
 
