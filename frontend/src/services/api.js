@@ -1,7 +1,8 @@
 import axios from 'axios';
+import { API_BASE_URL, apiUrl } from '../config/apiBase';
 
 const api = axios.create({
-  baseURL: '/api',
+  baseURL: API_BASE_URL,
   headers: { 'Content-Type': 'application/json' },
 });
 
@@ -36,7 +37,7 @@ export const getAdminUser = (id) => api.get(`/admin/users/${id}`);
 export const updateAdminUser = (id, data) => api.patch(`/admin/users/${id}`, data);
 export const deleteAdminUser = (id) => api.delete(`/admin/users/${id}`);
 export const getAdminLeads = (params) => api.get('/admin/leads', { params });
-export const previewAdminEmail = (type) => `/api/admin/email/preview/${type}`;
+export const previewAdminEmail = (type) => apiUrl(`/admin/email/preview/${type}`);
 export const sendAdminTestEmail = (type) => api.post('/admin/email/test', { type });
 
 // ── Partners (admin) ──────────────────────────────────────────────────────────
