@@ -16,7 +16,7 @@ Sos el agente DevOps de Milo Care. Trabajás en español rioplatense, con cambio
 | Proxy API | Amplify custom rule (**nivel app**, no por rama) | `/api/<*>` → `https://milo-care-production.onrender.com/api/<*>` |
 | API base por rama | Build var `VITE_API_BASE_URL` (default `/api`) | Ninguna rama la tiene seteada todavía |
 | Backend prod | Render free, servicio `milo-care-production` (`srv-d8mlsv9o3t8c73bvi9fg`, rama `main`) | Duerme por inactividad. `render.yaml` sincronizado (prod + staging) |
-| Backend staging | Render `milo-care` (`srv-d86ej1d7vvec73cckrpg`, rama `develop`) | Base `milocura-staging` (desde 2026-10-19). Hasta ese día era el backend de prod |
+| Backend staging | Render `milo-care-staging` (`srv-dbb4iass728c73f9kmd0`, workspace `Patio`, rama `develop`) | Base `milocura-staging` (desde 2026-10-19). Hasta ese día era el backend de prod |
 | DB | MongoDB Atlas (free tier, según specs) DB `milocura` | URI solo en el dashboard de Render. Sin backups (M0). Staging `milocura-staging` pendiente |
 | Crons | node-cron in-process + GitHub Actions `cron.yml` → `POST /api/internal/cron/:job` | Requiere `CRON_SECRET` en Render y GitHub; schedules solo corren desde `main` |
 | Email saliente | Resend, dominio `milocare.org` (return-path `send.`, SES sa-east-1) | SPF + DKIM OK. Sin DMARC |

@@ -7,8 +7,8 @@
 | | Local | Staging (a crear) | Producción |
 |---|---|---|---|
 | Frontend | Vite `:5173` (`docker compose up` o `npm run dev`) | Amplify rama `develop`: `https://develop.d2d3bj1p216a32.amplifyapp.com` | Amplify rama `main`: `https://milocare.org` (+ `www`) |
-| Cómo llega a la API | Proxy de Vite `/api` → `VITE_BACKEND_URL` o `http://localhost:3001` | **Hoy**: proxy de Amplify `/api` → backend de **prod**. **Objetivo**: `VITE_API_BASE_URL=https://milo-care.onrender.com/api` (llamada directa con CORS) | Proxy de Amplify (custom rule a nivel app) `/api/<*>` → `https://milo-care-production.onrender.com/api/<*>` |
-| Backend | Express `:3001` | Render `milo-care` (free, rama `develop`) | Render `milo-care-production` (free): `https://milo-care-production.onrender.com` |
+| Cómo llega a la API | Proxy de Vite `/api` → `VITE_BACKEND_URL` o `http://localhost:3001` | **Hoy**: proxy de Amplify `/api` → backend de **prod**. **Objetivo**: `VITE_API_BASE_URL=https://milo-care-staging.onrender.com/api` (llamada directa con CORS) | Proxy de Amplify (custom rule a nivel app) `/api/<*>` → `https://milo-care-production.onrender.com/api/<*>` |
+| Backend | Express `:3001` | Render `milo-care-staging` (free, rama `develop`) | Render `milo-care-production` (free): `https://milo-care-production.onrender.com` |
 | DB | `mongo:7` en docker (`milocura`) | Atlas DB `milocura-staging` (usuario propio) | Atlas DB `milocura` (URI solo en el dashboard de Render) |
 | Email | Resend con `onboarding@resend.dev` | Resend (`noreply@milocare.org`), con datos de prueba | Resend `noreply@milocare.org` |
 | Pagos | sandbox | Paddle sandbox / MP `TEST-` | Paddle / MP prod |
@@ -45,13 +45,13 @@ aws --profile milo-devops amplify list-jobs --app-id d2d3bj1p216a32 --branch-nam
 **Custom rules (rewrites/redirects): son a nivel APP, no por rama.** Tanto `aws amplify get-app` (`customRules`) como `update-app --custom-rules` operan sobre la app; `get-branch`/`update-branch` no tienen ese campo. Por eso la rama `develop` no puede tener un proxy `/api` que apunte a otro backend. La solución es la variable de build `VITE_API_BASE_URL` **por rama** (`frontend/src/config/apiBase.js`):
 
 - Sin variable (prod, `main`): `/api` → proxy de Amplify → Render prod. **No cambia nada en producción.**
-- Con variable (solo `develop`): el SPA llama directo a `https://milo-care.onrender.com/api`. El backend de staging lo permite por CORS (`APP_URL` = dominio de develop; orígenes extra en `CORS_ALLOWED_ORIGINS`). La auth usa Bearer en `localStorage`, no cookies, así que no hay problema con cookies cross-site.
+- Con variable (solo `develop`): el SPA llama directo a `https://milo-care-staging.onrender.com/api`. El backend de staging lo permite por CORS (`APP_URL` = dominio de develop; orígenes extra en `CORS_ALLOWED_ORIGINS`). La auth usa Bearer en `localStorage`, no cookies, así que no hay problema con cookies cross-site.
 
 Comando para cuando exista el backend de staging. **Ojo: `--environment-variables` reemplaza el mapa completo de la rama**, y hoy está vacío:
 
 ```bash
 aws --profile milo-devops amplify update-branch --app-id d2d3bj1p216a32 --branch-name develop \
-  --environment-variables VITE_API_BASE_URL=https://milo-care.onrender.com/api
+  --environment-variables VITE_API_BASE_URL=https://milo-care-staging.onrender.com/api
 aws --profile milo-devops amplify start-job --app-id d2d3bj1p216a32 --branch-name develop --job-type RELEASE
 ```
 
@@ -64,7 +64,7 @@ Rollback de `develop` (vuelve al proxy `/api` → prod): `aws --profile milo-dev
 ### Backend (Render)
 
 - Producción: servicio `milo-care-production` (rama `main`; confirmarlo en el dashboard), auto-deploy al pushear. Free: **duerme a los ~15 min sin tráfico**, y el primer request tarda ~30–50 s.
-- Staging: servicio `milo-care` (`srv-d86ej1d7vvec73cckrpg`, rama `develop`), base `milocura-staging` en el mismo cluster Atlas (desde 2026-10-19). Hasta mergear este PR y setear `VITE_API_BASE_URL`, el preview de `develop` sigue llamando al backend de prod vía el proxy de Amplify.
+- Staging: servicio `milo-care-staging` (`srv-dbb4iass728c73f9kmd0`, rama `develop`), base `milocura-staging` en el mismo cluster Atlas (desde 2026-10-19). Hasta mergear este PR y setear `VITE_API_BASE_URL`, el preview de `develop` sigue llamando al backend de prod vía el proxy de Amplify.
 - `render.yaml` es la referencia de configuración. Las keys con `sync: false` se cargan a mano y Render nunca las pisa.
 
 ### DB (MongoDB Atlas)
@@ -85,7 +85,7 @@ Fuente: `grep -rhoE "process\.env\.[A-Z_]+" backend/src | sort -u` (39 vars, má
 | `NODE_ENV` | (no se lee en `src`) | `production` | `production` |
 | `APP_URL` | CORS + links | `https://milocare.org` | `https://develop.d2d3bj1p216a32.amplifyapp.com` |
 | `CORS_ALLOWED_ORIGINS` | CORS extra (coma) | vacío | `http://localhost:5173` |
-| `API_URL` | links one-click del check-in | `https://milocare.org` (seteada 2026-10-19) | `https://milo-care.onrender.com` (seteada 2026-10-19) |
+| `API_URL` | links one-click del check-in | `https://milocare.org` (seteada 2026-10-19) | `https://milo-care-staging.onrender.com` (seteada 2026-10-19) |
 | `API_PUBLIC_URL` | webhook MP (default APP_URL) | 🔒 manual | URL de staging |
 | `VET_SHARE_PUBLIC_BASE_URL` | links vet-share | `https://milocare.org` | develop |
 | `WALLET_PUBLIC_BASE_URL` | QR del pase | `https://milocare.org` | develop |
@@ -148,7 +148,7 @@ Ninguna de estas cosas tiene CLI disponible acá (Atlas, Render, Cloudflare) o l
 
 **Staging**
 - [x] Atlas: base `milocura-staging` en el mismo cluster (creada 2026-10-19 al arrancar el servicio). Pendiente: usuario `milo-staging` con `readWrite` **solo** sobre `milocura-staging` (hoy staging usa `milo-care-dev`, que es `atlasAdmin`).
-- [x] Render: el servicio `milo-care` (rama `develop`) es staging desde 2026-10-19.
+- [x] Render: el servicio `milo-care-staging` (rama `develop`) es staging desde 2026-10-19.
 - [x] `JWT_SECRET` propio en staging (2026-10-19, 96 caracteres; distinto del de prod).
 - [ ] Opcional: separar también `RESEND_API_KEY`, `ANTHROPIC_API_KEY` y VAPID de staging (hoy los comparte con prod).
 - [ ] Cuando staging responda, correr el `aws amplify update-branch … VITE_API_BASE_URL=…` de la sección 2 y redeployar `develop`.
@@ -203,7 +203,7 @@ En octubre, ~USD 0,50 del gasto de AWS era la hosted zone de Route 53, ya borrad
 
 ### Riesgos de costo conocidos
 
-- **Horas de Render free:** las 750 h/mes son por workspace, y en `My Workspace` conviven `milo-care-production`, `milo-care` (staging) y `micuota-online-2026-backend`. El cron externo mantiene `milo-care-production` despierto (~744 h/mes), así que si `milo-care` también se mantiene despierto se pasa del límite y Render suspende los servicios. Staging tiene que quedar dormido: el cron solo pega a prod.
+- **Horas de Render free:** las 750 h/mes son por workspace. Prod (`milo-care-production`) está solo en `My Workspace`, así que el cron externo puede mantenerlo despierto todo el mes (~744 h). Staging (`milo-care-staging`) vive en el workspace `Patio` (compartido con `patio-mvp`, ambos free y con sleep). El workspace `milo-care-staging` existe pero está vacío: Render pide tarjeta para crear servicios ahí.
 - **Bot Milo:** el costo crece con el tráfico de la landing; el rate limit de `/api/milo-chat` es la guarda. Revisar el consumo en console.anthropic.com y fijar un límite de gasto ahí.
 - **Amplify `develop` con auto-build:** cada push consume minutos de build (USD 0,01/min). Hoy es despreciable.
 
