@@ -119,7 +119,7 @@ services:
   # secretos propios, pagos en sandbox. La rama `develop` de Amplify lo usa vía
   # VITE_API_BASE_URL (ver docs/devops/ENVIRONMENTS.md). NO apuntar a la DB de prod.
   - type: web
-    name: milo-care
+    name: milo-care-staging
     runtime: node
     rootDir: backend
     branch: develop
@@ -150,9 +150,9 @@ services:
       - key: BILLING_NOTIFY_EMAIL
         value: julian.cardozo.viggiano@gmail.com
       - key: API_URL
-        value: https://milo-care.onrender.com
+        value: https://milo-care-staging.onrender.com
       - key: API_PUBLIC_URL
-        value: https://milo-care.onrender.com
+        value: https://milo-care-staging.onrender.com
       - key: CRON_SECRET
         sync: false          # opcional en staging; vacío = endpoint de cron deshabilitado (404)
       - key: SLACK_ENABLED
