@@ -147,9 +147,9 @@ Otra opción es subir a M2/M10 si el negocio lo justifica (snapshots nativos).
 Ninguna de estas cosas tiene CLI disponible acá (Atlas, Render, Cloudflare) o las tiene que decidir el dueño de la cuenta.
 
 **Staging**
-- [ ] Atlas: crear la DB `milocura-staging` (en el mismo cluster M0 alcanza, o en un cluster aparte), un usuario `milo-staging` con `readWrite` **solo** sobre `milocura-staging`, e IP access list (Render free no tiene IP fija: `0.0.0.0/0` con un usuario de permisos acotados y una contraseña larga).
-- [ ] Render → New → Blueprint (o Web Service) con `milo-care` de `render.yaml`, rama `develop`.
-- [ ] Cargar los secretos de staging en Render: `MONGODB_URI` (staging), `JWT_SECRET` nuevo (`openssl rand -hex 32`), `RESEND_API_KEY`, Paddle/MP **sandbox**, el resto según hagan falta.
+- [x] Atlas: base `milocura-staging` en el mismo cluster (creada 2026-10-19 al arrancar el servicio). Pendiente: usuario `milo-staging` con `readWrite` **solo** sobre `milocura-staging` (hoy staging usa `milo-care-dev`, que es `atlasAdmin`).
+- [x] Render: el servicio `milo-care` (rama `develop`) es staging desde 2026-10-19.
+- [ ] Separar secretos de staging: hoy `milo-care` comparte `JWT_SECRET`, `RESEND_API_KEY`, `ANTHROPIC_API_KEY` y VAPID con prod. Mínimo: `JWT_SECRET` propio (`openssl rand -hex 32`) para que un token de un ambiente no sirva en el otro.
 - [ ] Cuando staging responda, correr el `aws amplify update-branch … VITE_API_BASE_URL=…` de la sección 2 y redeployar `develop`.
 
 **Cron externo**
@@ -202,7 +202,7 @@ En octubre, ~USD 0,50 del gasto de AWS era la hosted zone de Route 53, ya borrad
 
 ### Riesgos de costo conocidos
 
-- **Horas de Render free:** las 750 h/mes son por workspace. El cron externo mantiene `milo-care-production` despierto (~744 h/mes), así que si `milo-care` también se mantiene despierto se pasa del límite y Render suspende los servicios. Staging tiene que quedar dormido: el cron solo pega a prod.
+- **Horas de Render free:** las 750 h/mes son por workspace, y en `My Workspace` conviven `milo-care-production`, `milo-care` (staging) y `micuota-online-2026-backend`. El cron externo mantiene `milo-care-production` despierto (~744 h/mes), así que si `milo-care` también se mantiene despierto se pasa del límite y Render suspende los servicios. Staging tiene que quedar dormido: el cron solo pega a prod.
 - **Bot Milo:** el costo crece con el tráfico de la landing; el rate limit de `/api/milo-chat` es la guarda. Revisar el consumo en console.anthropic.com y fijar un límite de gasto ahí.
 - **Amplify `develop` con auto-build:** cada push consume minutos de build (USD 0,01/min). Hoy es despreciable.
 
