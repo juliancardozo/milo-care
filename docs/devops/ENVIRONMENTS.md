@@ -176,7 +176,46 @@ Ninguna de estas cosas tiene CLI disponible acá (Atlas, Render, Cloudflare) o l
 - [x] AWS: app Elastic Beanstalk `milocare-backend` + bucket `elasticbeanstalk-us-east-1-013960777529`, cert ACM FAILED de EB, CloudFront `EBIRY53JL4HBO` y hosted zone Route 53 `milocare.org`, todos borrados. Backups de configuración fuera del repo.
 - [x] IAM: usuario `milo-devops` (sin consola) + perfil CLI `milo-devops`.
 
-## 7. Usuario IAM `milo-devops`
+## 7. Costos (FinOps)
+
+Regla: toda acción con costo se avisa antes; lo recurrente necesita OK explícito. Precios de lista a la fecha: verificarlos en la página de cada proveedor antes de decidir.
+
+### Gasto real (2026-10-19)
+
+| Proveedor | Plan | Gasto | Fuente |
+|---|---|---|---|
+| AWS (Amplify + restos) | Pago por uso | **USD 0,51 en octubre**, forecast USD 0,55 | AWS Budgets (gratis de leer) |
+| Render (`milo-care`) | Free | USD 0 | plan en `render.yaml` |
+| MongoDB Atlas | M0 (free, según specs) | USD 0 | sin verificar (no hay acceso a Atlas) |
+| Cloudflare (DNS, registrar) | Free + dominio al costo | dominio `.org` ~USD 10/año | estimación |
+| Resend | Free (3.000 emails/mes, 100/día) | USD 0 | estimación |
+| Anthropic (bot Milo, Haiku 4.5) | Pago por uso | variable: USD 1 / 5 por millón de tokens in/out | sin verificar el consumo real |
+| GitHub Actions (cron) | Repo público: minutos gratis | USD 0 | |
+| Paddle | % por venta (Merchant of Record) | solo si hay ventas | |
+
+En octubre, ~USD 0,50 del gasto de AWS era la hosted zone de Route 53, ya borrada. Desde noviembre, AWS debería quedar en centavos (minutos de build y tráfico de Amplify).
+
+### Guardas activas
+
+- AWS Budgets: `My Monthly Cost Budget` (USD 10; alertas al 85 % y 100 % real y 100 % forecast) y `My Zero-Spend Budget` (USD 1).
+- Pendiente: monitor de anomalías de Cost Explorer (gratis). Requiere `ce:*` de lectura para `milo-devops`, que hoy no tiene.
+
+### Riesgos de costo conocidos
+
+- **Horas de Render free:** las 750 h/mes son por workspace. El cron externo mantiene `milo-care` despierto (~744 h/mes), así que si `milo-care-staging` también se mantiene despierto se pasa del límite y Render suspende los servicios. Staging tiene que quedar dormido: el cron solo pega a prod.
+- **Bot Milo:** el costo crece con el tráfico de la landing; el rate limit de `/api/milo-chat` es la guarda. Revisar el consumo en console.anthropic.com y fijar un límite de gasto ahí.
+- **Amplify `develop` con auto-build:** cada push consume minutos de build (USD 0,01/min). Hoy es despreciable.
+
+### Decisiones con costo pendientes de OK
+
+| Opción | Costo mensual | Estado |
+|---|---|---|
+| Render Starter (no duerme) | USD 7 | descartado: se usa el cron externo gratis |
+| Atlas M0 para staging | USD 0 | recomendado |
+| Atlas con backups gestionados (Flex/M10) | desde ~USD 8 / ~USD 57 | no recomendado aún; alternativa: `mongodump` a S3 (centavos) |
+| Bucket S3 para backups de `mongodump` | < USD 0,10 | requiere OK |
+
+## 8. Usuario IAM `milo-devops`
 
 Sin acceso a consola. Políticas:
 - Administradas: `CloudFrontReadOnlyAccess`, `AWSCertificateManagerReadOnly`, `AmazonRoute53ReadOnlyAccess`, `AmazonS3ReadOnlyAccess`, `AWSBillingReadOnlyAccess`, `AWSBudgetsReadOnlyAccess`.

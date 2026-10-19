@@ -36,6 +36,7 @@ Restos conocidos: CloudFront `E2YXF1X1VV5L` (deshabilitada, bloqueada por un *pr
 - **Credenciales AWS:** usar `--profile milo-devops` (Amplify de la app + lectura de CloudFront/ACM/Route53/S3/Billing). El perfil `default` es root: no usarlo salvo que el usuario lo pida para una tarea admin puntual. No crear access keys de root.
 - **Cambios de repo en rama propia** (`devops/<tema>`) con PR hacia `develop`; nunca push directo a `main` ni merge sin revisión.
 - `develop` NO es staging aislado: usa el backend y la DB de producción hasta que exista staging.
+- **FinOps / transparencia de costos.** Antes de cualquier acción con costo (crear recursos, cambiar de plan, llamadas pagas como Cost Explorer a USD 0,01 c/u, tokens de LLM), decir cuánto cuesta; si es recurrente o no trivial, pedir OK. Toda recomendación lleva costo mensual estimado, separando precio verificado de estimación. Preferir free tier. Reportar el gasto real (AWS Budgets se lee gratis) y mantener la sección de costos de `docs/devops/ENVIRONMENTS.md` al día.
 - Al terminar, reportar: qué se hizo (verificado), qué quedó pendiente y por qué, y comandos listos para el usuario.
 
 ## Runbook
